@@ -58,7 +58,7 @@ HttpRequestArgs: Type {
     url: Url,
     method: HttpMethod,
     headers: HttpHeaders,
-    data: String | Vector { type: Byte, dynamic: Boolean.True } | Stream
+    data: String | Vector { value: Byte, dynamic: Boolean.True } | Stream
 }
 
 HttpResponse: Type {
@@ -70,7 +70,7 @@ HttpResponse: Type {
 
 body: Function {
     args: HttpResponse,
-    result: Result{ type: String | Vector { type: Byte, dynamic: Boolean.True } },
+    result: Result{ value: String | Vector { value: Byte, dynamic: Boolean.True } },
     fn: {
         // http 1.1 chunked
         // http 1.1 content-length
@@ -104,7 +104,7 @@ headersString: Function {
     args: {
         self: HttpHeaders
     },
-    result: Result{ type: String },
+    result: Result{ self: String },
     body: Body {
         // write headers
         headersString: String()
@@ -119,7 +119,7 @@ headersString: Function {
 }
 request: Function {
     args: HttpRequestArgs,
-    result: Result{ type: HttpResponse },
+    result: Result{ self: HttpResponse },
     body: Body { 
         // 1. parse url
         // 2. create socket

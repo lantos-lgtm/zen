@@ -64,7 +64,7 @@ main: Function {
   },
   body: Body {
     callBacks: Vector {
-      type: MyCallBackFunction
+      value: MyCallBackFunction
     }(
       escapeString,
       capitalizeWords

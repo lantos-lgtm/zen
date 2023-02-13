@@ -22,7 +22,7 @@ const append {
         value: { vector.data.type },
     },
     returns: Result {
-        type: Void,
+        self: Void,
         error: VectorError,
     },
     body: {
@@ -44,7 +44,7 @@ multiply: Function {
         value: { vector.data.type },
     },
     returns: Result {
-        type: Void,
+        self: Void,
         error: VectorError,
     },
     body: {

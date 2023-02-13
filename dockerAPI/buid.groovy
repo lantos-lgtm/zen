@@ -12,8 +12,12 @@ build:  build.Builder {
         // 
         exe: self.Exe.standardExeOptions()
 
+        // add executables
+        exe.addExecutable ( 
+            name: String("main")
+            path: Path(String("./src/main.zim"))            
+        )
 
-        
         runCmd: exe.run()
         if (self.args){
             body: Body {

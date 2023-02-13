@@ -1,0 +1,87 @@
+imports: @import {
+    std,
+    build: std.build,
+    {
+        Float,
+        Int,
+        String,
+        Bool,
+        Map
+    }: std.values
+}
+
+ContainerStats: Type {
+    read*           time.DateTime,
+    preread*        time.DateTime,
+    pidsStats*      PidsStats,
+    blkioStats*     BlkioStats,
+    numProcs*       Int.U64,
+    storageStats*   StorageStats,
+    cpuStats*       CPUStats,
+    preCpuStats*    CPUStats,
+    memoryStats*    MemoryStats,
+    name*           String,
+    id*             String,
+    networks*:      Map { key: String, value: NetworkStats }
+}
+BlkioStats: Type {
+    ioServiceBytesRecursive*:  Result {self: Vector {value: BlkioStatEntry}},
+    ioServicedRecursive*:      Result {self: Vector {value: BlkioStatEntry}},
+    ioQueueRecursive*:         Result {self: Vector {value: BlkioStatEntry}},
+    ioServiceTimeRecursive*:   Result {self: Vector {value: BlkioStatEntry}},
+    ioWaitTimeRecursive*:      Result {self: Vector {value: BlkioStatEntry}},
+    ioMergedRecursive*:        Result {self: Vector {value: BlkioStatEntry}},
+    ioTimeRecursive*:          Result {self: Vector {value: BlkioStatEntry}},
+    sectorsRecursive*:         Result {self: Vector {value: BlkioStatEntry}},
+}
+CPUUsage: Type {
+    totalUsage*:          Float.F64
+    perCpuUsage*:         Vector { value: Float.F64}
+    usageInKernelmode*:   Float.F64
+    usageInUsermode*:     Float.F64
+}
+
+ThrottlingData: Type {
+    periods*:           Float.F64
+    throttledPeriods*:  Float.F64
+    throttledTime*:     Float.F64
+}
+
+MemoryStats: Type {
+    usage*:         Float.F64
+    stats*:         Map {key: String, value: Float.F64}
+    limit*:         Float.F64
+}
+
+NetworkStats: Type {
+    rxBytes*:       Float.F64
+    rxPackets*:     Float.F64
+    rxErrors*:      Float.F64
+    rxDropped*:     Float.F64
+    txBytes*:       Float.F64
+    txPackets*:     Float.F64
+    txErrors*:      Float.F64
+    txDropped*:     Float.F64
+}
+
+PidsStats: Type {
+    current*:       Float.F64
+    limit*:         Float.F64
+}
+
+StorageStats: Type {
+    ReadCountNormalized:  Int.U64
+    ReadSizeBytes:        Int.U64
+    WriteCountNormalized: Int.U64
+    WriteSizeBytes:       Int.U64
+}
+
+HumanReadableStats: Type {
+    usedMemory*:          Float.F64
+    availableMemory*:     Float.F64
+    memoryUsagePercent*:  Float.F64
+    cpuDelta*:            Float.F64
+    systemCpuDelta*:      Float.F64
+    numberCpus*:          Int.U64
+    cpuUsagePercent*:     Float.F64
+}

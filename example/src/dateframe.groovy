@@ -35,14 +35,14 @@ main: Function {
         // | 3  | Joe  | 40  | 1/1/2020 | true |
         // | 4  | James  | 50  | 1/1/2020 | false |
 
-        accountsDf.id // Vector {type: Int}(1, 2, 3)
-        accountsDf.name // Vector {type: String}("John", "Jane", "Joe")
-        accountsDf.age // Vector {type: Int}(20, 30, 40)
-        accountsDf.date // Vector {type: Date}("1/1/2020", "1/1/2020", "1/1/2020")
-        accountsDf.active // Vector {type: Bool}(true, false, true)
+        accountsDf.id // Vector { value: Int}(1, 2, 3)
+        accountsDf.name // Vector { value: String}("John", "Jane", "Joe")
+        accountsDf.age // Vector { value: Int}(20, 30, 40)
+        accountsDf.date // Vector { value: Date}("1/1/2020", "1/1/2020", "1/1/2020")
+        accountsDf.active // Vector { value: Bool}(true, false, true)
 
         // count active
-        active: accountsDf.active.filter(Bool.True) // Vector {type: Bool}(true, true)
+        active: accountsDf.active.filter(Bool.True) // Vector { value: Bool}(true, true)
         active.length() // 2
 
         // filter and update
