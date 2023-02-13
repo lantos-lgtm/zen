@@ -5,39 +5,39 @@ parseBool: Function {
         self: String
     }
     return: ResultWithError {
-        type: Bit
+        self: Bit
     }
     body: Body {
         if (value) {
             in: Vector {
-                String ("1")
-                String ("true")
-                String ("True")
-                String ("TRUE")
+                String ("1"),
+                String ("true"),
+                String ("True"),
+                String ("TRUE"),
             }
             body: Body {
-                return ResultWithError(Bit (1))
-            }
+                return ResultWithError(Bit (1)),
+            },
             else: Body {
-                return(error: "Invalid boolean value")
-            }
+                return(error: "Invalid boolean value"),
+            },
         }
         if (value) {
             in: Vector {
-                String ("0")
-                String ("false")
-                String ("False")
-                String ("FALSE")
-            }
+                String ("0"),
+                String ("false"),
+                String ("False"),
+                String ("FALSE"),
+            },
             body: Body {
-                return(Bit(0))
-            }
+                return(Bit(0),)
+            },
             else: Body {
                 return(
                     self: value
                     error: "Invalid boolean value"
                 )
-            }
+            },
         }
     }
 }
@@ -46,7 +46,7 @@ parseBool: Function {
         self: String
     }
     return: ResultWithError {
-        type: Bit
+        self: Bit
     }
     body: Body {
         if {
@@ -72,7 +72,7 @@ Boolean: Type {
     parse: Function {
         self: Type
         return: ResultWithError {
-            type: Bool
+            self: Bool
         }
         body: Body {
             if {
@@ -100,7 +100,7 @@ Boolean: Type {
 
 Byte: Type {
     data: Vector {
-        type: Bit
+        self: Bit
         size 8
     }
 }
@@ -109,7 +109,7 @@ Char: Byte
 
 IntType: Type {
     size: Vector {
-        type: Bit
+        self: Bit
         size 8
     }
     signed: Boolean
@@ -118,7 +118,7 @@ IntType: Type {
 IntBase: {
     intType: IntType
     data: Vector {
-        type: { Bit }
+        self: { Bit }
         size: { intType.size }
     }
 }
@@ -142,7 +142,7 @@ intRange: Vector {8 16 32 64 128 256 }
                             }
                             Struct {
                                 name: String.format`${prefix}Int${String.parse(size)}`
-                                type: IntBase {
+                                self: IntBase {
                                         intType: IntType {
                                             size: Int.parse(size)
                                             signed: Boolean.parse(signed)
@@ -161,7 +161,7 @@ intRange: Vector {8 16 32 64 128 256 }
 
 FloatType: Type {
     size: Vector {
-        type: Bit
+        self: Bit
         size 8
     }
     signed: Boolean
@@ -170,7 +170,7 @@ FloatType: Type {
 Float: Type {
     floatType: FloatType
     data: Vector {
-        type: { Bit }
+        self: { Bit }
         size: { size }
     }
 }
@@ -179,6 +179,6 @@ String: Type {
     length Int
     max: Int
     data: Vector {
-        type: {Char}
+        self: {Char}
     }
 }
