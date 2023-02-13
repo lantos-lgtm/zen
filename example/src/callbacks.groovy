@@ -17,10 +17,10 @@ ExpectedCallBackArgs: Type {
   string: String
 },
 ExpectedCallBackReturn: ResultWithError {
-  self: String
+  self:   String
 },
 MyCallBackFunction: Function {
-  args: ExpectedCallBackArgs,
+  args:   ExpectedCallBackArgs,
   return: ExpectedCallBackReturn,
 },
 escapeString: MyCallBackFunction {
@@ -65,7 +65,7 @@ main: Function {
   body: Body {
     callBacks: Vector {
       value: MyCallBackFunction
-    }(
+    } (
       escapeString,
       capitalizeWords
     ),

@@ -61,9 +61,6 @@ main: Function {
         // | 6  | 3 | TSLA | 600  | 1/1/2020 |
         // | 7  | 3 | AAPL | 700  | 1/1/2020 |
 
-
-
-
         // merge
         mergeDf: accountsDf.merge(
             left: accountsDf
@@ -81,7 +78,6 @@ main: Function {
         // | 3  | Joe  | 40  | 1/1/2020 | true | 3 | TSLA | 600  | 1/1/2020 |
         // | 3  | Joe  | 40  | 1/1/2020 | true | 3 | AAPL | 700  | 1/1/2020 |
 
-
         // group by
         mergeDf.groupBy(Vector(mergeDf.id, mergeDf.ticker)).sum(mergeDf.amount) 
 
@@ -91,6 +87,5 @@ main: Function {
         // | 2  | PLTR | 400  |
         // | 3  | TSLA | 1100  |
         // | 3  | AAPL | 700  |
-
     }
 }

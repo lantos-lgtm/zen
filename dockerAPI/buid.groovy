@@ -8,9 +8,9 @@ build:  build.Builder {
         // target platform options
         target: self.Target.standardTargetOptions()
         // relase, debug ...
-        mode: self.Mode.standardModeOptions()
+        mode:   self.Mode.standardModeOptions()
         // 
-        exe: self.Exe.standardExeOptions()
+        exe:    self.Exe.standardExeOptions()
 
         // add executables
         exe.addExecutable ( 
