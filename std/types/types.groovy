@@ -123,29 +123,30 @@ IntBase: {
     }
 }
 
-intRange: Vector(8 16 32 64 128 256)
-
-createInts: Comptime{ Function {
-        fn: {
-            _: loop {
-                on: intRange
-                fn: {
-                    signed: loop {
-                        on: Boolean.values()
-                        fn: {
-                            prefix: String ("")
-                            if {
-                                condition: signed
-                                then: {
-                                    prefix: String ("U")
+intRange: Vector {8 16 32 64 128 256 }
+@createInts {
+    fn: Function {
+        body: Body { 
+            var size loop {
+            on: intRange
+            fn: Function {
+                body: Body {
+                    var signed loop {
+                        on: Boolean.fieldPairs()
+                        fn: Function {
+                            prefix: String
+                            if (signed) {
+                                body: Body {
+                                    signed = String("U")
                                 }
                             }
-                            @Type {
-                                name: String.format(`${prefix}Int${String.parse{size}}`)
+                            Struct {
+                                name: String.format`${prefix}Int${String.parse(size)}`
                                 type: IntBase {
-                                    intType: IntType {
-                                        size: ${size}
-                                        signed: ${signed}
+                                        intType: IntType {
+                                            size: Int.parse(size)
+                                            signed: Boolean.parse(signed)
+                                        }
                                     }
                                 }
                             }
@@ -156,7 +157,7 @@ createInts: Comptime{ Function {
         }
     }
 }
-@createInts()
+@createInts{}
 
 FloatType: Type {
     size: Vector {

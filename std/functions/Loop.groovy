@@ -6,15 +6,14 @@ imports: {
 }
 
 LoopHandle: Type {
-
+    value: Type
 }
 Loop: Function {
     args: {
-        self: Body
+        self: LoopHandle
         body: Body
-        loopHandle: LoopHandle
     }
-    return: loopHandle
+    return: self.Type
     fn: Function {
         {
             if (self()) {
@@ -32,9 +31,11 @@ Loop: Function {
         i: Int
         next: ResultWithError{}
         body: Body
-        loopHandle: LoopHandle
+        loopHandle: LoopHandle {
+            value: self.Type
+        }
     }
-    return: loopHandle
+    return: args.loopHandle.Type
     fn: Function {
         {
             if (i < self.size()) {
