@@ -19,7 +19,7 @@ imports: {
 }
 
 // Dataframe: {
-//     columns: Vector{} 
+//     columns: Vector
 // }
 
 // dataframes

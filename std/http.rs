@@ -58,7 +58,7 @@ HttpRequestArgs: Type {
     url: Url,
     method: HttpMethod,
     headers: HttpHeaders,
-    data: String | Vector { type: Byte, dynamic: Boolean.True {} } | Stream
+    data: String | Vector { type: Byte, dynamic: Boolean.True } | Stream
 }
 
 HttpResponse: Type {
@@ -70,7 +70,7 @@ HttpResponse: Type {
 
 body: Function {
     args: HttpResponse,
-    result: Result{ type: String | Vector { type: Byte, dynamic: Boolean.True {} } },
+    result: Result{ type: String | Vector { type: Byte, dynamic: Boolean.True } },
     fn: {
         // http 1.1 chunked
         // http 1.1 content-length
@@ -80,7 +80,7 @@ body: Function {
         transferEncoding ""
         
         header for { 
-            in:  headers.next{},
+            in:  headers.next(),
             fn: {
                 _: match {
                     on: header.key,
@@ -99,6 +99,7 @@ body: Function {
         // read body
     }
 }
+
 headersString: Function {
     args: {
         self: HttpHeaders
@@ -106,9 +107,9 @@ headersString: Function {
     result: Result{ type: String },
     body: Body {
         // write headers
-        headersString: String {}
+        headersString: String()
         header for {
-            in: self.next {},
+            in: self.next(),
             fn: {
                 headersString: String.concat { headersString, String.format"${header.key}: ${header.value}\r" }
             }
@@ -147,7 +148,7 @@ request: Function {
             data: path
         }
         // write headers
-        headersString: self.headers.headersString {}
+        headersString: self.headers.headersString()
         _: connsection.write {
             data: headersString
         }
@@ -156,7 +157,7 @@ request: Function {
 }
 main Function {
     body: Body {
-        client: HttpClient{}
+        client: HttpClient
         client.request {
             url: Url {String {"http://localhost:8080"}}
             method: HttpMethod.GET

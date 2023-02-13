@@ -9,8 +9,8 @@ LoopHandle: Type {
 
 }
 Loop: Function {
-    self: Body
     args: {
+        self: Body
         body: Body
         loopHandle: LoopHandle
     }
@@ -27,8 +27,8 @@ Loop: Function {
 }
 // itterator
 Loop: Function {
-    self: Vector
     args: {
+        self: Vector
         i: Int
         next: ResultWithError{}
         body: Body

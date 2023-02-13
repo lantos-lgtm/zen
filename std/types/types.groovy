@@ -1,7 +1,9 @@
 Bit //@magic 1 0
 
 parseBool: Function {
-    self: String
+    args: {
+        self: String
+    }
     return: ResultWithError {
         type: Bit
     }
@@ -40,7 +42,9 @@ parseBool: Function {
     }
 }
 parseBool: Function {
-    self: String
+    args: {
+        self: String
+    }
     return: ResultWithError {
         type: Bit
     }

@@ -1,30 +1,30 @@
 imports: {
-    std,
+    std
     {
-        io,
-        time,
+        io
+        time
     }: std
     {
-        Function,
-        Loop,
-    }: std.functions,
+        Function
+        Loop
+    }: std.functions
     {
-        String,
-        Int,
-        Bool,
-        Vector,
+        String
+        Int
+        Bool
+        Vector
     }: std.types
 }
 
 Benchmack {
     args: {
-        self: Body,
-    },
+        self: Body
+    }
     fn: {
         start: time.now()
         self()
         end: time.now()
-        duration: time.subtract{end, start}
+        duration: time.subtract(Vector(end, start))
         io.println { String.format {"Duration: ${duration}"} }
     }
 }

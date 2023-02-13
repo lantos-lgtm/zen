@@ -1,22 +1,48 @@
-import
+imports: {
+    std: std
+    io: std.io
+    {
+        Function
+        Loop
+    }: std.functions
+    {
+        String
+        Int
+        Bool
+        Vector
+        Type
+    }: std.types
+    customImport: LocalImport(
+        path: Path("./custom.zim")
+    )
+    customPackage: Import(
+        package: build.Packages.customPackage // imported and defined in the build file
+    )
+}
 
-intRange {8, 16, 32, 64, 128, 256 }
+intRange: Vector {8 16 32 64 128 256 }
 @createInts {
     fn: Function {
         body: Body { 
             var size loop {
-            on: intRange,
+            on: intRange
             fn: Function {
                 body: Body {
                     var signed loop {
-                        on: Boolean.fieldPairs{},
+                        on: Boolean.fieldPairs()
                         fn: Function {
+                            prefix: String
+                            if (signed) {
+                                body: Body {
+                                    signed = String("U")
+                                }
+                            }
                             Struct {
-                                name: format`${signed ? "" : "U"}Int${size}`,
+                                name: String.format`${prefix}Int${size}`
                                 type: IntBase {
                                         intType: IntType {
-                                            size: ${size},
-                                            signed: ${signed},
+                                            size: Int.parse(size)
+                                            signed: Boolean.parse(signed)
                                         }
                                     }
                                 }
