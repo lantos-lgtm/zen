@@ -1,4 +1,4 @@
-imports: {
+imports: @Import {
     std: std
     io: std.io
     {
@@ -13,77 +13,86 @@ imports: {
         Type
     }: std.types
     customImport: LocalImport(
-        path: Path("./custom.zim")
-    )
+        path: Path("./custom.zim"),
+    ),
     customPackage: Import(
-        package: build.Packages.customPackage // imported and defined in the build file
-    )
-}
-
+        package: build.Packages.customPackage, // imported and defined in the build file
+    ),
+},
 // creating a struct
 MyType: Type {
-    myField: String("Hello World")
-    myGenericField: Type // not intiated type will need to be defined or can be assumed
-    myFunction
-}
-
+    myField: String("Hello World"),
+    myGenericField: Type, // not intiated type will need to be defined or can be assumed
+    myFunction,
+},
 // creating a function
 myFunction: Function {
     args: {
-        self: MyType
-    }
+        self: MyType,
+    },
     returns: ResultWithError {
         type: String
-    }
+    },
     body: Body {
         // do something
-    }
-}
-
+    },
+},
+// function overloading
+myFunction: Function {
+    args: {
+        self: MyType,
+        str: String,
+    },
+    returns: ResultWithError {
+        type: String
+    },
+    body: Body {
+        // do something
+    },
+},
 main: Function {
     returns: ResultWithError{type: void{} } // creating the ResultType that has a generic
     body: Body {
         // do something
         // calling a function
         myType: MyType() // initiated
-        str: myType.myFunction()
+        str: myType.myFunction(),
         str.error {
             // do something
-        }
+        },
         // loop is for while 
         myLoop: Loop {
             args: {
-                i: Int(10)
-            }
+                i: Int(10),
+            },
             on: Boolean.True
             fn: Function {
                 _: Condition {
-                    if: { i < Int(10) }
+                    if: { i < Int(10) },
                     then: {
-                        myLoop.break()
-                    }
-                }
+                        myLoop.break(),
+                    },
+                },
                 // do something
-            }
-        }
-    }
-}
+            },
+        },
+        // type calling
+        myType: MyType (),
+        // talking about a type
+        myTypeType: MyType
 
+        MyGeneric: Type {
+            value: Type // value type not created 
+        },
 
-// type calling
-myType: MyType ()
-// talking about a type
-myTypeType: MyType
+        myGeneric = MyGeneric {
+            value: String{}, // value type created but not initialized
+        } (
+            value: Int(10), // throws error already defined as String
+        ),
+        myGeneric = MyGeneric (
+            value: Int(10), // value type assumed and created
+        ),
+    },
+},
 
-MyGeneric: Type {
-    value: Type // value type not created 
-}
-
-myGeneric = MyGeneric {
-    value: String{} // value type created
-} (
-    value: Int(10) // throws error already defined as String
-)
-myGeneric = MyGeneric (
-    value: Int(10) // value type assumed and created
-)
