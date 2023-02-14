@@ -11,7 +11,7 @@ LoopHandle: Type {
 Loop: Function {
     args: {
         self: LoopHandle
-        body: Body
+        body: 
     }
     return: self.Type
     fn: Function {
@@ -30,7 +30,7 @@ Loop: Function {
         self: Vector
         i: Int
         next: ResultWithError{}
-        body: Body
+        body: 
         loopHandle: LoopHandle {
             value: self.Type
         }

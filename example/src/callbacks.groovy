@@ -24,7 +24,7 @@ MyCallBackFunction: Function {
   return: ExpectedCallBackReturn,
 },
 escapeString: MyCallBackFunction {
-  body: Body {
+  body:  {
     escapedList: Map {
       key: String,
       value: String
@@ -43,7 +43,7 @@ escapeString: MyCallBackFunction {
   },
 },
 capitalizeWords: MyCallBackFunction {
-  body: Body {
+  body:  {
     words: args.string.split(String(" ")),
     capitalizedWords: words.map(String.capitalize),
     capitalizedString: capitalizedWords.join(String(" ")),
@@ -51,7 +51,7 @@ capitalizeWords: MyCallBackFunction {
   },
 },
 callbackError: MyCallBackFunction {
-  body: Body {
+  body:  {
     return (error: "Error"),
   },
 },
@@ -62,7 +62,7 @@ main: Function {
   return: ResultWithError {
     self: String
   },
-  body: Body {
+  body:  {
     callBacks: Vector {
       value: MyCallBackFunction
     } (
@@ -70,7 +70,7 @@ main: Function {
       capitalizeWords
     ),
     callbackLoop: loop(callBacks) {
-      body: Body {
+      body:  {
         res: callbackLoop.value(self),
         if (res.error) {
           return (error: res.error),

@@ -1,13 +1,18 @@
 Bit //@magic 1 0
 
-parseBool: Function {
+Boolean: Type {
+    self: Bit
+}
+
+
+Boolean: Function {
     args: {
         self: String
     }
     return: ResultWithError {
-        self: Bit
+        self: Boolean
     }
-    body: Body {
+    body:  {
         if (value) {
             in: Vector {
                 String ("1"),
@@ -15,8 +20,8 @@ parseBool: Function {
                 String ("True"),
                 String ("TRUE"),
             }
-            body: Body {
-                return ResultWithError(Bit (1)),
+            body:  {
+                return ResultWithError(Boolean(1)),
             },
             else: Body {
                 return(error: "Invalid boolean value"),
@@ -29,8 +34,8 @@ parseBool: Function {
                 String ("False"),
                 String ("FALSE"),
             },
-            body: Body {
-                return(Bit(0),)
+            body:  {
+                return(Boolean(0),)
             },
             else: Body {
                 return(
@@ -41,25 +46,26 @@ parseBool: Function {
         }
     }
 }
-parseBool: Function {
+
+Boolean: Function {
     args: {
-        self: String
+        self: Int
     }
     return: ResultWithError {
         self: Bit
     }
-    body: Body {
+    body:  {
         if {
             value: self
             is: Int(1)
-            body: Body {
+            body:  {
                 return(Bit (1))
             }
         }
         if {
             value: self
             is: Int(0)
-            body: Body {
+            body:  {
                 return(Bit (0))
             }
         }
@@ -67,31 +73,28 @@ parseBool: Function {
     }
 }
 
-Boolean: Type {
-    self: Bit
-    parse: Function {
-        self: Type
-        return: ResultWithError {
-            self: Bool
-        }
-        body: Body {
-            if {
-                value: self.type
-                is: Vector {
-                    {
-                        value: String
-                        body: parseBool(self.value)
-                    }
-                    {
-                        value: Int
-                        body: parseBool(self.value)
-                    }
-                    {
-                        value: Bit
-                        body: Body {
-                            return(self.value)
-                        }
-                    }
+
+
+Boolean: Function {
+    self: Type
+    return: ResultWithError {
+        self: Bool
+    }
+    body:  {
+        if {
+            value: self.type
+            is: Vector {
+                {
+                    value: String
+                    body: Boolean(self.value)
+                }
+                {
+                    value: Int
+                    body: Boolean(self.value)
+                }
+                {
+                    value: Bit
+                    body:  Boolean(self.value)
                 }
             }
         }
@@ -126,26 +129,26 @@ IntBase: {
 intRange: Vector {8 16 32 64 128 256 }
 @createInts {
     fn: Function {
-        body: Body { 
+        body:  { 
             var size loop {
             on: intRange
             fn: Function {
-                body: Body {
+                body:  {
                     var signed loop {
                         on: Boolean.fieldPairs()
                         fn: Function {
                             prefix: String
                             if (signed) {
-                                body: Body {
+                                body:  {
                                     signed = String("U")
                                 }
                             }
                             Struct {
-                                name: String.format`${prefix}Int${String.parse(size)}`
+                                name: String.format`${prefix}Int${String(size)}`
                                 self: IntBase {
                                         intType: IntType {
-                                            size: Int.parse(size)
-                                            signed: Boolean.parse(signed)
+                                            size: Int(size)
+                                            signed: Boolean(signed)
                                         }
                                     }
                                 }
@@ -181,4 +184,8 @@ String: Type {
     data: Vector {
         self: {Char}
     }
+}
+// string init
+String: Function {
+
 }

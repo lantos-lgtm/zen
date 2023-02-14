@@ -17,16 +17,16 @@ imports: @Imports {
 Test: Function {
     args:{
         self: String
-        body: Body
+        body: 
     },
     return: ResultWithError {
         self: String
     },
-    body: Body {
+    body:  {
         io.println { String.format {"Test: ${args.self}"} }
         benchMarkString: String.format {"Benchmark: ${args.self} Test"}
         Benchmark (benchMarkString) {
-            body: Body {
+            body:  {
                 args.body.evaluate()
             }
         }
@@ -35,12 +35,12 @@ Test: Function {
 Check: Function {
     args:{
         self: String
-        body: Body
+        body: 
     },
     return: ResultWithError {
         self: String
     },
-    body: Body {
+    body:  {
         io.println { String.format {"Checking: ${args.self}"} }
         // check LHS == RHS
         // if not, return error

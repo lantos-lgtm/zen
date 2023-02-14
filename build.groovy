@@ -4,7 +4,7 @@ imports: Imports {
 }
 
 build:  build.Builder {
-    body: Body {
+    body:  {
         // target platform options
         target: self.Target.standardTargetOptions()
         // relase, debug ...
@@ -16,7 +16,7 @@ build:  build.Builder {
         
         runCmd: exe.run()
         if (self.args){
-            body: Body {
+            body:  {
                 runCmd.addArgs(self.args)
             }
         }

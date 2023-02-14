@@ -23,17 +23,17 @@ imports: {
 intRange: Vector {8 16 32 64 128 256 }
 @createInts {
     fn: Function {
-        body: Body { 
+        body:  { 
             var size loop {
             on: intRange
             fn: Function {
-                body: Body {
+                body:  {
                     var signed loop {
                         on: Boolean.fieldPairs()
                         fn: Function {
                             prefix: String
                             if (signed) {
-                                body: Body {
+                                body:  {
                                     signed = String("U")
                                 }
                             }
@@ -41,8 +41,8 @@ intRange: Vector {8 16 32 64 128 256 }
                                 name: String.format`${prefix}Int${size}`
                                 type: IntBase {
                                         intType: IntType {
-                                            size: Int.parse(size)
-                                            signed: Boolean.parse(signed)
+                                            size: Int(size)
+                                            signed: Boolean(signed)
                                         }
                                     }
                                 }

@@ -33,7 +33,7 @@ myFunction: Function {
     returns: ResultWithError {
         self: String
     },
-    body: Body {
+    body:  {
         // do something
     },
 },
@@ -46,13 +46,13 @@ myFunction: Function {
     returns: ResultWithError {
         self: String
     },
-    body: Body {
+    body:  {
         // do something
     },
 },
 main: Function {
     returns: ResultWithError{self: void{} } // creating the ResultType that has a generic
-    body: Body {
+    body:  {
         // do something
         // calling a function
         myType: MyType() // initiated

@@ -105,7 +105,7 @@ headersString: Function {
         self: HttpHeaders
     },
     result: Result{ self: String },
-    body: Body {
+    body:  {
         // write headers
         headersString: String()
         header for {
@@ -120,7 +120,7 @@ headersString: Function {
 request: Function {
     args: HttpRequestArgs,
     result: Result{ self: HttpResponse },
-    body: Body { 
+    body:  { 
         // 1. parse url
         // 2. create socket
         // 3. connect to server
@@ -156,7 +156,7 @@ request: Function {
     }
 }
 main Function {
-    body: Body {
+    body:  {
         client: HttpClient
         client.request {
             url: Url {String {"http://localhost:8080"}}

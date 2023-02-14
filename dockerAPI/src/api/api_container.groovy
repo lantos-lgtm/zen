@@ -33,7 +33,7 @@ createContainer: Function {
     return: ResultWithError {
         self: CreateContainerResponse
     },
-    body: Body {
+    body:  {
         queryString:
         url: Http.Url {
             protocol:   docker.url.protocol,

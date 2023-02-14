@@ -19,7 +19,7 @@ imports: @Imports {
 }
 
 main: Function {
-    body: Body {
+    body:  {
         // Dataframe: {
         //     columns: Vector
         // }

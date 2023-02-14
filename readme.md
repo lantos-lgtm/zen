@@ -12,8 +12,7 @@ things that are different
 - There are no enums, as enums are essentially types that map to a string or number
 
 Everything should be explicit except for when there is 
-- one argument
-- are changing affecting ``self``
+- one argument that is other than ``self``
 - You are setting a value with a concrete type
 
 Curly Brackets {} are used to define a type or to modify a type
@@ -39,12 +38,10 @@ To declare a string String must be used
 myString: String("hello")
 ```
 
-
-
 ### types
 type
 ```groovy
-Type: {
+Type: Type {
     self: String,
     fields: Map {key: String, value: Type }
 }
@@ -56,7 +53,14 @@ MyCurrency: {
     USD: String("USD"),
     EUR: String("EUR"),
 }
+
+MyRgb: {
+    RED,
+    GREEN,
+    BLUE,
+}
 ```
+
 types
 ```groovy
 MyAccount: Type {
@@ -71,20 +75,21 @@ functions are types with a body call method
 ```groovy
 Function: Type {
     args: Type,
-    body: Body,
+    body: ,
     return: Result | ResultWithError
 }
 ```
-functions
+example 
 ```groovy
-add: Function {
+greet: Function {
     args: {
-        a: Number,
-        b: Number,
+        self: MyAccount,
+        message: String,
     },
-    return: Number,
+    return: String,
     body: {
-        return a + b
+        return(String.format("${message} ${a.name}"))
     },
 }
+
 ```
