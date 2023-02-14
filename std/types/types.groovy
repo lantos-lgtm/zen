@@ -72,17 +72,14 @@ Boolean: Function {
         return(error: "Invalid boolean value")
     }
 }
-
-
-
+// When a 
 Boolean: Function {
     self: Type
     return: ResultWithError {
         self: Bool
     }
     body:  {
-        if {
-            value: self.type
+        if (self.type) {
             is: Vector {
                 {
                     value: String

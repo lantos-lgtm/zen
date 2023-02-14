@@ -6,8 +6,21 @@ imports: @Imports {
 
 // Json ( Type ) -> Json 
 // Json ( String ) -> Json
+// Json ( Json, Type ) -> Type
+// Json ( String, Type ) -> Type
 // String ( Json ) -> String
 
+JsonErrorKind: Type {
+    InvalidCharacter,
+    UnexpectedEndOfInput,
+    // ExpectedComma,
+    // ExpectedColon
+}
+
+JsonError: Error {
+    type: JsonErrorKind,
+    message: String,
+}
 JsNull: Result {nil: Boolean.True}
 JsNumber: Int | Float
 
@@ -16,20 +29,20 @@ JsonKind: Type {
     Number:     JsNumber,
     Boolean:    Boolean,
     Null:       Result {nil: Boolean.True},
-    Array:      Vector,
+    Array:      Vector {self: Ref {Json}},
     Object:     Map
 
 },
 
-Json: Type {
-    self: JsonKind
+
+JsonParserCtx: Type {
+    self: String,
+    i: Int,
 }
 
-
-Json: Function {
+parse: Function {
     args: {
-        self: String,
-        i: Int
+        self: JsonParserCtx
     },
     return: ResultWithError {
         self: Json
@@ -80,9 +93,28 @@ Json: Function {
             }
             // array
             if (self[i] == Char("[")){
+                // parse until unexpected "]" or ","
+                array: JsNode(Vector)
+
+                arrLoop: loop (true) {
+                    val: self.parse(i)
+                    val.error {
+                        return(error: val.error)
+                    }
+                    val1: self.parse(i)
+                    val1.error {
+                        return(error: val1.error)
+                    }
+                    if (self[i] == Char("]")) {
+                       
+                    }
+
+
+                }
 
             }
             if (self[i] == Char("{")){
+                // parse until unexpected "}" or ",""
                 
             }
         }
@@ -98,16 +130,20 @@ Json: Function {
         self: Json
     },
     body: {
-        i: 0
-        Json(self, i)
+        ctx: JsonParserCtx {
+            self: self,
+            i: 0,
+        }
+        JsonParserCtx.parse(i)
     }
 } 
 Json: Function {
     args: {
         self: Type,
     }, 
-    return: ResultWithError{
+    return: {
         self: Json,
+        error: JsonError,
     },
     body:  {
         // return.kind: value.getJsonKind(),

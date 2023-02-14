@@ -1,8 +1,14 @@
-const {
+{
     Function
 } @import { "./function.zim" }
 
-const AllocateFunction: Function {
+
+
+Ref: Type {
+    self: Pointer,
+}
+
+AllocateFunction: Function {
    args: {
        size: Int,
        alignment: Int,
@@ -13,7 +19,7 @@ const AllocateFunction: Function {
     }
 }
 
-const Allocator {
+Allocator: Type {
     allocate: AllocateFunction,
     deallocate: DeallocateFunction,
 }

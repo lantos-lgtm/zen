@@ -4,6 +4,11 @@
 <!-- grammar for zen -->
 
 # Zen
+- [ ] 
+- [ ] Highlighting
+- [ ] LSP
+
+
 guarentees
 - You should be able to work out where things come from without a editior
 - Things should be intuitive
