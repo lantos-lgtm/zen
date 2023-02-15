@@ -1,0 +1,74 @@
+
+// register structs to be used in the database
+
+OrmError: Error {
+    value: {
+        InvalidModel,
+        InvalidField,
+        InvalidValue,
+        InvalidQuery,
+        InvalidOperation,
+        InvalidConnection,
+        InvalidTransaction,
+    },
+    message: String
+}
+
+RelationTypes: Type {
+    OneToOne,
+    OneToMany,
+    ManyToOne,
+    ManyToMany
+}
+
+RelationField: {
+    type: RelationTypes,
+    model: Type,
+    field: Field,
+}
+
+RelationResolver: Function {
+    args: {
+        model: Type,
+        field: Field,
+    }
+    return: {
+        relation: Relation
+    }
+    body: {
+    }
+}
+
+
+
+Model: Type {
+    self: Type
+    fields: Vector {
+        RelationField
+    }
+}
+
+
+registerModel: Function {
+        args: {
+            models: Vector {Model}
+        }
+        return: {
+            error: Error
+        },
+        body: {
+            // add models
+            modelLoop: Loop (models) {
+                model: Type = modelLoop.value
+                // create the model name
+                fieldLoop: Loop (model.fields) {
+                    field: Field = fieldLoop.value
+                    if (field.type == Type) {
+                        registerModel(field.type)
+                    }
+                }
+            }
+            // create relations
+
+    }
+}

@@ -21,18 +21,29 @@ imports: @Import {
 },
 // creating a struct
 MyType: Type {
-    myField: String("Hello World"),
-    myGenericField: Type, // not intiated type will need to be defined or can be assumed
-    myFunction,
+    myField: String("Hello World"),     // creating a field with default value
+    myGenericField: Type,               // not intiated type will need to be defined or can be assumed
+    myConstantField: Const(String),     // creating a constant field that needs to be initialized
+    myPrivateField: Private(String),    // creating a private field that needs to be initialized that can only be accessed by the type
+    myPrivateFieldSetter: Function {
+        args: {
+            self: MyType,
+            value: String,
+        },
+        return: {
+            self: String
+        },
+        body:  {
+            self.myField: value,
+        },
+    }
 },
 // creating a function
 myFunction: Function {
     args: {
         self: MyType,
     },
-    returns: ResultWithError {
-        self: String
-    },
+    return: {String} // same as return: ResultWithError {}, or return: Result {}, as return is restricted to ResultWithError or Result
     body:  {
         // do something
     },
@@ -43,56 +54,20 @@ myFunction: Function {
         self: MyType,
         str: String,
     },
-    returns: ResultWithError {
-        self: String
+    return: {
+        self: String,
+        error: Error
     },
     body:  {
         // do something
     },
 },
 main: Function {
-    returns: ResultWithError{self: void{} } // creating the ResultType that has a generic
+    return: {void} // creating the ResultType that has a generic
     body:  {
-        // do something
-        // calling a function
-        myType: MyType() // initiated
-        str: myType.myFunction(),
-        str.error {
-            // do something
-        },
-        // loop is for while 
-        myLoop: Loop {
-            args: {
-                i: Int(10),
-            },
-            on: Boolean.True
-            fn: Function {
-                _: Condition {
-                    if: { i < Int(10) },
-                    then: {
-                        myLoop.break(),
-                    },
-                },
-                // do something
-            },
-        },
-        // type calling
-        myType: MyType (),
-        // talking about a type
-        myTypeType: MyType
-
-        MyGeneric: Type {
-            value: Type // value type not created 
-        },
-
-        myGeneric = MyGeneric {
-            value: String{}, // value type created but not initialized
-        } (
-            value: Int(10), // throws error already defined as String
-        ),
-        myGeneric = MyGeneric (
-            value: Int(10), // value type assumed and created
-        ),
+        myType: MyType                                  // not initiated
+        myTypeInstancate: MyType()                      // initiated
+        myTypeInstancate.myFunction(String("hello"))    // calling a function
     },
 },
 

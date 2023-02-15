@@ -2,6 +2,7 @@ const memory = @import { "./memory.zim" }
 const String = @import { "./string.zim" }
 
 const Vector {
+    self: Type,
     data: memory.Pointer,
     size: Int,
     capacity: Int,
