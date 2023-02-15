@@ -28,14 +28,28 @@ colons : are used to instanciate a varaiable or type
 
 
 ```groovy
-Result: {
+
+ErrorType: Type {
+    error: Type,
+    message: String,
+}
+
+Result: Type {
     self: Type,
     error: ErrorType,
 }
 
-MyResult: Result {String}
-MyResult: Result {self: String} // same
-myResult: MyResult("hello")  // instanciate a variable
+ResultWithError:  Result {
+    error: ErrorType
+}
+
+MyResult: Result {String}                                   // you can attempt to define an un defined type with {}
+MyResult: Result {self: String}                             // same as above but more explicit
+MyResult: ResultWithError {self: String, error: ErrorType}  // if the underType has more then one undefined type you must specify what field you are defining the type of
+
+myResult: MyResult("hello")                                 // initialising a variable
+myResult: MyResult(self:"hello")                            // same as above but more explicit
+
 ```
 
 To declare a string String must be used
@@ -53,13 +67,13 @@ Type: Type {
 ```
 enums 
 ```groovy
-MyCurrency: {
+MyCurrency: Type {
     GBP: String("GBP"),
     USD: String("USD"),
     EUR: String("EUR"),
 }
 
-MyRgb: {
+MyRgb: Type {
     RED,
     GREEN,
     BLUE,
@@ -96,5 +110,79 @@ greet: Function {
         return(String.format("${message} ${a.name}"))
     },
 }
+
+```
+
+Conditionals
+```groovy
+// Loop: Type {
+//     condition: Function | Boolean,
+//     return: LoodHandle,
+//     body: Body,
+// }
+
+// Loop: Type {
+//     condition: Function | Boolean,
+//     return: LoodHandle,
+//     body: Body,
+// }
+
+counter: Int(0)
+myLoop: Loop(true) {
+    if(counter > 10) {
+        myLoop.break()
+    }
+    io.print(String.format("counter: ${String(counter))}"))
+    counter: counter + 1
+}
+
+// we can also use iterate over a vector
+strings: Vector(String("hello"), String("world"))
+myLoop2: Loop(strings) {
+    io.print(myLoop2.value)
+}
+
+// if: Function {
+//     args: {
+//         self: Function | Boolean,
+//         then: Body,
+//     },
+//     body: Body()
+// }
+
+// standard if statement
+
+if(true) {
+    io.print("true")
+}
+
+// this works because the first argument can be passed as () and then the "then" body can be assumed in the following brackets {}
+
+// if: Function {
+//     args: {
+//         self: Function | Boolean,
+//         then: Body,
+//         else: Body,
+//     },
+//     body: Body()
+// }
+
+if(true) {
+    then: {io.print("true")},
+    else: {io.print("false")},
+}
+// we need to define then and else as there are two def types
+
+// match statements
+value: String("hello")
+if (value){
+    is: Vector(
+        Match("hello") { io.print("hello") },
+        Match("world") { io.print("world") }
+    )
+    // will complain if there are cases that are not covered
+    else: { io.print("not hello or world") },
+}
+
 
 ```

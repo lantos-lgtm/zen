@@ -29,7 +29,7 @@ JsonKind: Type {
     Number:     JsNumber,
     Boolean:    Boolean,
     Null:       Result {nil: Boolean.True},
-    Array:      Vector {self: Ref {Json}},
+    Array:      Vector {Ref{Json}},
     Object:     Map
 
 },

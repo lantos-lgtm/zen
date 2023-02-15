@@ -3,27 +3,24 @@ Boolean: Type {
     self: Bit
 }
 
-
 Boolean: Function {
     args: {
         self: String
     }
-    return: ResultWithError {
-        self: Boolean
-    }
+    return: {Boolean}
     body:  {
         if (value) {
-            in: Vector {
+            in: Vector(
                 String ("1"),
                 String ("true"),
                 String ("True"),
                 String ("TRUE"),
-            }
-            body:  {
-                return ResultWithError(Boolean(1)),
+            ),
+            body: {
+                return Boolean(1),
             },
             else: Body {
-                return(error: "Invalid boolean value"),
+                return(error: {error: Error.InvalidValue, String("Invalid boolean value")}),
             },
         }
         if (value) {
@@ -34,13 +31,10 @@ Boolean: Function {
                 String ("FALSE"),
             },
             body:  {
-                return(Boolean(0),)
+                return(Boolean(0))
             },
             else: Body {
-                return(
-                    self: value
-                    error: "Invalid boolean value"
-                )
+                return(error: {error: Error.InvalidValue, String("Invalid boolean value")}),
             },
         }
     }
@@ -50,48 +44,27 @@ Boolean: Function {
     args: {
         self: Int
     }
-    return: ResultWithError {
-        self: Bit
-    }
+    return: {Bit}
     body:  {
-        if {
-            value: self
-            is: Int(1)
-            body:  {
-                return(Bit (1))
-            }
+        if (self == Int(1)) {
+            return(Bit (1))
         }
-        if {
-            value: self
-            is: Int(0)
-            body:  {
-                return(Bit (0))
-            }
+        if (self == Int(0)) {
+            return(Bit (0))
         }
-        return(error: "Invalid boolean value")
+        return(error: {error: Error.InvalidValue, String("Invalid boolean value")}),
     }
 }
 // When a 
 Boolean: Function {
     self: Type
-    return: ResultWithError {
-        self: Bool
-    }
+    return: { Bool }
     body:  {
         if (self.type) {
-            is: Vector {
-                {
-                    value: String
-                    body: Boolean(self.value)
-                }
-                {
-                    value: Int
-                    body: Boolean(self.value)
-                }
-                {
-                    value: Bit
-                    body:  Boolean(self.value)
-                }
+            is: {
+                Match(String, {Boolean(self.value)}),
+                Match(Int, {Boolean(self.value)}),
+                Match(Bit, { Boolean(self.value)}),
             }
         }
     }

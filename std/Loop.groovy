@@ -11,13 +11,13 @@ LoopHandle: Type {
 Loop: Function {
     args: {
         self: LoopHandle
-        body: 
+        then: Body
     }
     return: self.Type
-    fn: Function {
+    body: Body {
         {
             if (self()) {
-                body()
+                args.then()
                 fn()
             }
             return()
@@ -27,16 +27,16 @@ Loop: Function {
 // itterator
 Loop: Function {
     args: {
-        self: Vector
-        i: Int
-        next: ResultWithError{}
-        body: 
+        self: Vector,
+        i: Int,
+        next: ResultWithError,
+        then: Body,
         loopHandle: LoopHandle {
             value: self.Type
-        }
+        },
     }
-    return: args.loopHandle.Type
-    fn: Function {
+    return: args.loopHandle.Type,
+    body: Function {
         {
             if (i < self.size()) {
                 next: ResultWithError(self[i])
