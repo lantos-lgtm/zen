@@ -25,7 +25,7 @@ main: Function {
         // }
 
         // dataframes
-        accountsDf: Dataframe{}
+        accountsDf: Dataframe
         accountsDf.loadCsv(Path("path/to/accounts.csv"))
 
         // 
