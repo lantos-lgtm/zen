@@ -80,7 +80,7 @@ functions are types with a body call method
 ```groovy
 Function: Type {
     args: Type,
-    body: ,
+    body: Body,
     return: Result | ResultWithError
 }
 ```

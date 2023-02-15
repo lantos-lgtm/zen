@@ -27,11 +27,8 @@ const append {
         error: VectorError,
     },
     body: {
-        match {
-            on: {vector.size == vector.capacity},
-            {
-            // grow vector
-            }
+        if (vector.size == vector.capacity) {
+            // grow the vector
         }
         vector.data[vector.size] = value
         vector.size = vector.size + 1

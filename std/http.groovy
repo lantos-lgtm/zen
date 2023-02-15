@@ -82,17 +82,15 @@ body: Function {
         header for { 
             in:  headers.next(),
             fn: {
-                _: match {
-                    on: header.key,
+                _: if (header.key) {
                     // match headers for content-length
                     // match headers for chunked
                     // match headers for http 1.0
-                    value: String,
-                    when: Vector {
-                        {"Content-Length": { contentLength: value}},
-                        { "Transfer-Encoding": { transferEncoding: value }},
-                        {"Connection": { connection: value },}
-                    }
+                    is: Vector (
+                        Match("Content-Length", { contentLength: value}),
+                        Match( "Transfer-Encoding", { transferEncoding: value }),
+                        Match("Connection", { connection: value }),
+                    ),
                 }
             }
         }
@@ -109,12 +107,12 @@ headersString: Function {
         // write headers
         headersString: String()
         header for {
-            in: self.next(),
             fn: {
-                headersString: String.concat { headersString, String.format"${header.key}: ${header.value}\r" }
+                headersString: String.concat(headersString, String.format"${header.key}: ${header.value}\r")
+                header.next()
             }
         }
-        headersString: String.concat { headersString, "\r" }
+        headersString: String.concat(headersString, "\r")
     }
 }
 request: Function {

@@ -46,12 +46,12 @@ prefix: If (signed) {
     }
 }
 
-matchVectorType: Vector{Match{value.type(), body: Body}}
+
 
 If: Function {
     args: {
         value: Type
-        is: matchVectorType,
+        is: Vector{Match{value.type(), body: Body}},
         else: Body,
     }
     return: void | Type
