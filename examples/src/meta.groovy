@@ -22,34 +22,23 @@ imports: {
 
 intRange: Array(8, 16, 32, 64, 128, 256)
 @createInts: Function {
-    body: Function {
-        body:  { 
-            var size loop {
-            on: intRange
-            body: Function {
-                body:  {
-                    var signed loop {
-                        on: Boolean.fieldPairs()
-                        body: Function {
-                            prefix: String
-                            If (signed) {
-                                signed = String("U")
-                            }
-                            Struct {
-                                name: String.format`${prefix}Int${size}`
-                                type: IntBase {
-                                        intType: IntType {
-                                            size: Int(size)
-                                            signed: Boolean(signed)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+    sizeLoop: Loop(intRange) {
+        signedLoop: Loop (Boolean.fieldPairs()) {
+            prefix: String("")
+            If (signedLoop.value.signed) {
+                signed = String("U")
+            }
+            Type {
+                name: String.format`${prefix}Int${String(sizeLoop.value)}`
+                self: IntBase {
+                    intType: IntType {
+                        size: Int(size)
+                        signed: Boolean(signed)
                     }
                 }
             }
         }
     }
 }
-@createInts{}
+
+@createInts()
