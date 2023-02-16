@@ -13,6 +13,7 @@ Todo:
 guarentees
 - You should be able to work out where things come from without a editior
 - simple rules
+- one way to do things unless there is a really good reason not
 
 things that are different
 - There are no enums, as enums are essentially types that map to a string or number
