@@ -4,14 +4,15 @@
 <!-- grammar for zen -->
 
 # Zen
-- [ ] 
+
+Todo:
 - [ ] Highlighting
 - [ ] LSP
 
 
 guarentees
 - You should be able to work out where things come from without a editior
-- Things should be intuitive
+- simple rules
 
 things that are different
 - There are no enums, as enums are essentially types that map to a string or number
@@ -45,7 +46,7 @@ ResultWithError:  Result {
 
 MyResult: Result {String}                                   // you can attempt to define an un defined type with {}
 MyResult: Result {self: String}                             // same as above but more explicit
-MyResult: ResultWithError {self: String, error: ErrorType}  // if the underType has more then one undefined type you must specify what field you are defining the type of
+MyResult: ResultWithError {self: String, error: ErrorType}  // If the underType has more then one undefined type you must specify what field you are defining the type of
 
 myResult: MyResult("hello")                                 // initialising a variable
 myResult: MyResult(self:"hello")                            // same as above but more explicit
@@ -113,7 +114,53 @@ greet: Function {
 
 ```
 
-Conditionals
+### Conditionals
+```groovy
+
+// if: Function {
+//     args: {
+//         self: Function | Boolean,
+//         then: Body,
+//     },
+//     body: Body()
+// }
+
+// standard If statement
+// this works because the first argument can be passed as () and then the "then" body can be assumed in the following brackets {}
+if(true) {
+    io.print("true")
+}
+
+
+// if: Function {
+//     args: {
+//         self: Function | Boolean,
+//         then: Body,
+//         else: Body,
+//     },
+//     body: Body()
+// }
+
+if(true) {
+    then: {io.print("true")},
+    else: {io.print("false")},
+}
+// we need to define then and else as there are two def types
+
+// match statements
+value: String("hello")
+If (value) {
+    is: Array(
+        Match("hello") { io.print("hello") },
+        Match("world") { io.print("world") }
+    )
+    // will complain If there are cases that are not covered
+    else: { io.print("not hello or world") },
+}
+
+```
+
+### loops
 ```groovy
 // Loop: Type {
 //     condition: Function | Boolean,
@@ -136,53 +183,9 @@ myLoop: Loop(true) {
     counter: counter + 1
 }
 
-// we can also use iterate over a vector
-strings: Vector(String("hello"), String("world"))
+// we can also use iterate over a Array
+strings: Array(String("hello"), String("world"))
 myLoop2: Loop(strings) {
     io.print(myLoop2.value)
 }
-
-// if: Function {
-//     args: {
-//         self: Function | Boolean,
-//         then: Body,
-//     },
-//     body: Body()
-// }
-
-// standard if statement
-
-if(true) {
-    io.print("true")
-}
-
-// this works because the first argument can be passed as () and then the "then" body can be assumed in the following brackets {}
-
-// if: Function {
-//     args: {
-//         self: Function | Boolean,
-//         then: Body,
-//         else: Body,
-//     },
-//     body: Body()
-// }
-
-if(true) {
-    then: {io.print("true")},
-    else: {io.print("false")},
-}
-// we need to define then and else as there are two def types
-
-// match statements
-value: String("hello")
-if (value){
-    is: Vector(
-        Match("hello") { io.print("hello") },
-        Match("world") { io.print("world") }
-    )
-    // will complain if there are cases that are not covered
-    else: { io.print("not hello or world") },
-}
-
-
 ```

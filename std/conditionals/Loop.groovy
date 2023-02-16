@@ -16,7 +16,7 @@ Loop: Function {
     return: self.Type
     body: Body {
         {
-            if (self()) {
+            If (self()) {
                 args.then()
                 fn()
             }
@@ -27,7 +27,7 @@ Loop: Function {
 // itterator
 Loop: Function {
     args: {
-        self: Vector,
+        self: Array,
         i: Int,
         next: ResultWithError,
         then: Body,
@@ -38,7 +38,7 @@ Loop: Function {
     return: args.loopHandle.Type,
     body: Function {
         {
-            if (i < self.size()) {
+            If (i < self.size()) {
                 next: ResultWithError(self[i])
                 body(next)
                 i.increment()

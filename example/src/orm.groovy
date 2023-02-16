@@ -12,11 +12,11 @@ AssetType: Type {
 }
 
 Asset: Type {
-    transactions: Vector {Transaction}
+    transactions: Array {Transaction}
     name: String,
     symbol: String,
     // enable funds of funds
-    children: Vector {Asset},
+    children: Array {Asset},
 }
 
 Rate: Type {
@@ -49,11 +49,11 @@ Transaction: Type {
 }
 
 TransactionGroup: Type {
-    transactions: Vector {Transaction}
+    transactions: Array {Transaction}
 }
 
 Account: Type {
-    transactions: Vector {TransactionGroup}
+    transactions: Array {TransactionGroup}
 }
 
 // Because this is important data we will never delete, we create a new entry with an active flag and active date then take the most recent active entry and use that as the current state.

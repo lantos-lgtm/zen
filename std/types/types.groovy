@@ -1,7 +1,7 @@
 Bit //@magic 1 0
 
 Byte: Type {
-    data: Vector {
+    data: Array {
         self: Bit
         size 8
     }
@@ -10,7 +10,7 @@ Byte: Type {
 Char: Byte
 
 IntType: Type {
-    size: Vector {
+    size: Array {
         self: Bit
         size 8
     }
@@ -19,13 +19,13 @@ IntType: Type {
 
 IntBase: {
     intType: IntType
-    data: Vector {
+    data: Array {
         self: { Bit }
         size: { intType.size }
     }
 }
 
-intRange: Vector {8 16 32 64 128 256 }
+intRange: Array {8 16 32 64 128 256 }
 @createInts {
     fn: Function {
         body:  { 
@@ -37,7 +37,7 @@ intRange: Vector {8 16 32 64 128 256 }
                         on: Boolean.fieldPairs()
                         fn: Function {
                             prefix: String
-                            if (signed) {
+                            If (signed) {
                                 body:  {
                                     signed = String("U")
                                 }
@@ -62,7 +62,7 @@ intRange: Vector {8 16 32 64 128 256 }
 @createInts{}
 
 FloatType: Type {
-    size: Vector {
+    size: Array {
         self: Bit
         size 8
     }
@@ -71,7 +71,7 @@ FloatType: Type {
 
 Float: Type {
     floatType: FloatType
-    data: Vector {
+    data: Array {
         self: { Bit }
         size: { size }
     }
@@ -80,7 +80,7 @@ Float: Type {
 String: Type {
     length Int
     max: Int
-    data: Vector {
+    data: Array {
         self: {Char}
     }
 }

@@ -2,7 +2,7 @@
 
 
 // If (Type) {
-//     is: Vector (
+//     is: Array (
 //         {
 //             match,
 //             body
@@ -49,13 +49,13 @@
 If: Function {
     args: {
         value: Type
-        is: Vector{Match{value.type(), body: Body}},
+        is: Array{Match{value.type(), body: Body}},
     }
     return: void | Type
     body: {
         matchLoop: loop (match) {
             // this proably will be magic 
-            if (value == match.value) {
+            If (value == match.value) {
                 matchLoop.value.body()
             }
             matchLoop.next()
@@ -67,14 +67,14 @@ If: Function {
 If: Function {
     args: {
         value: Type
-        is: Vector{Match{value.type(), body: Body}},
+        is: Array{Match{value.type(), body: Body}},
         else: Body,
     }
     return: void | Type
     body: {
         matchLoop: loop (match) {
             // this proably will be magic 
-            if (value == match.value) {
+            If (value == match.value) {
                 matchLoop.value.body()
             }
             matchLoop.next()
@@ -95,7 +95,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if (value()) {
+        If (value()) {
             result:  args.body()
             return(result)
         }
@@ -112,7 +112,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if (value()) {
+        If (value()) {
             result:  args.body()
             return(result)
         }
@@ -132,7 +132,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if (value()) {
+        If (value()) {
             result:  args.body()
             return(result)
         }
@@ -149,7 +149,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if (value()) {
+        If (value()) {
             result: match.body()
             return(result)
         }
@@ -165,7 +165,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if (value()) {
+        If (value()) {
             result: args.body()
             return(result)
         }

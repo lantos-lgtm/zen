@@ -19,7 +19,7 @@ build:  build.Builder {
         )
 
         runCmd: exe.run()
-        if (self.args){
+        If (self.args){
             body:  {
                 runCmd.addArgs(self.args)
             }

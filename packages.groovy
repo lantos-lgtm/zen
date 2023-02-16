@@ -4,7 +4,7 @@ imports: Import {
 }
 
 addPackages: build.Packages(
-    packages: Vector(
+    packages: Array(
         self.addPackage(
             name: String("std"),
             path: Path(String("./packages/std")),

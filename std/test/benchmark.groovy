@@ -12,7 +12,7 @@ imports: {
         String,
         Int,
         Bool,
-        Vector,
+        Array,
     }: std.types,
 },
 Bechmark: Function {
@@ -23,7 +23,7 @@ Bechmark: Function {
         start: time.now()
         self.evaluate()
         end: time.now()
-        duration: time.subtract(Vector(end, start))
+        duration: time.subtract(Array(end, start))
         io.println { String.format {"Duration: ${duration.format(time.nanoseconds)}"} }
     }
 }

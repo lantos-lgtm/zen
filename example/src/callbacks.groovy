@@ -9,7 +9,7 @@ imports: Imports {
     String,
     Int,
     Bool,
-    Vector,
+    Array,
     Type,
   }: std.types,
 },
@@ -29,7 +29,7 @@ escapeString: MyCallBackFunction {
       key: String,
       value: String
     }(
-      Vector(
+      Array(
         MapValue(String("<"), String("&lt;")),
         MapValue(String(">"), String("&gt;")),
         MapValue(String("&"), String("&amp;")),
@@ -43,7 +43,7 @@ escapeString: MyCallBackFunction {
   },
 },
 capitalizeWords: MyCallBackFunction {
-  body:  {
+  body: {
     words: args.string.split(String(" ")),
     capitalizedWords: words.map(String.capitalize),
     capitalizedString: capitalizedWords.join(String(" ")),
@@ -51,9 +51,7 @@ capitalizeWords: MyCallBackFunction {
   },
 },
 callbackError: MyCallBackFunction {
-  body:  {
-    return (error: "Error"),
-  },
+  return (error: "Error"),
 },
 main: Function {
   args: {
@@ -63,16 +61,14 @@ main: Function {
     self: String
   },
   body:  {
-    callBacks: Vector {
-      value: MyCallBackFunction
-    } (
+    callBacks: Array { MyCallBackFunction } (
       escapeString,
       capitalizeWords
     ),
     callbackLoop: loop(callBacks) {
       body:  {
         res: callbackLoop.value(self),
-        if (res.error) {
+        If (res.error) {
           return (error: res.error),
         },
         self: res.value

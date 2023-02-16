@@ -8,7 +8,7 @@ imports: @imports {
         Int,
         Float,
         Bool,
-        Vector,
+        Array,
         Result,
         ResultWithError,
     }: std.types,

@@ -9,7 +9,7 @@ imports:{
         String
         Int
         Bool
-        Vector
+        Array
     }: std.types
 }
 Person: Type {

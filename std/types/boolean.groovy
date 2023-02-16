@@ -9,8 +9,8 @@ Boolean: Function {
     }
     return: {Boolean}
     body:  {
-        if (value) {
-            in: Vector(
+        If (value) {
+            in: Array(
                 String ("1"),
                 String ("true"),
                 String ("True"),
@@ -23,8 +23,8 @@ Boolean: Function {
                 return(error: {error: Error.InvalidValue, String("Invalid boolean value")}),
             },
         }
-        if (value) {
-            in: Vector {
+        If (value) {
+            in: Array {
                 String ("0"),
                 String ("false"),
                 String ("False"),
@@ -46,10 +46,10 @@ Boolean: Function {
     }
     return: {Bit}
     body:  {
-        if (self == Int(1)) {
+        If (self == Int(1)) {
             return(Bit (1))
         }
-        if (self == Int(0)) {
+        If (self == Int(0)) {
             return(Bit (0))
         }
         return(error: {error: Error.InvalidValue, String("Invalid boolean value")}),
@@ -60,7 +60,7 @@ Boolean: Function {
     self: Type
     return: { Bool }
     body:  {
-        if (self.type) {
+        If (self.type) {
             is: {
                 Match(String, {Boolean(self.value)}),
                 Match(Int, {Boolean(self.value)}),

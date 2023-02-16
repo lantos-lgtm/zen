@@ -9,7 +9,7 @@ imports: @Imports {
         String,
         Int,
         Bool,
-        Vector,
+        Array,
         Type,
     }: std.types,
     Benchmark: build.package.Benchmark
@@ -43,7 +43,7 @@ Check: Function {
     body:  {
         io.println { String.format {"Checking: ${args.self}"} }
         // check LHS == RHS
-        // if not, return error
+        // If not, return error
         // error is the lhs and rhs values
     },
 },

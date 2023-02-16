@@ -25,18 +25,18 @@ ContainerStats: Type {
     networks*:      Map { key: String, value: NetworkStats }
 }
 BlkioStats: Type {
-    ioServiceBytesRecursive*:  Result {self: Vector {value: BlkioStatEntry}},
-    ioServicedRecursive*:      Result {self: Vector {value: BlkioStatEntry}},
-    ioQueueRecursive*:         Result {self: Vector {value: BlkioStatEntry}},
-    ioServiceTimeRecursive*:   Result {self: Vector {value: BlkioStatEntry}},
-    ioWaitTimeRecursive*:      Result {self: Vector {value: BlkioStatEntry}},
-    ioMergedRecursive*:        Result {self: Vector {value: BlkioStatEntry}},
-    ioTimeRecursive*:          Result {self: Vector {value: BlkioStatEntry}},
-    sectorsRecursive*:         Result {self: Vector {value: BlkioStatEntry}},
+    ioServiceBytesRecursive*:  Result {self: Array {value: BlkioStatEntry}},
+    ioServicedRecursive*:      Result {self: Array {value: BlkioStatEntry}},
+    ioQueueRecursive*:         Result {self: Array {value: BlkioStatEntry}},
+    ioServiceTimeRecursive*:   Result {self: Array {value: BlkioStatEntry}},
+    ioWaitTimeRecursive*:      Result {self: Array {value: BlkioStatEntry}},
+    ioMergedRecursive*:        Result {self: Array {value: BlkioStatEntry}},
+    ioTimeRecursive*:          Result {self: Array {value: BlkioStatEntry}},
+    sectorsRecursive*:         Result {self: Array {value: BlkioStatEntry}},
 }
 CPUUsage: Type {
     totalUsage*:          Float.F64
-    perCpuUsage*:         Vector { value: Float.F64}
+    perCpuUsage*:         Array { value: Float.F64}
     usageInKernelmode*:   Float.F64
     usageInUsermode*:     Float.F64
 }

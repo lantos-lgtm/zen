@@ -9,7 +9,7 @@ imports: {
         String,
         Int,
         Bool,
-        Vector,
+        Array,
         Type,
     }: std.types,
     customImport: LocalImport(
@@ -20,7 +20,7 @@ imports: {
     )
 }
 
-intRange: Vector(8, 16, 32, 64, 128, 256)
+intRange: Array(8, 16, 32, 64, 128, 256)
 @createInts: Function {
     body: Function {
         body:  { 
@@ -32,7 +32,7 @@ intRange: Vector(8, 16, 32, 64, 128, 256)
                         on: Boolean.fieldPairs()
                         body: Function {
                             prefix: String
-                            if (signed) {
+                            If (signed) {
                                 signed = String("U")
                             }
                             Struct {

@@ -9,7 +9,7 @@ imports: @Import {
         String
         Int
         Bool
-        Vector
+        Array
         Type
     }: std.types
     customImport: LocalImport(

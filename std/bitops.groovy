@@ -10,8 +10,8 @@
 // FlipBits
 
 
-myBits: Vector {bit} (0101011)
-myMask: Vector {bit} (1111111)
+myBits: Array {bit} (0101011)
+myMask: Array {bit} (1111111)
 
 myResult: myBits && myMask
 // 0101011

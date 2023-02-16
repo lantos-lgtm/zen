@@ -12,7 +12,7 @@ imports:{
         String,
         Int,
         Bool,
-        Vector,
+        Array,
         Type,
     }: std.types,
     {
@@ -58,7 +58,7 @@ HttpRequestArgs: Type {
     url: Url,
     method: HttpMethod,
     headers: HttpHeaders,
-    data: String | Vector { value: Byte, dynamic: Boolean.True } | Stream
+    data: String | Array { value: Byte, dynamic: Boolean.True } | Stream
 }
 
 HttpResponse: Type {
@@ -70,7 +70,7 @@ HttpResponse: Type {
 
 body: Function {
     args: HttpResponse,
-    result: Result{ value: String | Vector { value: Byte, dynamic: Boolean.True } },
+    result: Result{ value: String | Array { value: Byte, dynamic: Boolean.True } },
     fn: {
         // http 1.1 chunked
         // http 1.1 content-length
@@ -82,11 +82,11 @@ body: Function {
         header for { 
             in:  headers.next(),
             fn: {
-                _: if (header.key) {
+                _: If (header.key) {
                     // match headers for content-length
                     // match headers for chunked
                     // match headers for http 1.0
-                    is: Vector (
+                    is: Array (
                         Match("Content-Length", { contentLength: value}),
                         Match( "Transfer-Encoding", { transferEncoding: value }),
                         Match("Connection", { connection: value }),

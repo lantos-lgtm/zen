@@ -43,7 +43,7 @@ RelationResolver: Function {
 
 Model: Type {
     self: Type
-    fields: Vector {
+    fields: Array {
         RelationField
     }
 }
@@ -51,7 +51,7 @@ Model: Type {
 
 registerModel: Function {
         args: {
-            models: Vector {Model}
+            models: Array {Model}
         }
         return: {
             error: Error
@@ -63,7 +63,7 @@ registerModel: Function {
                 // create the model name
                 fieldLoop: Loop (model.fields) {
                     field: Field = fieldLoop.value
-                    if (field.type == Type) {
+                    If (field.type == Type) {
                         registerModel(field.type)
                     }
                 }
