@@ -27,7 +27,6 @@ colons : are used to instanciate a varaiable or type
 - when {} are used it is type definition
 - when : and followed by a defined variable or a function call it is a variable instanciation
 
-
 ```groovy
 
 ErrorType: Type {
@@ -111,7 +110,6 @@ greet: Function {
         return(String.format("${message} ${a.name}"))
     },
 }
-
 ```
 
 ### Conditionals
@@ -130,8 +128,6 @@ greet: Function {
 if(true) {
     io.print("true")
 }
-
-
 // if: Function {
 //     args: {
 //         self: Function | Boolean,

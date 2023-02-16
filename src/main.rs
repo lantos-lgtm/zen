@@ -1,4 +1,3 @@
-
 // example of a valid program
 // myResult: MyFunction(String("Value")) {
 //     callBack: {
@@ -7,7 +6,7 @@
 // }
 
 // Tokens:
-// IntLiteral, FloatLiteral, CharLiteral, StringLiteral, Identifier, curlyBraceOpen, curlyBraceClose, ParenOpen, ParenClose, Colon, Comma, Period, Whitespace, Comment, Eof
+// IntLiteral, FloatLiteral, CharLiteral, StringLiteral, Identifier, curlyBraceOpen, curlyBraceClose, ParenOpen, ParenClose, Colon, Comma, Period, WhiteSpace, Comment, Eof
 // "stringLiteral" -> stringLiteral
 // 123 | 1_000 -> intLiteral
 // 1.0 | 1.0e10 -> floatLiteral
@@ -17,7 +16,7 @@
 // : -> Colon
 // , -> comma
 // . -> period
-//  -> Whitespace
+//  -> WhiteSpace
 // // -> comment
 // \r\n | \n | \r  -> newline
 // \t, \v, \f, \u{A0} -> space
@@ -29,17 +28,17 @@
 // StringLiteral
 //  -> ParenOpen
 //  -> curlyBraceOpen
-//  -> Whitespace
+//  -> WhiteSpace
 
 // CharLiteral
 //  -> ParenOpen
 //  -> curlyBraceOpen
-//  -> Whitespace
+//  -> WhiteSpace
 
 // IntLiteral & FloatLiteral
 //  -> CurlyBraceClose
 //  -> ParenClose
-//  -> Whitespace
+//  -> WhiteSpace
 
 // Identifiers
 // Identifier
@@ -48,8 +47,7 @@
 //  -> CurlyBraceClose
 //  -> ParenOpen
 //  -> ParenClose
-//  -> Whitespace
-
+//  -> WhiteSpace
 
 // Symbols
 // CurlyBraceOpen
@@ -62,7 +60,7 @@
 // CurlyBraceClose
 
 //  -> CurlyBraceClose
-//  -> Whitespace
+//  -> WhiteSpace
 //  -> space
 //  -> newline
 //  -> comment
@@ -79,32 +77,30 @@
 // ParenClose
 //  -> CurlyBraceClose
 //  -> ParenClose
-//  -> Whitespace
+//  -> WhiteSpace
 //  -> comma
 
 // Colon
 // -> Identifier
 // -> CurlyBraceOpen
-// -> Whitespace
+// -> WhiteSpace
 
 // Comma
 //  -> *
 //  -> eof
-// Whitespace
+// WhiteSpace
 // comment
 // eof
 
 // Period
 //  -> Identifier
-//  -> Whitespace
+//  -> WhiteSpace
 
-// Whitespace
+// WhiteSpace
 //  -> *
 
-
-
-use std::str::FromStr;
 use std::error::Error;
+use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
@@ -120,16 +116,16 @@ pub enum Token {
     Colon,
     Comma,
     Period,
-    Whitespace,
     Comment(String),
-    Eof,
+    WhiteSpace(i64),
+    Newline(i64),
+    // Eof,
 }
 
 pub struct Tokenizer<'a> {
     input: &'a str,
     pos: usize,
 }
-
 
 impl<'a> Tokenizer<'a> {
     pub fn new(input: &'a str) -> Tokenizer<'a> {
@@ -158,14 +154,17 @@ impl<'a> Tokenizer<'a> {
         }
         result
     }
-
     fn read_number(&mut self) -> Token {
         let number = self.read_while(|ch| ch.is_digit(10) || ch == '_');
         if self.starts_with(".") {
             self.pos += 1;
             let fraction = self.read_while(|ch| ch.is_digit(10) || ch == '_');
             // the next character must be a whitespace | curlyBraceClose | ParenClose | comma
-            if self.starts_with(" ") || self.starts_with("}") || self.starts_with(")") || self.starts_with(",") {
+            if self.starts_with(" ")
+                || self.starts_with("}")
+                || self.starts_with(")")
+                || self.starts_with(",")
+            {
                 let number = format!("{}.{}", number, fraction);
                 Token::FloatLiteral(f64::from_str(&number).unwrap())
             } else {
@@ -177,7 +176,8 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn read_string(&mut self) -> Token {
-        let s = self.read_while(|ch| ch != '"' && ch != '\n');
+        let s = self.read_while(|ch| ch != '"');
+        self.pos += 1; // Skip the closing "
         Token::StringLiteral(s)
     }
     fn read_char(&mut self) -> Token {
@@ -187,11 +187,20 @@ impl<'a> Tokenizer<'a> {
 
     fn read_identifier(&mut self) -> Token {
         let s = self.read_while(|ch| ch.is_ascii_alphanumeric() || ch == '_');
-         Token::Identifier(s)
+        Token::Identifier(s)
     }
 
-    fn skip_whitespace(&mut self) {
-        self.read_while(|ch| ch.is_whitespace());
+    fn read_whitespace(&mut self) -> Token {
+        // if is newline
+        let newline = self.read_while(|ch| ['\r', '\n', '\u{A0}'].contains(&ch));
+        if newline.len() > 0 {
+            return Token::Newline(newline.len() as i64);
+        }
+        let white_space = self.read_while(|ch| ch.is_whitespace());
+        if white_space.len() > 0 {
+            return Token::WhiteSpace(white_space.len() as i64);
+        }
+        Token::WhiteSpace(0)
     }
 
     fn read_comment(&mut self) -> Token {
@@ -201,12 +210,14 @@ impl<'a> Tokenizer<'a> {
     }
 }
 
-
 impl<'a> Iterator for Tokenizer<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Token> {
-        self.skip_whitespace();
+        let white_space = self.read_whitespace();
+        if white_space != Token::WhiteSpace(0) {
+            return Some(white_space);
+        }
         match self.next_char()? {
             '{' => {
                 self.pos += 1;
@@ -231,12 +242,12 @@ impl<'a> Iterator for Tokenizer<'a> {
             ',' => {
                 self.pos += 1;
 
-                    Some(Token::Comma)
-                }
+                Some(Token::Comma)
+            }
             '"' => {
                 self.pos += 1;
                 Some(self.read_string())
-            },
+            }
             '\'' => {
                 self.pos += 1;
                 Some(self.read_char())
@@ -248,33 +259,82 @@ impl<'a> Iterator for Tokenizer<'a> {
                     panic!("Unexpected character: /");
                 }
             }
+            '.' => {
+                self.pos += 1;
+                Some(Token::Period)
+            }
+            // '\x00' => {
+            //     self.pos += 1;
+            //     Some(Token::Eof)
+            // }
             ch if ch.is_digit(10) => Some(self.read_number()),
             ch if ch.is_ascii_alphabetic() => Some(self.read_identifier()),
             ch => panic!("Unexpected character: {}", ch),
-
         }
     }
 }
 
-
-fn test_ast() {
-
-    let token_string = "
-        Person: Type {
-        name: String
-        age: Int.U8
-    }";
-
-    let mut tokenizer = Tokenizer::new(token_string);
-    let mut tokens = Vec::new();
-    while let Some(token) = tokenizer.next() {
-        tokens.push(token);
-    }
-    println!("{:?}", tokens);
-
+#[test]
+fn test_tokenize() {
+    let input = r#"
+myResult: MyFunction(String("Value")) {
+    callBack: {
+        io.print({String("Hello, world!"), Int(123)})
+    },
 }
-
+"#;
+    let expected = vec![
+        Token::Newline(1),
+        Token::Identifier("myResult".to_string()),
+        Token::Colon,
+        Token::WhiteSpace(1),
+        Token::Identifier("MyFunction".to_string()),
+        Token::ParenOpen,
+        Token::Identifier("String".to_string()),
+        Token::ParenOpen,
+        Token::StringLiteral("Value".to_string()),
+        Token::ParenClose,
+        Token::ParenClose,
+        Token::WhiteSpace(1),
+        Token::CurlyBraceOpen,
+        Token::Newline(1),
+        Token::WhiteSpace(4),
+        Token::Identifier("callBack".to_string()),
+        Token::Colon,
+        Token::WhiteSpace(1),
+        Token::CurlyBraceOpen,
+        Token::Newline(1),
+        Token::WhiteSpace(8),
+        Token::Identifier("io".to_string()),
+        Token::Period,
+        Token::Identifier("print".to_string()),
+        Token::ParenOpen,
+        Token::CurlyBraceOpen,
+        Token::Identifier("String".to_string()),
+        Token::ParenOpen,
+        Token::StringLiteral("Hello, world!".to_string()),
+        Token::ParenClose,
+        Token::Comma,
+        Token::WhiteSpace(1),
+        Token::Identifier("Int".to_string()),
+        Token::ParenOpen,
+        Token::IntLiteral(123),
+        Token::ParenClose,
+        Token::CurlyBraceClose,
+        Token::ParenClose,
+        Token::Newline(1),
+        Token::WhiteSpace(4),
+        Token::CurlyBraceClose,
+        Token::Comma,
+        Token::Newline(1),
+        Token::CurlyBraceClose,
+        Token::Newline(1),
+        // Token::Eof,
+    ];
+    let tokenizer = Tokenizer::new(input);
+    let tokens = tokenizer.collect::<Vec<Token>>();
+    assert_eq!(tokens, expected);
+}
 fn main() {
-    test_ast(); 
     println!("Hello, world!");
 }
