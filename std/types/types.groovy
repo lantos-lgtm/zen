@@ -26,40 +26,29 @@ IntBase: {
 }
 
 intRange: Array {8 16 32 64 128 256 }
-@createInts {
-    fn: Function {
-        body:  { 
-            var size loop {
-            on: intRange
-            fn: Function {
+@createInts: Function {
+    sizeLoop: Loop(intRange) {
+        signedLoop: loop (Boolean.fieldPairs()) {
+            prefix: String("")
+            If (signedLoop.value.signed) {
                 body:  {
-                    var signed loop {
-                        on: Boolean.fieldPairs()
-                        fn: Function {
-                            prefix: String
-                            If (signed) {
-                                body:  {
-                                    signed = String("U")
-                                }
-                            }
-                            Struct {
-                                name: String.format`${prefix}Int${String(size)}`
-                                self: IntBase {
-                                        intType: IntType {
-                                            size: Int(size)
-                                            signed: Boolean(signed)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    signed = String("U")
+                }
+            }
+            Struct {
+                name: String.format`${prefix}Int${String(sizeLoop.value)}`
+                self: IntBase {
+                    intType: IntType {
+                        size: Int(size)
+                        signed: Boolean(signed)
                     }
                 }
             }
         }
     }
 }
-@createInts{}
+
+@createInts()
 
 FloatType: Type {
     size: Array {
