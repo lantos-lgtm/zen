@@ -35,7 +35,7 @@ intRange: Array {8 16 32 64 128 256 }
                     signed = String("U")
                 }
             }
-            Struct {
+            Type {
                 name: String.format`${prefix}Int${String(sizeLoop.value)}`
                 self: IntBase {
                     intType: IntType {
