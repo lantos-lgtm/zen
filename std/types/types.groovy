@@ -25,7 +25,7 @@ IntBase: {
     }
 }
 
-intRange: Array {8 16 32 64 128 256 }
+intRange: Array(8, 16, 32, 64, 128, 256)
 @createInts: Function {
     sizeLoop: Loop(intRange) {
         signedLoop: loop (Boolean.fieldPairs()) {
