@@ -28,12 +28,10 @@ IntBase: {
 intRange: Array(8, 16, 32, 64, 128, 256)
 @createInts: Function {
     sizeLoop: Loop(intRange) {
-        signedLoop: loop (Boolean.fieldPairs()) {
+        signedLoop: Loop (Boolean.fieldPairs()) {
             prefix: String("")
             If (signedLoop.value.signed) {
-                body:  {
-                    signed = String("U")
-                }
+                signed = String("U")
             }
             Type {
                 name: String.format`${prefix}Int${String(sizeLoop.value)}`
