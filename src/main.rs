@@ -117,8 +117,8 @@ pub enum Token {
     Comma,
     Period,
     Comment(String),
-    WhiteSpace(i64),
-    Newline(i64),
+    WhiteSpace(usize),
+    Newline(usize),
     // Eof,
 }
 
@@ -194,11 +194,11 @@ impl<'a> Tokenizer<'a> {
         // if is newline
         let newline = self.read_while(|ch| ['\r', '\n', '\u{A0}'].contains(&ch));
         if newline.len() > 0 {
-            return Token::Newline(newline.len() as i64);
+            return Token::Newline(newline.len());
         }
         let white_space = self.read_while(|ch| ch.is_whitespace());
         if white_space.len() > 0 {
-            return Token::WhiteSpace(white_space.len() as i64);
+            return Token::WhiteSpace(white_space.len());
         }
         Token::WhiteSpace(0)
     }
@@ -335,6 +335,119 @@ myResult: MyFunction(String("Value")) {
     let tokens = tokenizer.collect::<Vec<Token>>();
     assert_eq!(tokens, expected);
 }
+
+#[derive(Debug, PartialEq)]
+enum Ast {
+    Program(Vec<AstNode>),
+    FunctionCall {
+        name: String,
+        args: Vec<AstNode>,
+    },
+    Function {
+        name: String,
+        args: Vec<String>,
+        body: Vec<AstNode>,
+    },
+
+    Literal(Literal),
+    Identifier(String),
+    Newline(usize),
+    WhiteSpace(usize),
+    Comment(String),
+}
+
+#[derive(Debug, PartialEq)]
+enum Literal{
+    StringLiteral(String),
+    IntLiteral(i64),
+    CharLiteral(char),
+}
+
+#[derive(Debug, PartialEq)]
+struct AstNode {
+    kind: Ast,
+    line: usize,
+    col: usize,
+}
+
+#[derive(Debug, PartialEq)]
+struct Parser {
+    tokens: Vec<Token>,
+    pos: usize,
+    line: usize,
+    col: usize,
+}
+
+// parser
+impl Parser {
+    fn new(tokens: Vec<Token>) -> Parser {
+        Parser {
+            tokens,
+            pos: 0,
+            line: 1,
+            col: 1,
+        }
+    }
+    fn peek(&self) -> Option<&Token> {
+        self.tokens.get(self.pos)
+    }
+    fn consume(&mut self, expect: Token) -> Result<(), String> {
+        match self.peek() {
+            Some(token) => {
+                if *token == expect {
+                    self.pos += 1;
+                    Ok(())
+                } else {
+                    Err(format!("Expected {:?}, got {:?}", expect, token))
+                }
+            }
+            None => Err(format!(
+                "Unexpected end of input at line {}, col {}",
+                self.line, self.col
+            )),
+        }
+    }
+
+    fn parse_function_call(&mut self) -> Result<AstNode, String> {
+        todo!()
+    }
+
+    fn parse_function(&mut self) -> Result<AstNode, String> {
+        todo!()
+    }
+
+    fn parse_program(&mut self) -> Result<Ast, String> {
+        let mut nodes = vec![];
+        while let Some(token) = self.peek() {
+            match token {
+                Token::Newline(_) => {
+                    todo!()
+                }
+                Token::WhiteSpace(_) | Token::Comment(_) => {
+                    // add the usize value of token::whiteSpace to pos and col
+                    todo!()
+                },
+                Token::Identifier(_) => {
+                    let node = self.parse_function_call()?;
+                    nodes.push(node);
+                }
+                Token::CurlyBraceOpen => {
+                    let node = self.parse_function()?;
+                    nodes.push(node);
+                }
+                _ => {
+                    return Err(format!(
+                        "Unexpected token {:?} at line {}, col {}",
+                        token, self.line, self.col
+                    ))
+                }
+            }
+        }
+        Ok(Ast::Program(nodes))
+    }
+ }
+
+
 fn main() {
     println!("Hello, world!");
 }
