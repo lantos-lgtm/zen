@@ -17,14 +17,13 @@ LayerType: Type {
     Output,
 }
 
-
 ActivationTypes: Type {
     ReLU,
     SoftMax,
     Sigmoid,
     Tanh,
     Linear,
-}
+},
 
 Layer: Type {
     type: LayerType,

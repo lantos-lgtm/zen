@@ -56,7 +56,10 @@ Account: Type {
     transactions: Array {TransactionGroup}
 }
 
-// Because this is important data we will never delete, we create a new entry with an active flag and active date then take the most recent active entry and use that as the current state.
+// Because this is important data we will never delete, 
+// we create a new entry with an active flag and active 
+// date then take the most recent active entry and use 
+// that as the current state.
 Active: Type {
     active: Boolean,
     activeDate: Date,

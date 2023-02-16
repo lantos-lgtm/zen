@@ -1,5 +1,5 @@
-const While @import { "./while.zim" }
-const Function @import { "./function.zim" }
+While @import { "./while.zim" }
+Function @import { "./function.zim" }
 
 
 ErrorType: Type {
