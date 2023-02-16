@@ -6,6 +6,10 @@
 # Zen
 
 Todo:
+- [ ] tokenize
+- [ ] astGen
+- [ ] ast -> llvm
+- [ ] ast -> lsp
 - [ ] Highlighting
 - [ ] LSP
 
