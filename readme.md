@@ -80,13 +80,13 @@ Type: Type {
 ```
 enums 
 ```groovy
-MyCurrency: Enum {
+Currency: Enum {
     GBP: String("GBP"),
     USD: String("USD"),
     EUR: String("EUR"),
 }
 
-MyRgb: Enum {
+Rgb: Enum {
     RED,
     GREEN,
     BLUE,
@@ -109,31 +109,16 @@ Token: Enum {
 
 
 // usage example
-Parse: Function {
-    args: {
-        self: Tokenizer.nextToken(),
-    },
-    return: {
-        self: Ast,
-        error: ErrorType,
-        complete: Boolean.False,
-    },
-    body: {
-        if (self){
-            is: Array(
-                Match(Token.NewLine) { Parse(Tokenizer.nextToken()) },
-                Match(Token.WhiteSpace) { Parse(Tokenizer.nextToken()) },
-                Match(Token.Comment) { 
-                    return(Comment(self))
-                },
-                // ...
-            )
-            else: {
-                return (Error(InvalidValue, "Unexpected Token"))
-            }
-        }
-    },
-}
+currency: Currency.GBP
+color: Rgb.RED
+token: Token.Comment("This is a comment")
+
+io.print(currency)              // "GBP"
+io.print(color)                 // 0
+io.print(token)                 // "comment"
+io.print(String(token))         // "This is a comment"
+io.print(String(token.Type))    // String
+
 ```
 
 types

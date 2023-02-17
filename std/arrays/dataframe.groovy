@@ -18,3 +18,4 @@ column: Function {
         return(self.columns[index])
     }
 }
+// need to add memory logic 
