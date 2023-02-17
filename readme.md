@@ -80,25 +80,25 @@ Type: Type {
 ```
 enums 
 ```groovy
-MyCurrency: Type {
+MyCurrency: Enum {
     GBP: String("GBP"),
     USD: String("USD"),
     EUR: String("EUR"),
 }
 
-MyRgb: Type {
+MyRgb: Enum {
     RED,
     GREEN,
     BLUE,
 }
 
-Literal: Type {
+Literal: Enum {
     String: String,
     Float: Float.f128,
     Int: Int.i128,
 }
 
-Token: Type {
+Token: Enum {
     NewLine: Int.usize,
     WhiteSpace: Int.usize,
     Comment: String,
@@ -106,6 +106,34 @@ Token: Type {
     Literals: Literal,
 }
 
+
+
+// usage example
+Parse: Function {
+    args: {
+        self: Tokenizer.nextToken(),
+    },
+    return: {
+        self: Ast,
+        error: ErrorType,
+        complete: Boolean.False,
+    },
+    body: {
+        if (self){
+            is: Array(
+                Match(Token.NewLine) { Parse(Tokenizer.nextToken()) },
+                Match(Token.WhiteSpace) { Parse(Tokenizer.nextToken()) },
+                Match(Token.Comment) { 
+                    return(Comment(self))
+                },
+                // ...
+            )
+            else: {
+                return (Error(InvalidValue, "Unexpected Token"))
+            }
+        }
+    },
+}
 ```
 
 types
