@@ -91,6 +91,21 @@ MyRgb: Type {
     GREEN,
     BLUE,
 }
+
+Literal: Type {
+    String: String,
+    Float: Float.f128,
+    Int: Int.i128,
+}
+
+Token: Type {
+    NewLine: Int.usize,
+    WhiteSpace: Int.usize,
+    Comment: String,
+    Identifier: String,
+    Literals: Literal,
+}
+
 ```
 
 types
