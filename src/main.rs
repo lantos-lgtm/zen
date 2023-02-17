@@ -357,7 +357,7 @@ enum Ast {
 }
 
 #[derive(Debug, PartialEq)]
-enum Literal{
+enum Literal {
     StringLiteral(String),
     IntLiteral(i64),
     CharLiteral(char),
@@ -421,12 +421,14 @@ impl Parser {
         while let Some(token) = self.peek() {
             match token {
                 Token::Newline(_) => {
-                    todo!()
+                    // skip 
+                    self.pos += 1;
                 }
                 Token::WhiteSpace(_) | Token::Comment(_) => {
                     // add the usize value of token::whiteSpace to pos and col
-                    todo!()
-                },
+                    // skip
+                    self.pos += 1;
+                }
                 Token::Identifier(_) => {
                     let node = self.parse_function_call()?;
                     nodes.push(node);
@@ -445,8 +447,24 @@ impl Parser {
         }
         Ok(Ast::Program(nodes))
     }
- }
+}
 
+#[test]
+fn test_parser() {
+    let input = r#"
+myResult: MyFunction(String("Value")) {
+    callBack: {
+        io.print({String("Hello, world!"), Int(123)})
+    },
+}
+"#;
+
+    let tokenizer = Tokenizer::new(input);
+    let tokens = tokenizer.collect::<Vec<Token>>();
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_program().unwrap();
+    println!("{:#?}", ast);
+}
 
 fn main() {
     println!("Hello, world!");
