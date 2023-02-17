@@ -38,6 +38,23 @@ MyType: Type {
         },
     }
 },
+
+// enums (pretty much the same as a type)
+Rgb: Enum {
+    Red: String("Red"),
+    Green: String("Green"),
+    Blue: String("Blue"),
+}
+// special enums experimental
+Token: Enum {
+    NewLine: Int.usize,
+    WhiteSpace: Int.usize,
+    Comment: String,
+    Identifier: String,
+    ParenOpen,
+    ParenClose,
+}
+
 // creating a function
 myFunction: Function {
     args: {

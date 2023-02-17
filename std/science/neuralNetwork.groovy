@@ -27,12 +27,12 @@ ActivationTypes: Type {
 
 Layer: Type {
     type: LayerType,
-    // input: Tensor,
-    // output: Tensor,
-    // weights: Tensor,
-    // biases: Tensor,
-    // forward: Body,
-    // backward: Body,
+    inputShape: int.u8,
+    outputShape: int.u8,
+    weights: Tensor{ type: Float.f32, shape: {inputShape, outputShape}},
+    biases: Tensor { type: Float.f32, shape: {outputShape}},
+    forward: Body,
+    backward: Body,
 
 },
 

@@ -32,6 +32,14 @@ colons : are used to instanciate a varaiable or type
 - when {} are used it is type definition
 - when : and followed by a defined variable or a function call it is a variable instanciation
 
+
+reserved words
+- Type      - used to define a type
+- Body      - used to define a body of code, this will take any fields on the type and make them available in the body
+- CompTime  - used to define a type or function that is run at compile time
+
+
+
 ```groovy
 
 ErrorType: Type {
