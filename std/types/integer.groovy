@@ -14,7 +14,7 @@ IntBase: {
     }
 }
 
-intRange: Array(8, 16, 32, 64, 128, 256)
+intRange: Array(4, 8, 16, 32, 64, 128, 256)
 createInts: CompTime, Function {
     return: Type
     body: {
@@ -42,7 +42,100 @@ createInts: CompTime, Function {
         }
     }
 }
-
-
-
 createInts()
+
+
+digit: Function {
+    args: {
+        self: Int
+    }
+    return: {
+        self: Int
+        error: Error
+    }
+    body: {
+        if (self < 0 || self > 9) {
+            return(Error("Invalid digit"))
+        }
+        return(self)
+    }
+}
+
+toAscii: Function {
+    args: {
+        self: Int
+    }
+    return: {
+        self: Char
+        error: Error
+    }
+    body: {
+        if (self < 0 || self > 9) {
+            return(Error("Invalid digit"))
+        }
+        return(Char(self + 48))
+    }
+}
+
+// to String
+from: Function {
+    args: {
+        self: Int
+    }
+    return: {
+        self: String
+        error: Error
+    }
+    body: {
+        tempInt: Int(self)
+        tempString: String()
+        // convert int to string
+        if (tempInt < 0) {
+            tempString = String("-")
+            self = self * -1
+        }
+        if (tempInt == 0) {
+            tempString = String("0")
+        }
+        
+        intLoop: Loop (tempInt > 10) {
+            digit: Digit(tempInt % 10)
+            tempString.append(digit.toAscii())
+            self = self / 10
+            
+        }
+        return(string)
+    }
+}
+
+// to Int
+from: Function {
+    args: {
+        self: String
+    },
+    return: {
+        self: Int
+        error: Error
+    }
+    body: {
+        tempInt: Int(0)
+        tempString: String(self)
+        // convert string to int
+        if (tempString[0] == "-") {
+            tempString = tempString[1:]
+            sign = -1
+        }
+        else {
+            sign = 1
+        }
+        stringLoop: Loop (tempString.length > 0) {
+            digit: tempString[0].toAscii()
+            digit.error {
+                return(Error("Invalid character in string"))
+            }
+            tempInt = tempInt * 10 + digit
+            tempString = tempString.window(1, tempString.length)
+        }
+        return(tempInt * sign)
+    }
+}

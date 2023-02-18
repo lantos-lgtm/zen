@@ -38,6 +38,27 @@ reserved words
 - Body      - used to define a body of code, this will take any fields on the type and make them available in the body
 - CompTime  - used to define a type or function that is run at compile time
 
+reserved symbols
+
+- :         - used to define a type or instanciate a variable
+- {}        - used to define a type or modify a type
+- ()        - used to call a function
+- |         - used to define a or type
+
+
+Logic, don't know if this should be included
+- logical operators == != > < >= <= && ||
+- maths operators + - * / %
+- bitwise operators & | ^ ~ << >>
+
+<!-- 
+    if( ==(x, y, x) )
+    if( ||(==(x, y), ==(x, z)) )
+    if ( x < y < z )
+    if( and(eq(x, y), eq(x, z)) )
+    if( or(eq(x, y), eq(x, z)))
+    
+ -->
 
 
 ```groovy
@@ -65,9 +86,11 @@ myResult: MyResult(self:"hello")                            // same as above but
 
 ```
 
-To declare a string String must be used
+To declare a string, int, float the type must be defined
+
 ```groovy
 myString: String("hello")
+myInt: Int(1)
 ```
 
 ### types
@@ -78,6 +101,7 @@ Type: Type {
     fields: Map {key: String, value: Type }
 }
 ```
+
 enums 
 ```groovy
 Currency: Enum {
@@ -113,11 +137,14 @@ currency: Currency.GBP
 color: Rgb.RED
 token: Token.Comment("This is a comment")
 
-io.print(currency)              // "GBP"
-io.print(color)                 // 0
-io.print(token)                 // "comment"
-io.print(String(token))         // "This is a comment"
-io.print(String(token.Type))    // String
+io.print(currency)                        // > "GBP"
+io.print(String.parse(currency))          // > "GBP"
+io.print(color)                           // > 0
+io.print(String(color))                   // Fails as Rgb.RED is not a string
+io.print(String.parse(color))             // > "RED"
+io.print(token)                           // > "comment"
+io.print(String(token))                   // > "This is a comment"
+io.print(String(token.Type))              // String
 
 ```
 
