@@ -1,4 +1,4 @@
-std: import("std"),
+std: std(),
 build: std.build,
 { 
     Type,
@@ -15,16 +15,30 @@ build: std.build,
     Loop,
     If,
 }: std.functions,
+Build: std.build,
+Package: std.build,
+String: std.types.String,
+Path: std.io.Path,
+Url: std.http.Url,
 
-build:  build.Builder {
+// load External packages
+packages: Array(
+    Package(
+        name: String("std"),
+        path: Path(String("./packages/std")),
+    ),
+    ...Packages.fromJson(Path(String("./packages.json"))),
+)
+
+
+main:  build.Builder {
     body:  {
         // target platform options
         target: self.Target.standardTargetOptions()
         // relase, debug ...
         mode: self.Mode.standardModeOptions()
-        // 
+        // add args
         exe: self.Exe.standardExeOptions()
-
 
         
         runCmd: exe.run()

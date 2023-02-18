@@ -81,11 +81,12 @@ Logic, don't know if this should be included
 Variable declaration
 ```groovy
 myString:   String            // variable declaration with type inference
-myString:   String("hello")   // variable declaration with type inference and initialisation
+myString:   String("hello \"zen\"\n")   // variable declaration with type inference and initialisation
+myString:   String(`hello "zen"
+`)   // variable declaration with type inference and initialisation
 
-my_int:     Const && Int        // error int must be initialised with a value
-my_int:     Const && Int(1)     // const variable declaration with type union and initialisation
-my_int_1:   Const(Int(1))     // same as union above but more explicit
+my_int:     Const{Int}        // error int must be initialised with a value
+my_int:     Const{Int(1)}     // const variable declaration with type union and initialisation
 
 // code blocks
 myBlock:    Body {
@@ -252,6 +253,7 @@ greet: Function {
 Result: Type {
     self:   Type,
     error:  ErrorType,
+    defer: Body,
 }
 
 ResultWithError: Result {
@@ -372,7 +374,7 @@ myLoop2:    Loop(myStrings) {
 ```
 
 
-# Packages & Importing
+# Example Project
 project structure
 ```
 project
@@ -382,49 +384,61 @@ project
 │   ├── main.zen
 ```
 
-packages.zen
-```groovy
-externalPackage: Package(
-    path: "/home/lantos/zen/externalPackages",
-)
-dockerApi: Package(
-    gitHub: (
-        url:        Url.parse(String("https://github.com/lantos-ltgm/docker-api.git")),
-        branch:     String("master"),
-        commitHash: String("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-    )
-)
+packages.json
+```json
+{
+    "packages": [
+        {
+            "name": "dockerApi",
+            "github": {
+                "owner": "lantos-ltgm",
+                "url": "https://github.com/lantos-ltgm/zen-docker-api.git",
+                "branch": "master",
+                "commit": "a1b2c3d4e5f6"
+            }
+        }
+    ]
+}
 ```
 
 build.zen
 ```groovy
 std:        std()                  // import the std lib
-packages:   importLocal("./packages.zen")   // import the packages file
-build:      std.build
+Build:      std.build
 
-main: build.Build {
+// load External packages
+packages: Array(
+    Build.Package(
+        name: String("std"),
+        path: Path(String("./packages/std")),
+    ),
+    ...Build.Packages.fromJson(Path(String("./packages.json"))),
+)
+
+main: Buld.Build {
     procjectName:   "project",
     srcPath:        "src",
 
     // load localFiles
+    // this will go through and add all the .zen files and folders in the src folder
+    // src/utils/other.zen
+    // std.localPackages.utils.other
     localPackages: build.loadLocalPackages(
         srcPath,
     )
 
     // add executable
-    self.executables: Array(
-        build.Executable(
+    self.executables build.Executable(
             name: "main",
             src: "main.zen",
             packages,
             localPackages,
-        ),
     ),
 }
 ```
 
 
-src/utils.zen
+src/utils/other.zen
 ```groovy
 std: std() // import the std lib
 {
@@ -442,33 +456,33 @@ someUtil: Function {
 
 src/main.zen
 ```groovy   
-std: std() // import the std lib
-externalPackage: std.build().packages.externalPackage,
-someUtil: std.build().localPackages.utils.someUtil,
-
+// std
+std: std()
 {
     Function,
     Loop
 }: std.functions,
+// custom
 {
     Docker
-}: std.build().packages.dockerApi
+}:  std.packages.dockerApi,
+someUtil: std.localPackages.utils.other.someUtil,
 
 
 main: Function {
     args: {},
+    return: String,
     body: {
         docker: Docker()
-        defer:  {
+        return.defer: {
             docker.close()
         }
-
         containers:     docker.listContainers()
         containersLoop: Loop(containers) {
             io.std.writeLine(containersLoop.value.name)
             io.std.writeLine(containersLoop.value.status)
         }
-    }
+    },
 }
 
 ```
