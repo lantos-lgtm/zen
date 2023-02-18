@@ -26,6 +26,7 @@ Rules
 - Everything should be explicit except for when there is 
     - one argument that is other than ``self``
     - You are setting a value with a defined type
+- Only first level declarations are exported
 
 <!-- - Curly Brackets {} are used to define a type or to modify a type
 - parenthesis () are used to call a function
@@ -469,6 +470,7 @@ std: std()
 someUtil: std.localPackages.utils.other.someUtil,
 
 
+// only 1st level declarations are exported
 main: Function {
     args: {},
     return: String,

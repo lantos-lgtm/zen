@@ -336,6 +336,8 @@ myResult: MyFunction(String("Value")) {
     assert_eq!(tokens, expected);
 }
 
+
+
 #[derive(Debug, PartialEq)]
 enum Ast {
     Program(Vec<AstNode>),
@@ -463,7 +465,9 @@ myResult: MyFunction(String("Value")) {
     let tokens = tokenizer.collect::<Vec<Token>>();
     let mut parser = Parser::new(tokens);
     let ast = parser.parse_program().unwrap();
-    println!("{:#?}", ast);
+
+
+
 }
 
 fn main() {
