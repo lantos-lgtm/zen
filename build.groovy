@@ -1,7 +1,20 @@
-imports: Imports {
-    std,
-    build,
-}
+std: import("std"),
+build: std.build,
+{ 
+    Type,
+    String,
+    Int,
+    Float,
+    Bool,
+    Array,
+    Result,
+    ResultWithError,
+}: std.types,
+{
+    Function,
+    Loop,
+    If,
+}: std.functions,
 
 build:  build.Builder {
     body:  {

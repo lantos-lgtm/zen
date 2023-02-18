@@ -1,28 +1,34 @@
-imports: @imports {
-    std,
-    Http: std.http,
-    Json: std.json,
-    { 
-        Type,
-        String,
-        Int,
-        Float,
-        Bool,
-        Array,
-        Result,
-        ResultWithError,
-    }: std.types,
-    {
-        Function,
-        Loop,
-    }: std.functions
-}
-
-Docker: Type {
-    client: Http.HttpClient,
-    host: String,
-    port: Port,
-}
+std: @import("std"),
+packages: std.packages,
+{ 
+    Type,
+    String,
+    Int,
+    Float,
+    Bool,
+    Array,
+    Result,
+    ResultWithError,
+}: std.types,
+{
+    Function,
+    Loop,
+    If,
+}: std.functions,
+Http: std.http,
+Json: std.json,
+{
+    Docker,
+    CreateContainerRequest,
+    CreateContainerResponse,
+}: 
+{
+    Docker,
+} packages.dockerApi,
+{
+    CreateContainerRequest,
+    CreateContainerResponse,
+} packages.dockerApi.models.models_container_stats,
 
 createContainer: Function {
     args: {

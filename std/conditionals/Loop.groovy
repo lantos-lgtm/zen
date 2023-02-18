@@ -1,13 +1,24 @@
-imports: { 
-    std: std
-    io: std.io
-    functions: std.functions
-
-}
+std: @std,
+{
+    Type,
+    String,
+    Int,
+    Float,
+    Bool,
+    Array,
+    Result,
+    ResultWithError,
+}: std.types,
+{
+    Function,
+    Loop,
+    If,
+}: std.functions,
 
 LoopHandle: Type {
     value: Type
-}
+},
+
 Loop: Function {
     args: {
         self: LoopHandle
@@ -24,7 +35,7 @@ Loop: Function {
         }
     }
 }
-// itterator
+// iteration
 Loop: Function {
     args: {
         self: Array,

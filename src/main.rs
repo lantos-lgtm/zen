@@ -421,7 +421,7 @@ impl Parser {
         while let Some(token) = self.peek() {
             match token {
                 Token::Newline(_) => {
-                    // skip 
+                    // skip
                     self.pos += 1;
                 }
                 Token::WhiteSpace(_) | Token::Comment(_) => {
@@ -468,4 +468,14 @@ myResult: MyFunction(String("Value")) {
 
 fn main() {
     println!("Hello, world!");
+    // #[derive(Debug, Clone, PartialEq)]
+    // enum MyEnum {
+    //     Comment(String),
+    // }
+
+    // let my_enum = MyEnum::Comment("Hello World".to_string());
+    // println!("{:#?}", my_enum);
+    // if let MyEnum::Comment(value) = my_enum {
+    //     println!("{:?}", value)
+    // }
 }
