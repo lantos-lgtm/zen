@@ -38,7 +38,8 @@ Rules
 Features
 - spread operator ```Person: Type {...Address, name: String, age: Int}```
 - object destructuring ```{myValue, myOtherValue} = myObject```
-- no tuples, just return an anonymous type, this is to keep code clean.
+- shorthand property asignments ```name: String("John), person: Person {name, age: 10}``` 
+- no tuples without keys, just return an anonymous type, this is to keep code clean.
 - All functions return a ```Result``` or ```ResultWithError```
     - no red/blue code (async/await)
     - ResultWithError the error must be handled. As the default error body will exit with ```Errror(ErrorNotCaptured, "Error not captured")```
