@@ -99,10 +99,15 @@
 // WhiteSpace
 //  -> *
 
-use std::error::Error;
+// use std::error::Error;
 use std::str::FromStr;
+use serde::{Deserialize, Serialize};
+// use serde_json::{json, Value};
+use std::collections::HashMap;
 
-#[derive(Debug, PartialEq)]
+
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Token {
     StringLiteral(String),
     IntLiteral(i64),
@@ -115,6 +120,7 @@ pub enum Token {
     ParenClose,
     Colon,
     Comma,
+    Ellipse,
     Period,
     Comment(String),
     WhiteSpace(usize),
@@ -260,8 +266,12 @@ impl<'a> Iterator for Tokenizer<'a> {
                 }
             }
             '.' => {
+                if self.starts_with("..") {
+                    self.pos += 2;
+                    return Some(Token::Ellipse);
+                } 
                 self.pos += 1;
-                Some(Token::Period)
+                return Some(Token::Period);
             }
             // '\x00' => {
             //     self.pos += 1;
@@ -336,139 +346,234 @@ myResult: MyFunction(String("Value")) {
     assert_eq!(tokens, expected);
 }
 
-
-
-#[derive(Debug, PartialEq)]
-enum Ast {
-    Program(Vec<AstNode>),
-    FunctionCall {
-        name: String,
-        args: Vec<AstNode>,
-    },
-    Function {
-        name: String,
-        args: Vec<String>,
-        body: Vec<AstNode>,
-    },
-
-    Literal(Literal),
-    Identifier(String),
-    Newline(usize),
-    WhiteSpace(usize),
-    Comment(String),
-}
-
-#[derive(Debug, PartialEq)]
-enum Literal {
-    StringLiteral(String),
-    IntLiteral(i64),
-    CharLiteral(char),
-}
-
-#[derive(Debug, PartialEq)]
-struct AstNode {
-    kind: Ast,
-    line: usize,
-    col: usize,
-}
-
-#[derive(Debug, PartialEq)]
-struct Parser {
-    tokens: Vec<Token>,
-    pos: usize,
-    line: usize,
-    col: usize,
-}
-
 // parser
-impl Parser {
-    fn new(tokens: Vec<Token>) -> Parser {
+
+enum BodyValue {
+    Ident(Ident),
+    Ellipse(Ellipse),
+}
+
+// enum EvaluableValue {
+//     Ident(Ident),
+//     Ellipse(Ellipse),
+//     Call(Call),
+//     CallWithBody(CallWithBody),
+
+// }
+
+struct UnkownBody(Vec<BodyValue>);      // { `body` }
+struct BodyDefinition(Vec<BodyValue>);  // { `body` }
+
+struct BodyTypeDefinition(Vec<BodyValue>);  // { `body` }
+struct Ellipse(Ident);                  // `...` `ident`
+struct Ident(String);                   // `ident`
+struct Call(Box<Expr>, Vec<Expr>);      // `ident` `(` `expr` `)`
+struct CallWithBody(Call, Body);        // `call` `body`
+struct Assignment(Ident, Expr);         // `ident` `:` `expr`
+struct FieldAccess(Ident, Ident);       // `ident` `.` `ident`
+struct FieldCall(Ident, Vec<Expr>);     //  `ident` `(` `expr` `)`
+
+
+#[derive(Debug, PartialEq, Serialize)]
+pub enum Expr {
+    Ident(String),
+    IntLit(i64),
+    FloatLit(f64),
+    StringLit(String),
+    Call(),
+    CallWithBody(Box<Expr>, Vec<Expr>, HashMap<String, Expr>),
+    Object(HashMap<String, Expr>),
+}
+
+#[derive(Debug, PartialEq, Serialize)]
+pub enum ParseError {
+    UnexpectedToken(Token),
+    UnexpectedEOF,
+}
+
+pub struct Parser<'a> {
+    tokens: std::iter::Peekable<Tokenizer<'a>>,
+}
+
+impl<'a> Parser<'a> {
+    pub fn new(input: &'a str) -> Parser<'a> {
         Parser {
-            tokens,
-            pos: 0,
-            line: 1,
-            col: 1,
+            tokens: Tokenizer::new(input).peekable(),
         }
     }
-    fn peek(&self) -> Option<&Token> {
-        self.tokens.get(self.pos)
+
+    fn next_token(&mut self) -> Result<Token, ParseError> {
+        self.tokens.next().ok_or(ParseError::UnexpectedEOF)
     }
-    fn consume(&mut self, expect: Token) -> Result<(), String> {
-        match self.peek() {
-            Some(token) => {
-                if *token == expect {
-                    self.pos += 1;
-                    Ok(())
+
+    fn parse_string_literal(&mut self) -> Result<Expr, ParseError> {
+        if let Token::StringLiteral(value) = self.next_token()? {
+            Ok(Expr::StringLit(value))
+        } else {
+            Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
+        }
+    }
+
+    fn parse_number_literal(&mut self) -> Result<Expr, ParseError> {
+        if let Token::IntLiteral(value) = self.next_token()? {
+            Ok(Expr::IntLit(value))
+        } else if let Token::FloatLiteral(value) = self.tokens.next().unwrap() {
+            Ok(Expr::FloatLit(value))
+        } else {
+            Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
+        }
+    }
+
+    fn parse_ident(&mut self) -> Result<Expr, ParseError> {
+        if let Token::Identifier(name) = self.next_token()? {
+            Ok(Expr::Ident(name))
+        } else {
+            Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
+        }
+    }
+
+    fn parse_primary(&mut self) -> Result<Expr, ParseError> {
+        match self.tokens.peek() {
+            Some(&Token::StringLiteral(_)) => self.parse_string_literal(),
+            Some(&Token::IntLiteral(_)) | Some(&Token::FloatLiteral(_)) => {
+                self.parse_number_literal()
+            }
+            Some(&Token::Identifier(_)) => self.parse_ident(),
+            Some(&Token::CurlyBraceOpen) => self.parse_object(),
+            Some(&Token::ParenOpen) => {
+                self.tokens.next();
+                let expr = self.parse_expr()?;
+                if let Some(&Token::ParenClose) = self.tokens.peek() {
+                    self.tokens.next();
+                    Ok(expr)
                 } else {
-                    Err(format!("Expected {:?}, got {:?}", expect, token))
+                    Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
                 }
             }
-            None => Err(format!(
-                "Unexpected end of input at line {}, col {}",
-                self.line, self.col
-            )),
+            _ => Err(ParseError::UnexpectedToken(self.tokens.next().unwrap())),
         }
     }
 
-    fn parse_function_call(&mut self) -> Result<AstNode, String> {
-        todo!()
-    }
-
-    fn parse_function(&mut self) -> Result<AstNode, String> {
-        todo!()
-    }
-
-    fn parse_program(&mut self) -> Result<Ast, String> {
-        let mut nodes = vec![];
-        while let Some(token) = self.peek() {
-            match token {
-                Token::Newline(_) => {
-                    // skip
-                    self.pos += 1;
-                }
-                Token::WhiteSpace(_) | Token::Comment(_) => {
-                    // add the usize value of token::whiteSpace to pos and col
-                    // skip
-                    self.pos += 1;
-                }
-                Token::Identifier(_) => {
-                    let node = self.parse_function_call()?;
-                    nodes.push(node);
-                }
-                Token::CurlyBraceOpen => {
-                    let node = self.parse_function()?;
-                    nodes.push(node);
-                }
-                _ => {
-                    return Err(format!(
-                        "Unexpected token {:?} at line {}, col {}",
-                        token, self.line, self.col
-                    ))
-                }
+    fn parse_call(&mut self, func: Expr) -> Result<Expr, ParseError> {
+        let mut args = Vec::new();
+        loop {
+            if let Some(&Token::ParenClose) = self.tokens.peek() {
+                self.tokens.next();
+                break;
+            }
+            args.push(self.parse_expr()?);
+            match self.tokens.next() {
+                Some(Token::Comma) => (),
+                Some(Token::ParenClose) => break,
+                Some(token) => return Err(ParseError::UnexpectedToken(token)),
+                None => return Err(ParseError::UnexpectedEOF),
             }
         }
-        Ok(Ast::Program(nodes))
+        Ok(Expr::Call(Box::new(func), args))
+    }
+
+    fn parse_object(&mut self) -> Result<Expr, ParseError> {
+        let mut properties = HashMap::new();
+        loop {
+            match self.tokens.next() {
+                Some(Token::Identifier(name)) => {
+                    if self.tokens.next() != Some(Token::Colon) {
+                        return Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()));
+                    }
+                    let value = self.parse_expr()?;
+                    properties.insert(name, value);
+                }
+                Some(Token::CurlyBraceClose) => break,
+                Some(token) => return Err(ParseError::UnexpectedToken(token)),
+                None => return Err(ParseError::UnexpectedEOF),
+            }
+            match self.tokens.next() {
+                Some(Token::Comma) => (),
+                Some(Token::CurlyBraceClose) => break,
+                Some(token) => return Err(ParseError::UnexpectedToken(token)),
+                None => return Err(ParseError::UnexpectedEOF),
+            }
+        }
+        Ok(Expr::Object(properties))
+    }
+
+    fn parse_expr(&mut self) -> Result<Expr, ParseError> {
+        let mut expr = self.parse_primary()?;
+        loop {
+            match self.tokens.peek() {
+                Some(&Token::ParenOpen) => {
+                    self.tokens.next();
+                    expr = self.parse_call(expr)?;
+                }
+                _ => break,
+            }
+        }
+        Ok(expr)
+    }
+
+    pub fn parse(&mut self) -> Result<Expr, ParseError> {
+        self.parse_expr()
     }
 }
 
 #[test]
 fn test_parser() {
-    let input = r#"
-myResult: MyFunction(String("Value")) {
-    callBack: {
-        io.print({String("Hello, world!"), Int(123)})
-    },
+    let input = "myResult: MyFunction(String(\"Value\")) {
+        callBack: {
+            io.print({String(\"Hello, world!\"), Int(123)})
+        },
+    }";
+
+    let expected = Expr::Object({
+        let mut ast = HashMap::new();
+        ast.insert(
+            "myResult".to_string(),
+            Expr::CallWithBody(
+                Box::new(Expr::Ident("MyFunction".to_string())),
+                vec![
+                    Expr::Call(
+                        Box::new(Expr::Ident("String".to_string())), 
+                        vec![Expr::StringLit("Value".to_string())]),
+                ],
+                {
+                    let mut ast = HashMap::new();
+                    ast.insert(
+                        "callBack".to_string(),
+                        Expr::Object({
+                            let mut ast = HashMap::new();
+                            ast.insert(
+                                "io.print".to_string(),
+                                Expr::Call(
+                                    Box::new(Expr::Ident("io.print".to_string())),
+                                    vec![
+                                        Expr::Object({
+                                            let mut ast = HashMap::new();
+                                            ast.insert("String".to_string(), Expr::StringLit("Hello, world!".to_string()));
+                                            ast.insert("Int".to_string(), Expr::IntLit(123));
+                                            ast
+                                        })
+                                    ],
+                                ),
+                            );
+                            ast
+                        })
+                    );
+                    ast
+                },
+                
+            ),
+        );
+        ast
+    });
+
+    let mut parser = Parser::new(input);
+    let result = parser.parse();
+
+    println!("{}", serde_json::to_string_pretty(&result).unwrap());
+    println!("{}", serde_json::to_string_pretty(&expected).unwrap());
+    assert_eq!(result, Ok(expected));
 }
-"#;
 
-    let tokenizer = Tokenizer::new(input);
-    let tokens = tokenizer.collect::<Vec<Token>>();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse_program().unwrap();
-
-
-
-}
 
 fn main() {
     println!("Hello, world!");
