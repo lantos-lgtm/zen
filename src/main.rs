@@ -353,6 +353,11 @@ enum BodyValue {
     Ellipse(Ellipse),
 }
 
+enum BodyTypeValue {
+    Assignment(Ident, Ident), // `ident` `:` `ident` 
+
+}
+
 // enum EvaluableValue {
 //     Ident(Ident),
 //     Ellipse(Ellipse),
@@ -361,18 +366,17 @@ enum BodyValue {
 
 // }
 
-struct UnkownBody(Vec<BodyValue>);      // { `body` }
-struct BodyDefinition(Vec<BodyValue>);  // { `body` }
-
+struct UnkownBody(Vec<BodyValue>);          // { `body` }
+struct BodyDefinition(Vec<BodyValue>);      // { `body` }
 struct BodyTypeDefinition(Vec<BodyValue>);  // { `body` }
-struct Ellipse(Ident);                  // `...` `ident`
-struct Ident(String);                   // `ident`
-struct Call(Box<Expr>, Vec<Expr>);      // `ident` `(` `expr` `)`
-struct CallWithBody(Call, Body);        // `call` `body`
-struct Assignment(Ident, Expr);         // `ident` `:` `expr`
-struct FieldAccess(Ident, Ident);       // `ident` `.` `ident`
-struct FieldCall(Ident, Vec<Expr>);     //  `ident` `(` `expr` `)`
-
+struct Ellipse(Ident);                      // `...` `ident`
+struct Ident(String);                       // `ident`
+struct Call(Box<Expr>, Vec<Expr>);          // `ident` `(` `expr` `)`
+struct CallWithBody(Call, UnkownBody);            // `call` `body`
+struct Assignment(Ident, Expr);             // `ident` `:` `expr`
+struct FieldAccess(Ident, Expr);           // `ident` `.` `expr`
+struct FieldCall(Ident, Vec<Expr>);         //  `ident` `(` `expr` `)`
+ 
 
 #[derive(Debug, PartialEq, Serialize)]
 pub enum Expr {
