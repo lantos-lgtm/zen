@@ -25,14 +25,14 @@ ContainerStats: Type {
     networks*:      Map { key: String, value: NetworkStats }
 }
 BlkioStats: Type {
-    ioServiceBytesRecursive*:  Result {self: Array {value: BlkioStatEntry}},
-    ioServicedRecursive*:      Result {self: Array {value: BlkioStatEntry}},
-    ioQueueRecursive*:         Result {self: Array {value: BlkioStatEntry}},
-    ioServiceTimeRecursive*:   Result {self: Array {value: BlkioStatEntry}},
-    ioWaitTimeRecursive*:      Result {self: Array {value: BlkioStatEntry}},
-    ioMergedRecursive*:        Result {self: Array {value: BlkioStatEntry}},
-    ioTimeRecursive*:          Result {self: Array {value: BlkioStatEntry}},
-    sectorsRecursive*:         Result {self: Array {value: BlkioStatEntry}},
+    ioServiceBytesRecursive*:  Result {Array {value: BlkioStatEntry}},
+    ioServicedRecursive*:      Result {Array {value: BlkioStatEntry}},
+    ioQueueRecursive*:         Result {Array {value: BlkioStatEntry}},
+    ioServiceTimeRecursive*:   Result {Array {value: BlkioStatEntry}},
+    ioWaitTimeRecursive*:      Result {Array {value: BlkioStatEntry}},
+    ioMergedRecursive*:        Result {Array {value: BlkioStatEntry}},
+    ioTimeRecursive*:          Result {Array {value: BlkioStatEntry}},
+    sectorsRecursive*:         Result {Array {value: BlkioStatEntry}},
 }
 CPUUsage: Type {
     totalUsage*:          Float.F64
