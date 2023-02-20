@@ -32,9 +32,9 @@ Json: std.json,
 
 createContainer: Function {
     args: {
-        docker:     Docker,
+        self:       Docker,
         name:       String,
-        body:       CreateContainerRequest
+        req:       CreateContainerRequest
     },
     return: ResultWithError {
         self: CreateContainerResponse
@@ -48,7 +48,8 @@ createContainer: Function {
             path:       String.format("/containers/create"),
             query:      String.format("name=${name}")
         }
-        bodyJson: Json.encode(body),
+        bodyJson: Json.encode(args.req),
+
         response: docker.client.request(
             url:    url,
             method: Http.HttpMethod.POST,
