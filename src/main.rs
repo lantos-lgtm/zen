@@ -125,36 +125,34 @@ fn parse_string(string: &String) {
 }
 
 fn main() {
-    // parse command line arguments
-    let args: Vec<String> = std::env::args().collect();
-    let mut args = args.iter();
-    args.next();
-    let mut file_path = None;
-    let mut repl = false;
-    let mut string = None;
-    while let Some(arg) = args.next() {
-        match arg.as_str() {
-            "-f" => {
-                file_path = Some(args.next().expect("Expected file name after -f"));
-            }
-            "-s" => {
-                string = Some(args.next().expect("Expected string after -s"));
-            }
-            _ => {
-                repl = true;
-            }
-        }
-    }
-    if repl {
-        parse_repl();
-    } else {
-        if let Some(file_path) = file_path {
-            // load file
-            parse_file(file_path);
-        } else if let Some(string) = string {
-            parse_string(string);
-        }
-    }
+    // parse args using clap
+    // run, build, test
+    //  -f file_path
+    //  -s string
+    // -h help
+    // "" repl
 
+    let matches = clap::Command::new("zen")
+        .version("0.1.0")
+        .author("Lyndon Leong <l.leong1618[at]gmail.com>")
+        .about("A programming language")
+        .arg(
+            clap::Arg::new("file")
+                .short('f')
+                .long("file")
+                .value_name("FILE")
+                .help("File to parse")
+        )
+        .arg(
+            clap::Arg::new("string")
+                .short('s')
+                .long("string")
+                .value_name("STRING")
+                .help("String to parse")
+        )
+        .get_matches();
+
+    // Match on args
     
+
 }
