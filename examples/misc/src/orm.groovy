@@ -12,23 +12,23 @@ AssetType: Type {
 }
 
 Asset: Type {
-    transactions: Array {Transaction}
-    name: String,
-    symbol: String,
+    transactions:   Array {Transaction}
+    name:           String,
+    symbol:         String,
     // enable funds of funds
-    children: Array {Asset},
+    children:       Array {Asset},
 }
 
 Rate: Type {
-    quote: Asset,
-    base: Asset,
-    sign: Boolean,
-    mentisa: Int.U64,
-    exponent: Int.U8,
-    date: Date,
+    quote:          Asset,
+    base:           Asset,
+    sign:           Boolean,
+    mentisa:        Int.U64,
+    exponent:       Int.U8,
+    date:           Date,
 }
 
-TransactionType: Type {
+TransactionType: Enum {
     Deposit,
     Withdrawal,
     Transfer,
@@ -40,12 +40,12 @@ TransactionType: Type {
 }
 
 Transaction: Type {
-    account: Account,
-    transactionType: TransactionType,
-    asset: Asset,
-    amount: Int,
-    date: Date,   
-    settled: Date
+    account:            Account,
+    transactionType:    TransactionType,
+    asset:              Asset,
+    amount:             Int,
+    date:               Date,   
+    settled:            Date
 }
 
 TransactionGroup: Type {
@@ -61,7 +61,7 @@ Account: Type {
 // date then take the most recent active entry and use 
 // that as the current state.
 Active: Type {
-    active: Boolean,
+    active:     Boolean,
     activeDate: Date,
 }
 AddActiveFlags: Function {
@@ -69,8 +69,8 @@ AddActiveFlags: Function {
         self: Type,
     },
     returns: {
-        self: Type,
-        error: Error,
+        self:   Type,
+        error:  Error,
     },
     body: {
         // TODO
@@ -80,12 +80,11 @@ AddActiveFlags: Function {
 
 
 // models
-assetModel: Orm.Model(Asset)
-transactionTypeModel: Orm.Model(TransactionType)
-transactionModel: Orm.Model(Transaction)
-transactionGroupModel: Orm.Model(TransactionGroup)
-
-accountModel: Orm.Model(Account)
+assetModel:             Orm.Model(Asset)
+transactionTypeModel:   Orm.Model(TransactionType)
+transactionModel:       Orm.Model(Transaction)
+transactionGroupModel:  Orm.Model(TransactionGroup)
+accountModel:           Orm.Model(Account)
 accountModel.fields.push(
     Orm.VirtualField(
         name: "balance",
@@ -102,7 +101,7 @@ accountModel.fields.push(
     )
 )
 
-modelsPreActiveFlag: Orm.createModels({
+modelsPreActiveFlag:    Orm.createModels({
     assetTypeModel,
     assetModel,
     transactionTypeModel,
@@ -112,10 +111,10 @@ modelsPreActiveFlag: Orm.createModels({
 })
 
 models: Orm.createModels({
-    assetTypeModel: AddActiveFlags(assetTypeModel),
-    assetModel: AddActiveFlags(assetModel),
-    transactionTypeModel: AddActiveFlags(transactionTypeModel),
-    transactionModel: AddActiveFlags(transactionModel),
-    transactionGroupModel: AddActiveFlags(transactionGroupModel),
-    accountModel: AddActiveFlags(accountModel),
+    assetTypeModel:         AddActiveFlags(assetTypeModel),
+    assetModel:             AddActiveFlags(assetModel),
+    transactionTypeModel:   AddActiveFlags(transactionTypeModel),
+    transactionModel:       AddActiveFlags(transactionModel),
+    transactionGroupModel:  AddActiveFlags(transactionGroupModel),
+    accountModel:           AddActiveFlags(accountModel),
 })
