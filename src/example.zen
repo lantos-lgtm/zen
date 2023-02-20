@@ -27,7 +27,6 @@ getFullname: Function {
     }
 }
 
-
 lastName: String,
 myPerson: Person {
     uniqueId: String("1234"),

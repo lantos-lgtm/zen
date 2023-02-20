@@ -19,8 +19,8 @@ pub struct Assignment {
     pub value: Box<Expr>,
 }
 
-#[derive(Debug, PartialEq, Serialize)]
-pub struct Ellipse(pub Identifier);
+// #[derive(Debug, PartialEq, Serialize)]
+// pub struct Ellipse(pub Identifier);
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct SpreadOperator(pub Identifier);
@@ -68,8 +68,26 @@ pub enum Expr {
     Call(Call),
     // TypeDef(TypeExpr),
     Literal(Literal),
-    Ellipse(Ellipse),
+    // Ellipse(Ellipse),
     SpreadOperator(SpreadOperator),
     Body(Body),
     Accessor(Accessor),
 }
+
+
+
+
+
+// Expr            -> Atom | Binary | Unary | Grouping
+// Binary          -> Expr Op Expr
+// Unary           -> (! | -) Expr
+// Grouping        -> ( Expr ) | { Expr }
+// Atom            -> Identifier | Literal
+// Identifier      -> String
+// Literal         -> StringLiteral | IntLiteral | FloatLiteral
+// Op              -> MathOps | EqualityOps | ComparisonOps | LogicalOps //| BitwiseOps
+// ComparisonOps   -> < | > | <= | >=
+// LogicalOps      -> && | ||
+// EqualityOps     -> == | !=
+// MathOps         -> + | - | * | **| / | % 
+// BitwiseOps      -> & | | | ^ | ~ | << | >>

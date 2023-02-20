@@ -1,5 +1,5 @@
 use serde::{Serialize};
-use crate::ast::{Expr, Literal, Identifier, Ellipse, Assignment, Key, Body};
+use crate::ast::{Expr, Literal, Identifier, Assignment, Key, Body, SpreadOperator};
 use crate::tokenizer::{Token, Tokenizer, self};
 
 
@@ -67,7 +67,7 @@ impl<'a> Parser<'a> {
     fn parse_ellipse(&mut self) -> Result<Expr, ParseError> {
         // ...identifier
         if let Token::Identifier(name) = self.next_token()? {
-            Ok(Expr::Ellipse(Ellipse(Identifier(name))))
+            Ok(Expr::SpreadOperator(SpreadOperator(Identifier(name))))
         } else {
             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
         }
