@@ -33,7 +33,8 @@ main: Function {
         testFileLabels.close()
 
         // create network
-        MinstNet:  Network {
+        MinstNet:  Type {
+            self: Network
             layers: {
                 conv1: Convolutional2d(
                     inputChannels: 1,
@@ -149,6 +150,6 @@ main: Function {
         }
 
         print("Accuracy: ", correct / testImages.size())
-        
+
     }
 }
