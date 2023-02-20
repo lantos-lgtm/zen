@@ -1,0 +1,22 @@
+std: std()
+{
+    Docker
+}: importLocal("./docker.zen")
+
+
+
+main: Function()
+{
+    args: {},
+    return: {},
+    body: {
+        docker: Docker()
+        containers: docker.listContainers()
+        cLoop: loop(containers) {
+            c: cLoop.value
+            if (c.state == "running") {
+                docker.stopContainer(c.id)
+            }
+        }
+    }
+}
