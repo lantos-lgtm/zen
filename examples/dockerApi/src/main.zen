@@ -1,6 +1,9 @@
 std: std()
 {
-    Docker
+    Docker,
+    State
+    listContainers,
+    stopContainer
 }: importLocal("./docker.zen")
 
 
@@ -13,9 +16,8 @@ main: Function()
         docker: Docker()
         containers: docker.listContainers()
         cLoop: loop(containers) {
-            c: cLoop.value
-            if (c.state == "running") {
-                docker.stopContainer(c.id)
+            if (cLoop.value.state == State.RUNNING) {
+                docker.stopContainer(cLoop.value.id)
             }
         }
     }

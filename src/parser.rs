@@ -1,5 +1,6 @@
+use clap::Id;
 use serde::{Serialize};
-use crate::ast::{Expr, Literal, Identifier, Assignment, Key, Body, SpreadOperator};
+use crate::ast::{Expr, Literal, Identifier, Assign, Key, Body, SpreadOperator, TypeDef, Fields, Accessor};
 use crate::tokenizer::{Token, Tokenizer, self};
 
 
@@ -47,96 +48,56 @@ impl<'a> Parser<'a> {
         // identifier(...) = L Token::ParenOpen         R
         // identifier{...} = L Token::CurlyBraceOpen    R
         // identifier:...  = L Token::Colon             R
+        // identifier)     = L Token::Identifier        R
+        // identifier,     = L Token::Identifier        R
+        // identifier.     = L Token::Identifier        R
+        // identifier)      = L Token::Identifier        R
 
 
         // need a way to do L ,Token, R 
 
-        if let Token::Identifier(name) = self.next_token()? {
-            match self.tokens.peek() {
-                Some(Token::ParenOpen) => todo!(),
-                Some(Token::CurlyBraceOpen) => todo!(),
-                Some(Token::Colon) => todo!(),
-                _ => Ok(Expr::Identifier(Identifier(name))),
-            }
-        } else {
-            Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
-        }
-
     }
 
-    fn parse_ellipse(&mut self) -> Result<Expr, ParseError> {
+    fn parse_ellipse(&mut self, expr: Expr) -> Result<(), ParseError> {
         // ...identifier
+        // ...(expr)
         if let Token::Identifier(name) = self.next_token()? {
             Ok(Expr::SpreadOperator(SpreadOperator(Identifier(name))))
         } else {
             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
         }
     }
-    fn parse_dot(&mut self) -> Result<Expr, ParseError> {
+    fn parse_dot(&mut self, L: Identifier) -> Result<Expr, ParseError> {
         // L , Token::Dot, R
-        if let Token::Dot = self.next_token()? {
-            Ok(Expr::Identifier(Identifier(".".to_string())))
-        } else {
-            Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
-        }
+
+        let expr = Expr::Accessor(Accessor {
+            object: L,
+            property: Box::new(self.parse_expr()?),
+        });
+        Ok(expr)
+        // todo!()
     }
 
     fn parse_body(&mut self) -> Result<Expr, ParseError> {
         // { ... }
-        let mut fields = Vec::new();
-        while let Some(token) = self.tokens.peek() {
-            match token {
-                Token::Newline(_) | Token::WhiteSpace(_) => {
-                    self.tokens.next();
-                },
-                Token::CurlyBraceOpen => {
-                    fields.push(self.parse_body()?);
-                }
-                Token::CurlyBraceClose => {
-                    self.tokens.next();
-                    break;
-                }
-                _ => {
-                    fields.push(self.parse_primary()?);
-                }
-            }
-        }
-        Ok(Expr::Body(Body { fields }))
+        todo!()
+     
     }
 
-    fn parse_assignment(&mut self) -> Result<Expr, ParseError> {
+    fn parse_assignment(&mut self, expr: Expr) -> Result<Expr, ParseError> {
         // identifier: ...  = L Token::Colon, R
         // {...}: ...       = L Token::Colon, R
 
-        let mut key = Vec::new();
-        let mut value = None;
-        while let Some(token) = self.tokens.peek() {
-            match token {
-                Token::Identifier(name) => {
-                    key.push(Identifier(name.to_string()));
-                    self.tokens.next();
-                }
-                Token::Colon => {
-                    self.tokens.next();
-                    value = Some(self.parse_primary()?);
-                    break;
-                }
-                _ => {
-                    return Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()));
-                }
-            }
-        }
-        if key.len() == 1 {
-            Ok(Expr::Assignment(Assignment {
-                key: Key::Key(key.pop().unwrap()),
-                value: Box::new(value.unwrap()),
-            }))
-        } else {
-            Ok(Expr::Assignment(Assignment {
-                key: Key::DestructureKeys(key),
-                value: Box::new(value.unwrap()),
-            }))
-        }
+        // get previous expression
+        let Key = 
+
+        let expr = Expr::Assign(Assign {
+            key: Key::Key(),
+            value: Box::new(self.parse_expr()?),
+        });
+        // todo!()
+
+       
     }
 
     fn parse_primary(&mut self) -> Result<Expr, ParseError> {
@@ -196,21 +157,29 @@ fn test_ast() {
 
     println!("{:?}", name_ast);
 
-    let name_ast_expected = Expr::Assignment(Assignment{
+    let name_ast_expected = Expr::Assign(Assign { 
         key: Key::Key(Identifier("Name".to_string())),
-        value: Box::new(Expr::Body(Body {
-            fields: vec![
-                Expr::Assignment(Assignment{
+        value: Box::new(Expr::TypeDef(TypeDef{
+            name: Identifier("Type".to_string()),
+            fields: Fields(vec![
+                Assign {
                     key: Key::Key(Identifier("fistName".to_string())),
-                    value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-                }),
-                Expr::Assignment(Assignment{
+                    value: Box::new(Expr::TypeDef(TypeDef{
+                        name: Identifier("String".to_string()),
+                        fields: Fields(vec![]),
+                    })),
+                },
+                Assign {
                     key: Key::Key(Identifier("lastName".to_string())),
-                    value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-                }),
-            ]
-        })),
+                    value: Box::new(Expr::TypeDef(TypeDef{
+                        name: Identifier("String".to_string()),
+                        fields: Fields(vec![]),
+                    })),
+                },
+            ]),
+        }))
     });
+
 
     assert!(name_ast == name_ast_expected);
 
@@ -236,16 +205,16 @@ fn test_ast() {
 
     // println!("other_func1_ast1: {:?}", serde_json::to_string_pretty(&other_func1_ast1).unwrap());
 
-    // let other_func1_ast1_expected = Expr::Assignment(Assignment {
-    //     key: Key::DestructureKeysAssignment(vec![
-    //         Assignment { 
+    // let other_func1_ast1_expected = Expr::Assign(Assign {
+    //     key: Key::DestructureKeysAssign(vec![
+    //         Assign { 
     //             key: Key::Key(Identifier("x".to_string())), 
     //             value: Box::new(Expr::Accessor(Accessor { 
     //                 name:   Identifier("Int".to_string()),
     //                 field:  Box::new(Expr::Identifier(Identifier("i32".to_string())))
     //             }))
     //         },
-    //         Assignment { 
+    //         Assign { 
     //             key: Key::Key(Identifier("x".to_string())), 
     //             value: Box::new(Expr::Accessor(Accessor { 
     //                 name:   Identifier("Int".to_string()),
@@ -303,7 +272,7 @@ fn test_ast() {
     //     io.print(result.x)
     //     io.print(result.y)
     // }";
-    // let other_func1_ast2_expected = Expr::Assignment(Assignment {
+    // let other_func1_ast2_expected = Expr::Assign(Assign {
     //     key: Key::DestructureKeys(vec![
     //         Identifier("x".to_string()),
     //         Identifier("y".to_string()),
@@ -362,11 +331,11 @@ fn test_ast() {
     //         args: Box::new(Body { fields: vec![] }),
     //         body: Box::new(Body {
     //             fields: vec![
-    //                 Expr::Assignment(Assignment {
+    //                 Expr::Assign(Assign {
     //                     key: Key::Key(Identifier("other1".to_string())),
     //                     value: Box::new(Expr::Identifier(Identifier("Person".to_string()))),
     //                 }),
-    //                 Expr::Assignment(Assignment {
+    //                 Expr::Assign(Assign {
     //                     key: Key::Key(Identifier("other2".to_string())),
     //                     value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
     //                 }),

@@ -10,11 +10,11 @@ pub struct Identifier(pub String);
 pub enum Key {
     Key(Identifier),
     DestructureKeys(Vec<Identifier>), // destructuring without type
-    DestructureKeysAssignment(Vec<Assignment>), // destructuring with type
+    DestructureKeysAssign(Vec<Assign>), // destructuring with type
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Assignment {
+pub struct Assign {
     pub key: Key,
     pub value: Box<Expr>,
 }
@@ -29,25 +29,40 @@ pub struct SpreadOperator(pub Identifier);
 // pub struct TypeExpr {
 //     // : Type || Type { TypeExpr }
 //     pub base_type: Box<TypeExpr>,
-//     pub fields: Vec<Assignment>,
+//     pub fields: Vec<Assign>,
 // }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Body {
-    pub fields: Vec<Expr>,
+pub struct Block(Vec<Expr>);
+
+#[derive(Debug, PartialEq, Serialize)]
+pub enum Body {
+    Fields(Fields),
+    Block(Block),
 }
+
+
+#[derive(Debug, PartialEq, Serialize)]
+
+pub struct Fields(pub Vec<Assign>);
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Call {
     pub name: Identifier,
-    pub args: Box<Body>,
-    pub body: Box<Body>,
+    pub args: Fields,
+    pub body: Body,
+}
+
+#[derive(Debug, PartialEq, Serialize)]
+pub struct TypeDef {
+    pub name: Identifier,
+    pub fields: Fields,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Accessor {
-    pub name: Identifier,
-    pub field: Box<Expr>,
+    pub object: Identifier,
+    pub property: Box<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -63,15 +78,21 @@ pub enum Literal {
 
 #[derive(Debug, PartialEq, Serialize)]
 pub enum Expr {
+    // Atom
     Identifier(Identifier),
-    Assignment(Assignment),
-    Call(Call),
-    // TypeDef(TypeExpr),
     Literal(Literal),
-    // Ellipse(Ellipse),
+
+    // Unary
     SpreadOperator(SpreadOperator),
-    Body(Body),
+
+    // Binary
+    Assign(Assign),
     Accessor(Accessor),
+
+    // Grouping
+    Body(Body),
+    TypeDef(TypeDef),
+    Call(Call),
 }
 
 

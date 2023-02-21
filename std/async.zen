@@ -30,7 +30,7 @@
 // as sync code is async from the results perspective it just happens instantly
 // it will throw an error if it's not ready yet
 // if everything is a result we can bubble up the complete status
-
+// this might be similar to go's async 
 sleepyFunc: Function{
     args: {
         i: Int.I32
