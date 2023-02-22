@@ -27,7 +27,7 @@ Loop: Function {
     return: self.Type
     body: Body {
         {
-            If (self()) {
+            if(self()) {
                 args.then()
                 fn()
             }
@@ -49,7 +49,7 @@ Loop: Function {
     return: args.loopHandle.Type,
     body: Function {
         {
-            If (i < self.size()) {
+            if(i < self.size()) {
                 next: ResultWithError(self[i])
                 body(next)
                 i.increment()

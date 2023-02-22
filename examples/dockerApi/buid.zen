@@ -1,4 +1,4 @@
-std: import("std"),
+std: @std(),
 build: std.build,
 { 
     Type,
@@ -32,7 +32,7 @@ build:  build.Builder {
         )
 
         runCmd: exe.run()
-        If (self.args){
+        if(self.args){
             body:  {
                 runCmd.addArgs(self.args)
             }

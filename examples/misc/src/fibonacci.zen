@@ -1,4 +1,4 @@
-std: std()
+std: @std()
 io: std.io
 {
     Function,
@@ -17,67 +17,60 @@ io: std.io
 // fribonacci recursive
 fribRec: Function{
     args: {
-        self: Int
+        x: Int
     },
-    return: {
-        self: Int
-    },
+    return: { Int },
     body: {
-        if (self < 2) {
-            return(self)
+        if(x < 2) {
+            return(x)
         }
-        return(fribRec(self - 1) + fribRec(self - 2))
+        return(fribRec(x - 1) + fribRec(x - 2))
     }
 }
 
 // frib recursive with memoization
 fribMemo: Function{
     args: {
-        self: Int
+        x: Int
     },
-    return: {
-        self: Int
-    },
+    return: { Int},
     body: {
         memo: Map(keys: {Int}, values: {Int})
         fribMemoInner: Function {
             args: {
-                self: Int
+                x: Int
             },
-            return: {
-                self: Int
-            },
+            return: {Int},
             body: {
-                if (self < 2) {
-                    return(self)
+                if(x < 2) {
+                    return(x)
                 }
-                if (memo.hasKey(self)) {
-                    return(memo[self])
+                if(memo.hasKey(x)) {
+                    return(memo[x])
                 }
-                memo[self] = fribMemoInner(self - 1) + fribMemoInner(self - 2)
-                return(memo[self])
+                memo[x] = fribMemoInner(x - 1) + fribMemoInner(x - 2)
+                return(memo[x])
             }
         }
+        return(fribMemoInner(x))
     }
 }
 
 // while loop
 fribWhile: Function {
     args: {
-        self: Int
+        x: Int
     },
-    return: {
-        self: Int
-    },
+    return: { Int },
     body: {
         prev: Int(0)
         curr: Int(1)
         next: Int(0)
-        myLoop: Loop (self > 0) {
+        myLoop: Loop (x > 0) {
             next = prev + curr
             prev = curr
             curr = next
-            self.decrement()
+            x.decrement()
         }
         return(curr)
     }
@@ -85,13 +78,19 @@ fribWhile: Function {
 
 main: Function {
     args: {
-        self: Int
+        str: Int
     }
     body: {
-        max: Const{self}
-        if (max < 0) {
+        max: Int.I32.parse(str) {
+            error: {
+                // got to think about how to handle errors
+                io.stdout.print(String.parse("usage\n >fribonacci <number>"))
+                return(Void)
+            }
+        }
+        if(max < 0) {
             io.stdout.print(String.parse("usage\n >fribonacci <number>"))
-            return()
+            return(Void)
         }
         Benchmark ("frib") {
             io.stdout.print(String.parse(fribRec(max)))

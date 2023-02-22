@@ -82,7 +82,7 @@ body: Function {
         header for { 
             in:  headers.next(),
             fn: {
-                _: If (header.key) {
+                _: if(header.key) {
                     // match headers for content-length
                     // match headers for chunked
                     // match headers for http 1.0

@@ -144,7 +144,7 @@ main: Function {
             model.forward(image, output)
             prediction: Int.i32
             output.max(prediction.ref())
-            if (prediction == testLabels[testLoop.value]) {
+            if(prediction == testLabels[testLoop.value]) {
                 correct.increment()
             }
         }

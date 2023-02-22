@@ -60,39 +60,39 @@ parse: Function {
         // [ -> array
         // { -> object
         tempLoop: loop (i < self.len) {
-            If (self[i] == Char(" ")) {
+            if(self[i] == Char(" ")) {
                 i += 1
             }
-            If (self[i] == Char("\"")) {
+            if(self[i] == Char("\"")) {
                 i += 1
                 escaped: Boolean.False
                 stringLoop: loop (i < self.len) {
                    
                 }
             }
-            If (self.window(i, 4) == String("true")) {
+            if(self.window(i, 4) == String("true")) {
                 return(value: Boolean.True)
             }
-            If (self.window(i, 5) == String("false")) {
+            if(self.window(i, 5) == String("false")) {
                 return(value: Boolean.False)
             }
-            If (self.window(i, 4) == String("null")) {
+            if(self.window(i, 4) == String("null")) {
                 return(value: JsNull)
             }
-            If (self[i].union(Digits).length != 0){
+            if(self[i].union(Digits).length != 0){
                 isFloat: Boolean.False
                 numberLoop: loop (i < self.len) {
-                    If (self[i].union(Digits).length == 0) {
-                        // If isFloat invalid number
-                        // If isFloat == false assume float
-                        // If is " " skip
-                        // If is "," or "]" or "}" end number
+                    if(self[i].union(Digits).length == 0) {
+                        // ifisFloat invalid number
+                        // ifisFloat == false assume float
+                        // ifis " " skip
+                        // ifis "," or "]" or "}" end number
                     }
                     i += 1
                 }
             }
             // array
-            If (self[i] == Char("[")){
+            if(self[i] == Char("[")){
                 // parse until unexpected "]" or ","
                 array: JsNode(Array)
 
@@ -105,7 +105,7 @@ parse: Function {
                     val1.error {
                         return(error: val1.error)
                     }
-                    If (self[i] == Char("]")) {
+                    if(self[i] == Char("]")) {
                        
                     }
 
@@ -113,7 +113,7 @@ parse: Function {
                 }
 
             }
-            If (self[i] == Char("{")){
+            if(self[i] == Char("{")){
                 // parse until unexpected "}" or ",""
                 
             }
@@ -147,9 +147,9 @@ Json: Function {
     },
     body:  {
         // return.kind: value.getJsonKind(),
-        If (value.isLoopable()) {
+        if(value.isLoopable()) {
             then: {
-                If (self.type() == JsonKind.Object) {
+                if(self.type() == JsonKind.Object) {
                     tempLoop: loop (value) {
                         childNode: tempLoop.value.toJson()
                         childNode.error {
@@ -158,7 +158,7 @@ Json: Function {
                         return.value[tempLoop.value.key] = childNode.value
                     }
                 }
-                If (self.type() == JsonKind.Array) {
+                if(self.type() == JsonKind.Array) {
                     tempLoop: loop (value) {
                         childNode: tempLoop.value.toJson()
                         childNode.error {

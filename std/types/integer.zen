@@ -22,7 +22,7 @@ createInts: CompTime, Function {
             sizeLoop: Loop(intRange) {
             signedLoop: Loop (Boolean.fieldPairs()) {
                 prefix: String("")
-                If (signedLoop.value.signed) {
+                if(signedLoop.value.signed) {
                     signed = String("U")
                 }
                 childName: String.format`${prefix}Int${String(sizeLoop.value)}`
@@ -54,7 +54,7 @@ digit: Function {
         error: Error
     }
     body: {
-        if (self < 0 || self > 9) {
+        if(self < 0 || self > 9) {
             return(Error("Invalid digit"))
         }
         return(self)
@@ -70,7 +70,7 @@ toAscii: Function {
         error: Error
     }
     body: {
-        if (self < 0 || self > 9) {
+        if(self < 0 || self > 9) {
             return(Error("Invalid digit"))
         }
         return(Char(self + 48))
@@ -90,11 +90,11 @@ from: Function {
         tempInt: Int(self)
         tempString: String()
         // convert int to string
-        if (tempInt < 0) {
+        if(tempInt < 0) {
             tempString = String("-")
             self = self * -1
         }
-        if (tempInt == 0) {
+        if(tempInt == 0) {
             tempString = String("0")
         }
         
@@ -121,7 +121,7 @@ from: Function {
         tempInt: Int(0)
         tempString: String(self)
         // convert string to int
-        if (tempString[0] == "-") {
+        if(tempString[0] == "-") {
             tempString = tempString[1:]
             sign = -1
         }

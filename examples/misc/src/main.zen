@@ -29,7 +29,7 @@ greetPerson: Function {
 }
 main: Function {
     body: {
-        var person: Person{
+        person: Person{
             name: String("John")
             age: Int(20)
         }

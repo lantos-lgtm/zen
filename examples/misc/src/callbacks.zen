@@ -33,7 +33,7 @@ escapeString: MyCallBackFunction {
         MapValue(String("<"), String("&lt;")),
         MapValue(String(">"), String("&gt;")),
         MapValue(String("&"), String("&amp;")),
-        MapValue(String("\""), String("&quot;")),
+        MapValue(String("\"), String("&quot;")),
         MapValue(String("'"), String("&#x27;")),
         MapValue(String("/"), String("&#x2F;")),
       ),
@@ -68,7 +68,7 @@ main: Function {
     callbackLoop: loop(callBacks) {
       body:  {
         res: callbackLoop.value(self),
-        If (res.error) {
+        if(res.error) {
           return (error: res.error),
         },
         self: res.value

@@ -62,7 +62,7 @@ reserved symbols
 - ```()```        - used to call a function
 - ```||```         - used to define a or type
 
-Logic, don't know if this should be included
+Logic, don't know ifthis should be included
 - logical operators ```== != > < >= <= && ||||```
 - maths operators ```+ - * / %```
 - bitwise operators ```& || ^ ~ << >>```
@@ -70,7 +70,7 @@ Logic, don't know if this should be included
 <!-- 
     if( ==(x, y, x) )
     if( ||||(==(x, y), ==(x, z)) )
-    if ( x < y < z )
+    if( x < y < z )
     if( and(eq(x, y), eq(x, z)) )
     if( or(eq(x, y), eq(x, z)))
     
@@ -292,9 +292,9 @@ MyError: Error {
 
 MyResult: Result {String}                                   // you can attempt to define an un defined type with {}
 MyResult: Result {self: String}                             // same as above but more explicit
-MyResult: ResultWithError {self: String, error: MyError}    // If the underType has more then one undefined type you must specify what field you are defining the type of
+MyResult: ResultWithError {self: String, error: MyError}    // ifthe underType has more then one undefined type you must specify what field you are defining the type of
 
-myResult: MyResult("hello") {                               // initialising a variable then defining what to do if there is an error
+myResult: MyResult("hello") {                               // initialising a variable then defining what to do ifthere is an error
     io.std.writeLine(String("error"))                               // print the error
 }                                                           // this works because we define a body which applys to the error.body
 myResult: MyResult(self:"hello")                            // same as above but more explicit
@@ -312,7 +312,7 @@ myResult: MyResult(self:"hello")                            // same as above but
 //     body: Body()
 // }
 
-// standard If statement
+// standard ifstatement
 // this works because the first argument can be passed as () and then the "then" body can be assumed in the following brackets {}
 if(Boolean.True) {
     io.std.writeLine("true")
@@ -334,12 +334,12 @@ if(Boolean.True) {
 
 // match statements
 value: String("hello")
-if (value) {
+if(value) {
     is: Array(
         Match("hello") { io.std.writeLine("hello") },
         Match("world") { io.std.writeLine("world") }
     )
-    // will complain If there are cases that are not covered
+    // will complain ifthere are cases that are not covered
     else: { io.std.writeLine("not hello or world") },
 }
 
@@ -405,7 +405,7 @@ packages.json
 
 build.zen
 ```groovy
-std:        std()                  // import the std lib
+std:        @std()                  // import the std lib
 Build:      std.build
 
 // load External packages
@@ -442,7 +442,7 @@ main: Buld.Build {
 
 src/utils/other.zen
 ```groovy
-std: std() // import the std lib
+std: @std() // import the std lib
 {
     Function,
     Loop
@@ -459,7 +459,7 @@ someUtil: Function {
 src/main.zen
 ```groovy   
 // std
-std: std()
+std: @std()
 {
     Function,
     Loop

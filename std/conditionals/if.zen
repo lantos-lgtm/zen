@@ -1,7 +1,7 @@
 // 
 
 
-// If (Type) {
+// if(Type) {
 //     is: Array (
 //         {
 //             match,
@@ -17,7 +17,7 @@
 //     }
 // }
 
-// If {
+// if{
 //     {
 //         condition,
 //         body
@@ -28,16 +28,16 @@
 //     },
 // }
 
-// If (Boolean) {
+// if(Boolean) {
 //     body
 // }
 
-// If (Boolean) {
+// if(Boolean) {
 //     body,
 //     else:
 // }
 
-// prefix: If (signed) {
+// prefix: if(signed) {
 //     body:  {
 //         signed = String("U")
 //     }
@@ -55,7 +55,7 @@ If: Function {
     body: {
         matchLoop: loop (match) {
             // this proably will be magic 
-            If (value == match.value) {
+            if(value == match.value) {
                 matchLoop.value.body()
             }
             matchLoop.next()
@@ -74,7 +74,7 @@ If: Function {
     body: {
         matchLoop: loop (match) {
             // this proably will be magic 
-            If (value == match.value) {
+            if(value == match.value) {
                 matchLoop.value.body()
             }
             matchLoop.next()
@@ -95,7 +95,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        If (value()) {
+        if(value()) {
             result:  args.body()
             return(result)
         }
@@ -112,7 +112,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        If (value()) {
+        if(value()) {
             result:  args.body()
             return(result)
         }
@@ -132,7 +132,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        If (value()) {
+        if(value()) {
             result:  args.body()
             return(result)
         }
@@ -149,7 +149,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        If (value()) {
+        if(value()) {
             result: match.body()
             return(result)
         }
@@ -165,7 +165,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        If (value()) {
+        if(value()) {
             result: args.body()
             return(result)
         }

@@ -13,7 +13,7 @@ build:  build.Builder {
         exe: self.Exe.standardExeOptions()
 
         runCmd: exe.run()
-        If (self.args){
+        if(self.args){
             body:  {
                 runCmd.addArgs(self.args)
             }

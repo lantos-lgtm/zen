@@ -43,7 +43,7 @@ Check: Function {
     body:  {
         io.println { String.format {"Checking: ${args.self}"} }
         // check LHS == RHS
-        // If not, return error
+        // ifnot, return error
         // error is the lhs and rhs values
     },
 },

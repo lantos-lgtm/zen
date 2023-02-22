@@ -48,7 +48,7 @@ impl<'a> Tokenizer<'a> {
     {
         let mut result = String::new();
         while let Some(ch) = self.next_char() {
-            if !test(ch) {
+            if!test(ch) {
                 break;
             }
             result.push(ch);
@@ -58,11 +58,11 @@ impl<'a> Tokenizer<'a> {
     }
     fn read_number(&mut self) -> Token {
         let number = self.read_while(|ch| ch.is_digit(10) || ch == '_');
-        if self.starts_with(".") {
+        ifself.starts_with(".") {
             self.pos += 1;
             let fraction = self.read_while(|ch| ch.is_digit(10) || ch == '_');
             // the next character must be a whitespace | curlyBraceClose | ParenClose | comma
-            if self.starts_with(" ")
+            ifself.starts_with(" ")
                 || self.starts_with("}")
                 || self.starts_with(")")
                 || self.starts_with(",")
@@ -93,13 +93,13 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn read_whitespace(&mut self) -> Token {
-        // if is newline
+        // ifis newline
         let newline = self.read_while(|ch| ['\r', '\n', '\u{A0}'].contains(&ch));
-        if newline.len() > 0 {
+        ifnewline.len() > 0 {
             return Token::Newline(newline.len());
         }
         let white_space = self.read_while(|ch| ch.is_whitespace());
-        if white_space.len() > 0 {
+        ifwhite_space.len() > 0 {
             return Token::WhiteSpace(white_space.len());
         }
         Token::WhiteSpace(0)
@@ -117,7 +117,7 @@ impl<'a> Iterator for Tokenizer<'a> {
 
     fn next(&mut self) -> Option<Token> {
         let white_space = self.read_whitespace();
-        if white_space != Token::WhiteSpace(0) {
+        ifwhite_space != Token::WhiteSpace(0) {
             return Some(white_space);
         }
         match self.next_char()? {
@@ -155,14 +155,14 @@ impl<'a> Iterator for Tokenizer<'a> {
                 Some(self.read_char())
             }
             '/' => {
-                if self.starts_with("//") {
+                ifself.starts_with("//") {
                     Some(self.read_comment())
                 } else {
                     panic!("Unexpected character: /");
                 }
             }
             '.' => {
-                if self.starts_with("..") {
+                ifself.starts_with("..") {
                     self.pos += 2;
                     return Some(Token::Ellipse);
                 }
@@ -173,8 +173,8 @@ impl<'a> Iterator for Tokenizer<'a> {
             //     self.pos += 1;
             //     Some(Token::Eof)
             // }
-            ch if ch.is_digit(10) => Some(self.read_number()),
-            ch if ch.is_ascii_alphabetic() => Some(self.read_identifier()),
+            ch ifch.is_digit(10) => Some(self.read_number()),
+            ch ifch.is_ascii_alphabetic() => Some(self.read_identifier()),
             ch => panic!("Unexpected character: {}", ch),
         }
     }

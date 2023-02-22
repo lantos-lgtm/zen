@@ -1,4 +1,4 @@
-std: @import("std"),
+std: @std(),
 packages: std.packages,
 { 
     Type,

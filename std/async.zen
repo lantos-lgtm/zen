@@ -28,8 +28,8 @@
 
 // to avoid red/blue code we can assume all code is async and then when you access value on a result.
 // as sync code is async from the results perspective it just happens instantly
-// it will throw an error if it's not ready yet
-// if everything is a result we can bubble up the complete status
+// it will throw an error ifit's not ready yet
+// ifeverything is a result we can bubble up the complete status
 // this might be similar to go's async 
 sleepyFunc: Function{
     args: {
@@ -48,7 +48,7 @@ main: Function{
         let client = HttpClient()
         // trigger all requests
         // this loads up all the requests
-        // but if the exe is sync it will not trigger any suspends
+        // but ifthe exe is sync it will not trigger any suspends
         requestLoop: loop(10){
             return: Array{HttpResponse}
             body: {

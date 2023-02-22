@@ -1,4 +1,5 @@
-std: @import("std"),
+std: @std(),
+
 Http: std.http,
 {
     Port

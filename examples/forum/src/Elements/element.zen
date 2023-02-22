@@ -1,4 +1,4 @@
-std: std()
+std: @std()
 {
     Element,
     View,
@@ -73,7 +73,7 @@ render: Function {
     }
     return: Void,
     body: {
-        if (os.platform) {
+        if(os.platform) {
             is: "web" {
                 view.render(self)
             },
