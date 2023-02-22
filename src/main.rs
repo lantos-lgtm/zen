@@ -124,35 +124,34 @@
 //     println!("{:#?}", ast);
 // }
 
-// fn main() {
-//     // parse args using clap
-//     // run, build, test
-//     //  -f file_path
-//     //  -s string
-//     // -h help
-//     // "" repl
+fn main() {
+    // parse args using clap
+    // run, build, test
+    //  -f file_path
+    //  -s string
+    // -h help
+    // "" repl
 
-//     let matches = clap::Command::new("zen")
-//         .version("0.1.0")
-//         .author("Lyndon Leong <l.leong1618[at]gmail.com>")
-//         .about("A programming language")
-//         .arg(
-//             clap::Arg::new("file")
-//                 .short('f')
-//                 .long("file")
-//                 .value_name("FILE")
-//                 .help("File to parse")
-//         )
-//         .arg(
-//             clap::Arg::new("string")
-//                 .short('s')
-//                 .long("string")
-//                 .value_name("STRING")
-//                 .help("String to parse")
-//         )
-//         .get_matches();
+    let matches = clap::Command::new("zen")
+        .version("0.1.0")
+        .author("Lyndon Leong <l.leong1618[at]gmail.com>")
+        .about("A programming language")
+        .arg(
+            clap::Arg::new("file")
+                .short('f')
+                .long("file")
+                .value_name("FILE")
+                .help("File to parse")
+        )
+        .arg(
+            clap::Arg::new("string")
+                .short('s')
+                .long("string")
+                .value_name("STRING")
+                .help("String to parse")
+        )
+        .get_matches();
 
-//     // Match on args
-    
+    // Match on args    
 
-// }
+}

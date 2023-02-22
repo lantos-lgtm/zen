@@ -33,7 +33,7 @@ append: Function {
         error: ArrayError,
     },
     body: {
-        if(Array.size == Array.capacity) {
+        if (Array.size == Array.capacity) {
             // grow the Array
         }
         Array.data[Array.size] = value

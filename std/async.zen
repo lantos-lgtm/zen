@@ -58,7 +58,7 @@ main: Function{
         }
         waitLoop: loop(true) {
             done: requestLoop.return.foldLeft(){self.complete}
-            if(done){
+            if (done){
                 waitLoop.break()
             }
         }

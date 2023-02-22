@@ -63,7 +63,7 @@ registerModel: Function {
                 // create the model name
                 fieldLoop: Loop (model.fields) {
                     field: Field = fieldLoop.value
-                    if(field.type == Type) {
+                    if (field.type == Type) {
                         registerModel(field.type)
                     }
                 }

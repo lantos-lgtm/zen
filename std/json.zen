@@ -60,29 +60,29 @@ parse: Function {
         // [ -> array
         // { -> object
         tempLoop: loop (i < self.len) {
-            if(self[i] == Char(" ")) {
+            if (self[i] == Char(" ")) {
                 i += 1
             }
-            if(self[i] == Char("\"")) {
+            if (self[i] == Char("\"")) {
                 i += 1
                 escaped: Boolean.False
                 stringLoop: loop (i < self.len) {
                    
                 }
             }
-            if(self.window(i, 4) == String("true")) {
+            if (self.window(i, 4) == String("true")) {
                 return(value: Boolean.True)
             }
-            if(self.window(i, 5) == String("false")) {
+            if (self.window(i, 5) == String("false")) {
                 return(value: Boolean.False)
             }
-            if(self.window(i, 4) == String("null")) {
+            if (self.window(i, 4) == String("null")) {
                 return(value: JsNull)
             }
-            if(self[i].union(Digits).length != 0){
+            if (self[i].union(Digits).length != 0){
                 isFloat: Boolean.False
                 numberLoop: loop (i < self.len) {
-                    if(self[i].union(Digits).length == 0) {
+                    if (self[i].union(Digits).length == 0) {
                         // ifisFloat invalid number
                         // ifisFloat == false assume float
                         // ifis " " skip
@@ -92,7 +92,7 @@ parse: Function {
                 }
             }
             // array
-            if(self[i] == Char("[")){
+            if (self[i] == Char("[")){
                 // parse until unexpected "]" or ","
                 array: JsNode(Array)
 
@@ -105,7 +105,7 @@ parse: Function {
                     val1.error {
                         return(error: val1.error)
                     }
-                    if(self[i] == Char("]")) {
+                    if (self[i] == Char("]")) {
                        
                     }
 
@@ -113,7 +113,7 @@ parse: Function {
                 }
 
             }
-            if(self[i] == Char("{")){
+            if (self[i] == Char("{")){
                 // parse until unexpected "}" or ",""
                 
             }
@@ -147,9 +147,9 @@ Json: Function {
     },
     body:  {
         // return.kind: value.getJsonKind(),
-        if(value.isLoopable()) {
+        if (value.isLoopable()) {
             then: {
-                if(self.type() == JsonKind.Object) {
+                if (self.type() == JsonKind.Object) {
                     tempLoop: loop (value) {
                         childNode: tempLoop.value.toJson()
                         childNode.error {
@@ -158,7 +158,7 @@ Json: Function {
                         return.value[tempLoop.value.key] = childNode.value
                     }
                 }
-                if(self.type() == JsonKind.Array) {
+                if (self.type() == JsonKind.Array) {
                     tempLoop: loop (value) {
                         childNode: tempLoop.value.toJson()
                         childNode.error {
@@ -225,11 +225,11 @@ String: Function {
         self: String,
     },
     body:  {
-        if(jsNode.type() == JsonKind.Null) {return(String("null"))}
-        if(jsNode.type() == JsonKind.String) {return(String("\"").append(jsNode.value).append("\""))}
-        if(jsNode.type() == JsonKind.Number) {return(String(jsNode.value))}
-        if(jsNode.type() == JsonKind.Boolean) {return(String(jsNode.value))}
-        // if(jsNode.type() == JsonKind.Array) {return(String(jsNode.value))}
-        // if(jsNode.type() == JsonKind.Object) {return(String(jsNode.value))}
+        if (jsNode.type() == JsonKind.Null) {return(String("null"))}
+        if (jsNode.type() == JsonKind.String) {return(String("\"").append(jsNode.value).append("\""))}
+        if (jsNode.type() == JsonKind.Number) {return(String(jsNode.value))}
+        if (jsNode.type() == JsonKind.Boolean) {return(String(jsNode.value))}
+        // if (jsNode.type() == JsonKind.Array) {return(String(jsNode.value))}
+        // if (jsNode.type() == JsonKind.Object) {return(String(jsNode.value))}
     }
 }

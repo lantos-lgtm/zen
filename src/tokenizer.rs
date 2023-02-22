@@ -58,11 +58,11 @@ impl<'a> Tokenizer<'a> {
     }
     fn read_number(&mut self) -> Token {
         let number = self.read_while(|ch| ch.is_digit(10) || ch == '_');
-        ifself.starts_with(".") {
+        if self.starts_with(".") {
             self.pos += 1;
             let fraction = self.read_while(|ch| ch.is_digit(10) || ch == '_');
             // the next character must be a whitespace | curlyBraceClose | ParenClose | comma
-            ifself.starts_with(" ")
+            if self.starts_with(" ")
                 || self.starts_with("}")
                 || self.starts_with(")")
                 || self.starts_with(",")
@@ -95,11 +95,11 @@ impl<'a> Tokenizer<'a> {
     fn read_whitespace(&mut self) -> Token {
         // ifis newline
         let newline = self.read_while(|ch| ['\r', '\n', '\u{A0}'].contains(&ch));
-        ifnewline.len() > 0 {
+        if newline.len() > 0 {
             return Token::Newline(newline.len());
         }
         let white_space = self.read_while(|ch| ch.is_whitespace());
-        ifwhite_space.len() > 0 {
+        if white_space.len() > 0 {
             return Token::WhiteSpace(white_space.len());
         }
         Token::WhiteSpace(0)
@@ -117,7 +117,7 @@ impl<'a> Iterator for Tokenizer<'a> {
 
     fn next(&mut self) -> Option<Token> {
         let white_space = self.read_whitespace();
-        ifwhite_space != Token::WhiteSpace(0) {
+        if white_space != Token::WhiteSpace(0) {
             return Some(white_space);
         }
         match self.next_char()? {
@@ -155,14 +155,14 @@ impl<'a> Iterator for Tokenizer<'a> {
                 Some(self.read_char())
             }
             '/' => {
-                ifself.starts_with("//") {
+                if self.starts_with("//") {
                     Some(self.read_comment())
                 } else {
                     panic!("Unexpected character: /");
                 }
             }
             '.' => {
-                ifself.starts_with("..") {
+                if self.starts_with("..") {
                     self.pos += 2;
                     return Some(Token::Ellipse);
                 }
@@ -173,8 +173,8 @@ impl<'a> Iterator for Tokenizer<'a> {
             //     self.pos += 1;
             //     Some(Token::Eof)
             // }
-            ch ifch.is_digit(10) => Some(self.read_number()),
-            ch ifch.is_ascii_alphabetic() => Some(self.read_identifier()),
+            ch if ch.is_digit(10) => Some(self.read_number()),
+            ch if ch.is_ascii_alphabetic() => Some(self.read_identifier()),
             ch => panic!("Unexpected character: {}", ch),
         }
     }

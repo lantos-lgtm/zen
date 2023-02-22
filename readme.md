@@ -68,11 +68,11 @@ Logic, don't know ifthis should be included
 - bitwise operators ```& || ^ ~ << >>```
 
 <!-- 
-    if( ==(x, y, x) )
-    if( ||||(==(x, y), ==(x, z)) )
-    if( x < y < z )
-    if( and(eq(x, y), eq(x, z)) )
-    if( or(eq(x, y), eq(x, z)))
+    if ( ==(x, y, x) )
+    if ( ||||(==(x, y), ==(x, z)) )
+    if ( x < y < z )
+    if ( and(eq(x, y), eq(x, z)) )
+    if ( or(eq(x, y), eq(x, z)))
     
  -->
 
@@ -314,7 +314,7 @@ myResult: MyResult(self:"hello")                            // same as above but
 
 // standard ifstatement
 // this works because the first argument can be passed as () and then the "then" body can be assumed in the following brackets {}
-if(Boolean.True) {
+if (Boolean.True) {
     io.std.writeLine("true")
 }
 // if: Function {
@@ -326,7 +326,7 @@ if(Boolean.True) {
 //     body: Body()
 // }
 
-if(Boolean.True) {
+if (Boolean.True) {
     then: {io.std.writeLine("true")},
     else: {io.std.writeLine("false")},
 }
@@ -334,7 +334,7 @@ if(Boolean.True) {
 
 // match statements
 value: String("hello")
-if(value) {
+if (value) {
     is: Array(
         Match("hello") { io.std.writeLine("hello") },
         Match("world") { io.std.writeLine("world") }
@@ -361,7 +361,7 @@ if(value) {
 
 counter:    Int(0)
 myLoop:     Loop(true) {
-    if(counter > 10) {
+    if (counter > 10) {
         myLoop.break()
     }
     io.std.writeLine(String.format("counter: ${String(counter))}"))

@@ -17,7 +17,7 @@ main: Function()
         docker: Docker()
         containers: docker.listContainers()
         cLoop: loop(containers) {
-            if(cLoop.value.state == State.RUNNING) {
+            if (cLoop.value.state == State.RUNNING) {
                 docker.stopContainer(cLoop.value.id)
             }
         }

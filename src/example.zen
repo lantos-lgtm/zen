@@ -46,7 +46,7 @@ otherFunc1: Function {
         error: Error
     }
     body: {
-        if(self.age < 18) {
+        if (self.age < 18) {
             return(
                 Error(
                     err: InvalidInput, 

@@ -21,7 +21,7 @@ fribRec: Function{
     },
     return: { Int },
     body: {
-        if(x < 2) {
+        if (x < 2) {
             return(x)
         }
         return(fribRec(x - 1) + fribRec(x - 2))
@@ -42,10 +42,10 @@ fribMemo: Function{
             },
             return: {Int},
             body: {
-                if(x < 2) {
+                if (x < 2) {
                     return(x)
                 }
-                if(memo.hasKey(x)) {
+                if (memo.hasKey(x)) {
                     return(memo[x])
                 }
                 memo[x] = fribMemoInner(x - 1) + fribMemoInner(x - 2)
@@ -88,7 +88,7 @@ main: Function {
                 return(Void)
             }
         }
-        if(max < 0) {
+        if (max < 0) {
             io.stdout.print(String.parse("usage\n >fribonacci <number>"))
             return(Void)
         }

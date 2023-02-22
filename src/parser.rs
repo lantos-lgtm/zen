@@ -26,7 +26,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_string_literal(&mut self) -> Result<Expr, ParseError> {
-        iflet Token::StringLiteral(value) = self.next_token()? {
+        if let Token::StringLiteral(value) = self.next_token()? {
             Ok(Expr::Literal(Literal::StringLiteral(value)))
         } else {
             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
@@ -34,9 +34,9 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_number_literal(&mut self) -> Result<Expr, ParseError> {
-        iflet Token::IntLiteral(value) = self.next_token()? {
+        if let Token::IntLiteral(value) = self.next_token()? {
             Ok(Expr::Literal(Literal::IntLiteral(value)))
-        } else iflet Token::FloatLiteral(value) = self.tokens.next().unwrap() {
+        } else if let Token::FloatLiteral(value) = self.tokens.next().unwrap() {
             Ok(Expr::Literal(Literal::FloatLiteral(value)))
         } else {
             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
@@ -61,7 +61,7 @@ impl<'a> Parser<'a> {
     fn parse_ellipse(&mut self, expr: Expr) -> Result<(), ParseError> {
         // ...identifier
         // ...(expr)
-        iflet Token::Identifier(name) = self.next_token()? {
+        if let Token::Identifier(name) = self.next_token()? {
             Ok(Expr::SpreadOperator(SpreadOperator(Identifier(name))))
         } else {
             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
@@ -89,12 +89,7 @@ impl<'a> Parser<'a> {
         // {...}: ...       = L Token::Colon, R
 
         // get previous expression
-        let Key = 
-
-        let expr = Expr::Assign(Assign {
-            key: Key::Key(),
-            value: Box::new(self.parse_expr()?),
-        });
+        // let Key = 
         // todo!()
 
        
@@ -102,7 +97,7 @@ impl<'a> Parser<'a> {
 
     fn parse_primary(&mut self) -> Result<Expr, ParseError> {
         // what can we expect to see on at the root of the file or body
-        iflet Some(token) = self.tokens.peek() {
+        if let Some(token) = self.tokens.peek() {
             match token {
                 // Token::StringLiteral(_) => self.parse_string_literal(),
                 // Token::IntLiteral(_) | Token::FloatLiteral(_) => self.parse_number_literal(),
@@ -121,7 +116,7 @@ impl<'a> Parser<'a> {
     fn parse_expr(&mut self) -> Result<Expr, ParseError> {
         let mut expr = self.parse_primary()?;
         loop {
-            iflet Some(token) = self.tokens.peek() {
+            if let Some(token) = self.tokens.peek() {
                 match token {
                     Token::Newline(_) => {
                         self.tokens.next();
@@ -380,7 +375,7 @@ fn test_ast() {
 //     }
 
 //     fn parse_string_literal(&mut self) -> Result<Expr, ParseError> {
-//         iflet Token::StringLiteral(value) = self.next_token()? {
+//         if let Token::StringLiteral(value) = self.next_token()? {
 //             Ok(Expr::StringLit(value))
 //         } else {
 //             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
@@ -388,9 +383,9 @@ fn test_ast() {
 //     }
 
 //     fn parse_number_literal(&mut self) -> Result<Expr, ParseError> {
-//         iflet Token::IntLiteral(value) = self.next_token()? {
+//         if let Token::IntLiteral(value) = self.next_token()? {
 //             Ok(Expr::IntLit(value))
-//         } else iflet Token::FloatLiteral(value) = self.tokens.next().unwrap() {
+//         } else if let Token::FloatLiteral(value) = self.tokens.next().unwrap() {
 //             Ok(Expr::FloatLit(value))
 //         } else {
 //             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
@@ -398,7 +393,7 @@ fn test_ast() {
 //     }
 
 //     fn parse_ident(&mut self) -> Result<Expr, ParseError> {
-//         iflet Token::Identifier(name) = self.next_token()? {
+//         if let Token::Identifier(name) = self.next_token()? {
 //             Ok(Expr::Ident(name))
 //         } else {
 //             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
@@ -416,7 +411,7 @@ fn test_ast() {
 //             Some(&Token::ParenOpen) => {
 //                 self.tokens.next();
 //                 let expr = self.parse_primary()?;
-//                 iflet Some(&Token::ParenClose) = self.tokens.peek() {
+//                 if let Some(&Token::ParenClose) = self.tokens.peek() {
 //                     self.tokens.next();
 //                     Ok(expr)
 //                 } else {
@@ -430,7 +425,7 @@ fn test_ast() {
 //     fn parse_call(&mut self, func: Expr) -> Result<Expr, ParseError> {
 //         let mut args = Vec::new();
 //         loop {
-//             iflet Some(&Token::ParenClose) = self.tokens.peek() {
+//             if let Some(&Token::ParenClose) = self.tokens.peek() {
 //                 self.tokens.next();
 //                 break;
 //             }

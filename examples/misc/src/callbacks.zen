@@ -68,7 +68,7 @@ main: Function {
     callbackLoop: loop(callBacks) {
       body:  {
         res: callbackLoop.value(self),
-        if(res.error) {
+        if (res.error) {
           return (error: res.error),
         },
         self: res.value
