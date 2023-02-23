@@ -10,11 +10,11 @@ pub struct Identifier(pub String);
 pub enum Key {
     Key(Identifier),
     DestructureKeys(Vec<Identifier>), // destructuring without type
-    DestructureKeysAssign(Vec<Assign>), // destructuring with type
+    DestructureKeysAssign(Vec<Assignment>), // destructuring with type
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Assign {
+pub struct Assignment {
     pub key: Key,
     pub value: Box<Expr>,
 }
@@ -23,13 +23,18 @@ pub struct Assign {
 // pub struct Ellipse(pub Identifier);
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct SpreadOperator(pub Identifier);
+pub enum SpreadOperator {
+    // ...Identifier
+    Identifier(Identifier),
+    // ...{ ... }
+    typeDef(Box<Expr>)
+};
 
 // #[derive(Debug, PartialEq, Serialize)]
 // pub struct TypeExpr {
 //     // : Type || Type { TypeExpr }
 //     pub base_type: Box<TypeExpr>,
-//     pub fields: Vec<Assign>,
+//     pub fields: Vec<Assignment>,
 // }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -44,7 +49,7 @@ pub enum Body {
 
 #[derive(Debug, PartialEq, Serialize)]
 
-pub struct Fields(pub Vec<Assign>);
+pub struct Fields(pub Vec<Assignment>);
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Call {
@@ -86,7 +91,7 @@ pub enum Expr {
     SpreadOperator(SpreadOperator),
 
     // Binary
-    Assign(Assign),
+    Assignment(Assignment),
     Accessor(Accessor),
 
     // Grouping

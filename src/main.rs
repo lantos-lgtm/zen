@@ -6,7 +6,6 @@
 // // }
 
 // // Tokens:
-// // IntLiteral, FloatLiteral, CharLiteral, StringLiteral, Identifier, curlyBraceOpen, curlyBraceClose, ParenOpen, ParenClose, Colon, Comma, Dot, WhiteSpace, Comment, Eof
 // // "stringLiteral" -> stringLiteral
 // // 123 | 1_000 -> intLiteral
 // // 1.0 | 1.0e10 -> floatLiteral
@@ -16,7 +15,6 @@
 // // : -> Colon
 // // , -> comma
 // // . -> period
-// //  -> WhiteSpace
 // // // -> comment
 // // \r\n | \n | \r  -> newline
 // // \t, \v, \f, \u{A0} -> space
@@ -26,19 +24,16 @@
 
 // // Literals
 // // StringLiteral
-// //  -> ParenOpen
+// //  -> ParenClose
 // //  -> curlyBraceOpen
-// //  -> WhiteSpace
 
 // // CharLiteral
-// //  -> ParenOpen
+// //  -> ParenClose
 // //  -> curlyBraceOpen
-// //  -> WhiteSpace
 
 // // IntLiteral & FloatLiteral
-// //  -> CurlyBraceClose
 // //  -> ParenClose
-// //  -> WhiteSpace
+// //  -> CurlyBraceClose
 
 // // Identifiers
 // // Identifier
@@ -47,7 +42,6 @@
 // //  -> CurlyBraceClose
 // //  -> ParenOpen
 // //  -> ParenClose
-// //  -> WhiteSpace
 
 // // Symbols
 // // CurlyBraceOpen
@@ -60,7 +54,6 @@
 // // CurlyBraceClose
 
 // //  -> CurlyBraceClose
-// //  -> WhiteSpace
 // //  -> space
 // //  -> newline
 // //  -> comment
@@ -77,32 +70,26 @@
 // // ParenClose
 // //  -> CurlyBraceClose
 // //  -> ParenClose
-// //  -> WhiteSpace
 // //  -> comma
 
 // // Colon
 // // -> Identifier
 // // -> CurlyBraceOpen
-// // -> WhiteSpace
 
 // // Comma
 // //  -> *
 // //  -> eof
-// // WhiteSpace
 // // comment
 // // eof
 
 // // Dot
 // //  -> Identifier
-// //  -> WhiteSpace
+// //  -> Dot
 
-// // WhiteSpace
-// //  -> *
-
-// mod tokenizer;
-// mod ast;
-// mod parser;
-// use parser::{Parser};
+mod tokenizer;
+mod ast;
+mod parser;
+use parser::{Parser};
 
 
 // // repl

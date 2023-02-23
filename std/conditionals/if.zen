@@ -1,7 +1,7 @@
 // 
 
 
-// if(Type) {
+// if (Type) {
 //     is: Array (
 //         {
 //             match,
@@ -28,16 +28,16 @@
 //     },
 // }
 
-// if(Boolean) {
+// if (Boolean) {
 //     body
 // }
 
-// if(Boolean) {
+// if (Boolean) {
 //     body,
 //     else:
 // }
 
-// prefix: if(signed) {
+// prefix: if (signed) {
 //     body:  {
 //         signed = String("U")
 //     }
@@ -46,7 +46,7 @@
 //     }
 // }
 
-If: Function {
+if: Function {
     args: {
         value: Type
         is: Array{Match{value.type(), body: Body}},
@@ -55,7 +55,7 @@ If: Function {
     body: {
         matchLoop: loop (match) {
             // this proably will be magic 
-            if(value == match.value) {
+            if (value == match.value) {
                 matchLoop.value.body()
             }
             matchLoop.next()
@@ -64,7 +64,7 @@ If: Function {
     }
 }
 
-If: Function {
+if: Function {
     args: {
         value: Type
         is: Array{Match{value.type(), body: Body}},
@@ -74,7 +74,7 @@ If: Function {
     body: {
         matchLoop: loop (match) {
             // this proably will be magic 
-            if(value == match.value) {
+            if (value == match.value) {
                 matchLoop.value.body()
             }
             matchLoop.next()
@@ -84,7 +84,7 @@ If: Function {
     }
 }
 
-If: Function {
+if: Function {
     args: {
         value: Function {
             return: Boolean
@@ -95,14 +95,14 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if(value()) {
+        if (value()) {
             result:  args.body()
             return(result)
         }
     }
 }
 
-If: Function {
+if: Function {
     args: {
         value: Function {
             return: Boolean
@@ -112,7 +112,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if(value()) {
+        if (value()) {
             result:  args.body()
             return(result)
         }
@@ -121,7 +121,7 @@ If: Function {
     }
 }
 
-If: Function {
+if: Function {
     args: {
         value: Function {
             return: Boolean
@@ -132,7 +132,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if(value()) {
+        if (value()) {
             result:  args.body()
             return(result)
         }
@@ -142,21 +142,21 @@ If: Function {
 }
 
 
-If: Function {
+if: Function {
     args: {
         value: Bool
     }
     return: void | Type
     body: {
             // this proably will be magic 
-        if(value()) {
+        if (value()) {
             result: match.body()
             return(result)
         }
     }
 }
 
-If: Function {
+if: Function {
     args: {
         value: Bool,
         body: Body,
@@ -165,7 +165,7 @@ If: Function {
     return: void | Type
     body: {
             // this proably will be magic 
-        if(value()) {
+        if (value()) {
             result: args.body()
             return(result)
         }
