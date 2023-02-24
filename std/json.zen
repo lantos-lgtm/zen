@@ -1,16 +1,32 @@
-imports: @Imports {
-    {
-        type
-    }: std.meta.type
-},
+std: @std(),
+{
+    type
+}: std.meta.type
+{
+    Function,
+    Type,
+    Error,
+    Enum,
+    Result,
+    ResultWithError,
+    Ref,
+    Array,
+    Map,
+    String,
+    Int,
+    Float,
+    Boolean,
+    Char,
+    Digits,
 
+}: std.types,
 // Json ( Type ) -> Json 
 // Json ( String ) -> Json
 // Json ( Json, Type ) -> Type
 // Json ( String, Type ) -> Type
 // String ( Json ) -> String
 
-JsonErrorKind: Type {
+JsonErrorKind: Enum {
     InvalidCharacter,
     UnexpectedEndOfInput,
     // ExpectedComma,
@@ -63,7 +79,7 @@ parse: Function {
             if (self[i] == Char(" ")) {
                 i += 1
             }
-            if (self[i] == Char("\"")) {
+            if (self[i] == Char("\")) {
                 i += 1
                 escaped: Boolean.False
                 stringLoop: loop (i < self.len) {

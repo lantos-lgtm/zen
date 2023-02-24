@@ -1,19 +1,18 @@
-imports: @Imports {
-    std,
-    io: std.io,
-    {
-        Function,
-        Loop,
-    }: std.functions,
-    {
-        String,
-        Int,
-        Bool,
-        Array,
-        Type,
-    }: std.types,
-    Benchmark: build.package.Benchmark
-},
+std: @std(),
+io: std.io,
+{
+    Function,
+    Loop,
+}: std.functions,
+{
+    String,
+    Int,
+    Bool,
+    Array,
+    Type,
+}: std.types,
+Benchmark: std.testing.Benchmark,
+
 Test: Function {
     args:{
         self: String

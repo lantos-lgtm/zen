@@ -1,14 +1,13 @@
-imports: @import {
-    std,
-    build: std.build,
-    {
-        Float,
-        Int,
-        String,
-        Bool,
-        Map
-    }: std.values
-}
+std: @std(),
+build: std.build,
+{
+    Float,
+    Int,
+    String,
+    Bool,
+    Map
+}: std.values
+
 
 ContainerStats: Type {
     read*           time.DateTime,

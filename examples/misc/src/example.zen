@@ -1,24 +1,15 @@
-imports: @Import {
-    std: std
-    io: std.io
-    {
-        Function
-        Loop
-    }: std.functions
-    {
-        String
-        Int
-        Bool
-        Array
-        Type
-    }: std.types
-    customImport: LocalImport(
-        path: Path("./custom.zim"),
-    ),
-    customPackage: Import(
-        package: build.Packages.customPackage, // imported and defined in the build file
-    ),
-},
+std: @std(),
+build: std.build,
+{
+    Float,
+    Int,
+    String,
+    Bool,
+    Map
+}: std.values
+customImport: build.localPackages.customImport
+customPackage: build.packages.customPackage
+
 // creating a struct
 MyType: Type {
     myField: String("Hello World"),     // creating a field with default value

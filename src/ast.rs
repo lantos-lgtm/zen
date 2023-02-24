@@ -28,7 +28,7 @@ pub enum SpreadOperator {
     Identifier(Identifier),
     // ...{ ... }
     typeDef(Box<Expr>)
-};
+}
 
 // #[derive(Debug, PartialEq, Serialize)]
 // pub struct TypeExpr {

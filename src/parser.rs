@@ -164,44 +164,46 @@ impl<'a> Parser<'a> {
 
     fn parse_expr(&mut self) -> Result<Expr, ParseError> {
         // the main parse route
+        // Should this be looping
         let mut lhs = self.parse_primary()?;
         // this should be our lhs
-        let mut expr: Expr;
-        loop {
-            if let Some(token) = self.tokens.peek() {
-                match token {
-                    Token::Newline(_) | Token::Comma=> {
-                        self.tokens.next();
-                    }
-                    Token::Colon => {
-                        expr = self.parse_assignment(lhs)?;
-                    },
-                    Token::Dot => {
-                        expr = self.parse_dot(lhs)?;
-                    },
-                    Token::Ellipse => {
-                        expr = self.parse_ellipse()?;
-                    },
-                    Token::CurlyBraceOpen => {
-                        // probably a typedef
-                        expr = self.parse_type_def(lhs)?;
-                    },
-                    Token::ParenOpen => {
-                        // probably a function call
-                        expr = self.parse_call(lhs)?;
-                    },
-                    // The following tokens are handled in the respected open token
-                    // Token::CurlyBraceClose 
-                    // Token::ParenClose
-                    _ => {
-                        break;
-                    }
+        let mut expr : Option<Expr> = None;
+        if let Some(token) = self.tokens.peek() {
+            match token {
+                Token::Newline(_) | Token::Comma=> {
+                    self.tokens.next();
                 }
-            } else {
-                break;
+                Token::Colon => {
+                    expr = Some(self.parse_assignment(lhs)?);
+                },
+                Token::Dot => {
+                    expr = Some(self.parse_dot(lhs)?);
+                },
+                Token::Ellipse => {
+                    expr = Some(self.parse_ellipse()?);
+                },
+                Token::CurlyBraceOpen => {
+                    // probably a typedef
+                    expr = Some(self.parse_type_def(lhs)?);
+                },
+                Token::ParenOpen => {
+                    // probably a function call
+                    expr = Some(self.parse_call(lhs)?);
+                },
+                // The following tokens are handled in the respected open token
+                // Token::CurlyBraceClose 
+                // Token::ParenClose
+                _ => {
+                    expr = None;
+                }
             }
+        } 
+
+        if let Some(expr) = expr {
+            Ok(expr)
+        } else {
+            Err(ParseError::UnexpectedEOF)
         }
-        Ok(expr)
     }
 
     fn parse_primary(&mut self) -> Result<Expr, ParseError> {
