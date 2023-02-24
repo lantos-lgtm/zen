@@ -9,9 +9,9 @@ WrapType: Type {
 }
 
 Person: Type {
-    uniqueId: Wrap{String},
-    ...Name                     // spread operator
-    age: Int.i32(0)             // default value
+    uniqueId: Wrap{String},     // Wrapping String type as WrapType
+    ...Name                     // Union type
+    age: Int.I32(0)             // default value
 }
 
 getFullname: Function {
@@ -32,7 +32,7 @@ myPerson: Person {
     uniqueId: String("1234"),
     firstName: String("John"),
     lastName,
-    age: Int.i32(20),
+    age: Int.I32(20),
 }
 fullName: myPerson.getFullname()
 
@@ -42,7 +42,7 @@ otherFunc1: Function {
         callBack: Function,
     }
     return: {
-        self: {x: Int.i32, y: Int.i32}, // creating an anonymous type
+        self: {x: Int.I32, y: Int.I32}, // creating an anonymous type
         error: Error
     }
     body: {
@@ -58,8 +58,8 @@ otherFunc1: Function {
             io.print(myLoop.value)
         }
         result: (           // returning an object
-            x: Int.i32(1),
-            y: Int.i32(2)
+            x: Int.I32(1),
+            y: Int.I32(2)
         )
         callBack()      // calling callback
         return(result)  // returning value
@@ -81,8 +81,8 @@ otherFunc2: Function {
 
 
 {
-    x: Int.i32,
-    y: Int.i32,
+    x: Int.I32,
+    y: Int.I32,
 }: myPerson.otherFunc1() {
     io.print(result.x)
     io.print(result.y)

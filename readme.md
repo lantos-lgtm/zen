@@ -36,9 +36,9 @@ Rules
 
 
 Features
-- spread operator ```Person: Type {...Address, name: String, age: Int.i32}```
+- spread operator ```Person: Type {...Address, name: String, age: Int.I32}```
 - object destructuring ```{myValue, myOtherValue} = myObject```
-- shorthand property asignments ```name: String("John), person: Person {name, age: Int.i32(10)}``` 
+- shorthand property asignments ```name: String("John), person: Person {name, age: Int.I32(10)}``` 
 - no tuples without keys, just return an anonymous type, this is to keep code clean.
 - All functions return a ```Result``` or ```ResultWithError```
     - no red/blue code (async/await)

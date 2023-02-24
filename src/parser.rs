@@ -273,15 +273,15 @@ fn test_ast() {
     assert!(name_ast == name_ast_expected);
 
     // {
-    //     x: Int.i32,
-    //     y: Int.i32,
+    //     x: Int.I32,
+    //     y: Int.I32,
     // }: myPerson.otherFunc1() {
     //     io.print(result.x)
     //     io.print(result.y)
     // }
     // let other_func1_str = "{
-    //     x: Int.i32,
-    //     y: Int.i32,
+    //     x: Int.I32,
+    //     y: Int.I32,
     // }: myPerson.otherFunc1() {
     //     io.print(result.x)
     //     io.print(result.y)
@@ -300,14 +300,14 @@ fn test_ast() {
     //             key: Key::Key(Identifier("x".to_string())), 
     //             value: Box::new(Expr::Accessor(Accessor { 
     //                 name:   Identifier("Int".to_string()),
-    //                 field:  Box::new(Expr::Identifier(Identifier("i32".to_string())))
+    //                 field:  Box::new(Expr::Identifier(Identifier("I32".to_string())))
     //             }))
     //         },
     //         Assign { 
     //             key: Key::Key(Identifier("x".to_string())), 
     //             value: Box::new(Expr::Accessor(Accessor { 
     //                 name:   Identifier("Int".to_string()),
-    //                 field:  Box::new(Expr::Identifier(Identifier("i32".to_string())))
+    //                 field:  Box::new(Expr::Identifier(Identifier("I32".to_string())))
     //             }))
     //         }
     //     ]),
