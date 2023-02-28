@@ -84,8 +84,6 @@ Variable declaration
 ```groovy
 myString:   String            // variable declaration with type inference
 myString:   String("hello \"zen\"\n")   // variable declaration with type inference and initialisation
-myString:   String(`hello "zen"
-`)   // variable declaration with type inference and initialisation
 
 my_int:     Const{Int}        // error int must be initialised with a value
 my_int:     Const{Int(1)}     // const variable declaration with type union and initialisation
@@ -255,7 +253,6 @@ greet: Function {
 Result: Type {
     self:   Type,
     error:  ErrorType,
-    defer: Body,
 }
 
 ResultWithError: Result {
@@ -477,9 +474,10 @@ main: Function {
     return: String,
     body: {
         docker: Docker()
-        return.defer: {
+        // body.defer: {
+        body.defer.add({
             docker.close()
-        }
+        })
         containers:     docker.listContainers()
         containersLoop: Loop(containers) {
             io.std.writeLine(containersLoop.value.name)
