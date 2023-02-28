@@ -1,7 +1,22 @@
+std: @std(),
+{
+    Array,
+    Error,
+    String,
+    True: Boolean.True,
+    False: Boolean.False,
+
+}: std.types,
+{
+    Test,
+    Assert,
+}: std.testing,
+
+
 
 Dataframe: Type {
-    columnNames: Array {type: String, dynamic: true},
-    columns: Array {type: Array, dynamic: true},
+    columnNames: Array {type: String, dynamic: True},
+    columns: Array {type: Array, dynamic: True},
 }
 
 column: Function {
@@ -19,3 +34,160 @@ column: Function {
     }
 }
 // need to add memory logic 
+
+// Na || NaN
+// broadcast
+// Row
+
+
+Test (name:"Dateframe.init", for: Dataframe.init, example: True) {
+
+    // Using Arrays
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+    columnNames: Array{String}("a", "b", "c")
+    df: Dataframe.init(columnNames, data)
+
+    _df: Dataframe.init()
+    _df.columnNames = columnNames
+    _df.set(name: "a", value: Array{Int.I32}(1,2,3))
+    _df.set(name: "b", value: Array{Int.I32}(4,5,6))
+    _df.set(name: "c", value: Array{Int.I32}(7,8,9))
+
+    Assert.equals(lhs: df, rhs: _df)
+
+    // Using DF with specified column names
+    // df: Dataframe( 
+    //     Dataframe.Column("a", 1, 4, 7),
+    //     Dataframe.Column("b", 2, 5, 8),
+    //     Dataframe.Column("c", 3, 6, 9),
+    // )
+    _df_Row: Dataframe(
+        Dataframe.Row("a", "b", "c"),
+        Dataframe.Row(1, 2, 3),
+        Dataframe.Row(4, 5, 6),
+        Dataframe.Row(7, 8, 9),
+    )
+
+    Assert.equals(lhs: df, rhs: = _df_Row)
+}
+
+
+Test (name:"Dataframe.column_access", for: Dataframe.column, example: True) {
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+    columnNames: Array{String}("a", "b", "c")
+
+    df: Dataframe.init(columnNames, data)
+
+    Assert.equals(lhs: df.column(name: "a"), rhs: Array{Int.I32}(1,2,3))
+    Assert.equals(lhs: df.column(name: "b"), rhs: Array{Int.I32}(4,5,6))
+    Assert.equals(lhs: df.column(name: "c"), rhs: Array{Int.I32}(7,8,9))
+}
+
+Test(name:"Dataframe.row_access", for: Dataframe.row, exmaple: True) {
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+    columnNames: Array{String}("a", "b", "c")
+
+    df: Dataframe.init(columnNames, data)
+
+    Assert.equals(lhs: df.row(index: 0), rhs: Array{Int.I32}(1,4,7))
+    Assert.equals(lhs: df.row(index: 1), rhs: Array{Int.I32}(2,5,8))
+    Assert.equals(lhs: df.row(index: 2), rhs: Array{Int.I32}(3,6,9))
+}
+
+
+Test(name: "Dataframe.set", for: Dataframe.set, example: True) {
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+    columnNames: Array{String}("a", "b", "c")
+
+    df: Dataframe.init(columnNames, data)
+
+    // previous value
+    df.set(column: "a", value: Array(10,20,30))
+    Assert.equals(lhs: df.column(column: "a"), rhs: Array(10,20,30))
+    // new value
+    df.set(column: "d", value: Array(10,20,30))
+    Assert.equals(lhs: df.column(column: "d"), rhs: Array(10,20,30))
+}
+
+Test(name:"Dataframe.where", for: Dataframe.where, example: True){
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+    columnNames: Array{String}("a", "b", "c")
+
+    df: Dataframe.init(columnNames, data)
+
+    Assert.equals(lhs: df.where(row: "a", value: 1), rhs: Array(1,2,3))
+    Assert.equals(lhs: df.where(row: "b", value: 2), rhs: Array(4,5,6))
+    Assert.equals(lhs: df.where(row: "c", value: 3), rhs: Array(7,8,9))
+
+    // updating
+    df.where(row: "a", value: 1) = Array(10,20,30)
+    Assert.equals(lhs: df.where(row: "a", value: 1), rhs: Array(10,20,30))
+}
+
+
+Test(name: "Dataframe.transpose", for: Dataframe.transpose, example: True) {
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+    columnNames: Array{String}("a", "b", "c")
+    df: Dataframe.init(columnNames, data)
+
+}
+
+Test(name: "Dataframe.operations", for: Dataframe, example: True) {
+    // this is when the sizes are the same
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+
+    columnNames: Array{String}("a", "b", "c")
+    df: Dataframe.init(columnNames, data)
+
+}
+
+Test(name: "Dataframe.broadcasting", for: Dataframe, example: True) {
+    // broadcasting occours when the dataframe sizes are not the same
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+
+    columnNames: Array{String}("a", "b", "c")
+    df: Dataframe.init(columnNames, data)
+    
+    // broadcasting to a column
+    // df = df + 1
+    // df.column = df.column + 1
+    // df.row = df.row + 1
+    // df = df + Array(1,2,3)
+    // df = df + Array(1,2,3,4)
+    // df = df + Array(1,2)
+    // df = df.dot(df)
+
+}
+
