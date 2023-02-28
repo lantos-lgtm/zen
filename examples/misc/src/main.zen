@@ -15,40 +15,57 @@ imports:{
 Person: Type {
     name: String
     age: Int
-    greetPerson
+    init
 }
+
+// static function
+init: Function {
+    args: {
+        self: Person
+        name: String
+        age: Int
+    }
+    returns: Person
+    body: {
+        return.value.name = args.name
+        return.value.age = args.age
+        return()
+    }
+}
+
 greetPerson: Function {
     args: {
-        person: Person
+        self: Person
         greeting: String
     }
     returns: String
     body: {
-        return { string.format{ greeting + String(" ") + person.name + String("!") } } 
+        return { string.format{ args.greeting + String(" ") + args.self.person.name + String("!") } } 
     }
 }
+
+greetPersonExample: Example {
+    person: Person (
+        name: String("John")
+        age: Int(20)
+    )
+    greeting: String("Hello")
+    message: person.greetPerson(greeting: greeting)
+    // same as greetPerson(person: person, greeting: greeting)
+    
+}
+
+
 main: Function {
     body: {
         person: Person{
             name: String("John")
             age: Int(20)
         }
-        io.print {
-            greetPerson {
+        message: greetPerson(
                 person: person
                 greeting: String("Hello")
-            }
-        }
-    }
-}
-
-loop Loop (true) {
-    body: {
-        io.print {
-            string.format {
-                String("Hello World")
-            }
-        }
-        loop.break()
+        )
+        io.stdout.writeLn(message)
     }
 }
