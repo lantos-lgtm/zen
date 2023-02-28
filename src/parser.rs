@@ -1,7 +1,7 @@
 use clap::Id;
 use serde::{Serialize};
 use crate::ast::{Expr, Literal, Identifier, Assignment, Key, Body, SpreadOperator, TypeDef, Fields, Accessor};
-use crate::tokenizer::{Token, Tokenizer, self};
+use crate::tokenizer::{Token, Tokenizer};
 
 
 #[derive(Debug, PartialEq, Serialize)]
