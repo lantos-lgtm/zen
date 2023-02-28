@@ -1,0 +1,97 @@
+Token: Enum {
+    // Literals
+    STRING_LITERAL: String,
+    INT_LITERAL: Int,
+    FLOAT_LITERAL: Float,
+    BOOL_LITERAL: Boolean,
+
+    // Identifiers
+    IDENTIFIER: String,
+
+    // Keywords
+
+    // Symbols
+    L_PAREN,
+    R_PAREN,
+    L_BRACE,
+    R_BRACE,
+    COMMA,
+    DOT,
+    ELIPSES,
+    COLON,
+
+    // Operators
+    // PLUS,
+    // MINUS,
+    // STAR,
+    // SLASH,
+    // PERCENT,
+}
+
+Lexer: Type {
+    tokens: Array{self:Token, dynamic: Boolean.True},
+    source: String,
+    pos: Int,
+    line: Int,
+    col: Int,
+}
+
+isDigit: Function {
+    args: {
+        char: String,
+    },
+    return: Boolean,
+    body: {
+        return(char >= '0' && char <= '9')
+    }
+}
+
+lex: Function {
+    args: {
+        self. Lexer,
+        source: String,
+    },
+    body: {
+        self.source = source
+        self.pos = 0
+        self.line = 1
+        self.col = 1
+        self.tokens = Array{Token}()
+
+        lexLoop: loop (self.pos < self.source.length()) {
+            if (self.source[self.pos]) {
+                is: Array(
+                    Match('\t', '   ') {
+                        self.pos.inc(Int(1))
+                        self.col.inc(Int(1))
+                    },
+                    Match('\n', '\r') {
+                        self.line.inc(Int(1))
+                        self.col: Int(1)
+                    },
+                    isDigit, {
+                        isFloat: Boolean.False
+
+                        lexDigit: loop (self.source[self.pos]isDigit()) {
+                            self.pos.inc(Int(1))
+                        }
+                        // check for float
+                        if (self.source[self.pos] == '.') {
+                            isFloat = Boolean.True
+                            self.pos.inc(Int(1))
+                            lexFloat: loop (self.source[self.pos]isDigit()) {
+                                self.pos.inc(Int(1))
+                            }
+                            // check for 
+                        }
+                        
+                    },
+                    
+                ),
+                else: {
+                    
+                }
+            }
+        }
+    }
+}
