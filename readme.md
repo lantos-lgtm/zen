@@ -10,8 +10,9 @@ Todo:
 - [ ] astGen
 - [ ] ast -> llvm
 - [ ] ast -> lsp
-- [ ] Highlighting
+- [x] Highlighting
 - [ ] LSP
+- [ ] TreeSitter
 
 
 Mantra
