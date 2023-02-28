@@ -39,8 +39,11 @@ column: Function {
 // broadcast
 // Row
 
+// Dimensionality, Dimentional Analysis(buckingham pi theorem) in a sci library?
 
-Test (name:"Dateframe.init", for: Dataframe.init, example: True) {
+
+Test (name:"Dateframe.from", for: Dataframe.from, example: True) {
+
 
     // Using Arrays
     data: Array{Array{Int.I32}} (
@@ -49,9 +52,9 @@ Test (name:"Dateframe.init", for: Dataframe.init, example: True) {
         Array(7,8,9),
     )
     columnNames: Array{String}("a", "b", "c")
-    df: Dataframe.init(columnNames, data)
+    df: Dataframe.from(columnNames, data)
 
-    _df: Dataframe.init()
+    _df: Dataframe()
     _df.columnNames = columnNames
     _df.set(name: "a", value: Array{Int.I32}(1,2,3))
     _df.set(name: "b", value: Array{Int.I32}(4,5,6))
@@ -73,6 +76,54 @@ Test (name:"Dateframe.init", for: Dataframe.init, example: True) {
     )
 
     Assert.equals(lhs: df, rhs: = _df_Row)
+
+    // Using Maps
+    data: Map{String, Array{Int.I32}}(
+        MapValue("a", Array(1,2,3)),
+        MapValue("b", Array(4,5,6)),
+        MapValue("c", Array(7,8,9)),
+    )
+    df: Dataframe.from(data)
+
+
+    // Using Types
+    Person: Type {
+        name: String,
+        age: Int.I32,
+        
+
+    }
+    data: Array{Person}(
+        Person("John", 20),
+        Person("Jane", 21),
+        Person("Jack", 22),
+    )
+    df: Dataframe.from(data)
+
+
+    // Using complex types
+    Employee: Type {
+        person: Person,
+        salary: Float.F64,
+    }
+    data: Array{Employee}(
+        Employee(Person("John", 20), Float.f64(1000.0)),
+        Employee(Person("Jane", 21), Float.f64(2000.0)),
+        Employee(Person("Jack", 22), Float.f64(3000.0)),
+    )
+
+    df: Dataframe.from(data)
+    // how to deal with ref? 
+    // | Person                       | Salary    |
+    // | {"name": "John", "age": "20"}|       1000|
+    // | {"name": "Jane", "age": "21"}|       2000|
+    // | {"name": "Jack", "age": "22"}|       3000|
+
+    df: df.flatten()
+    // | person.name | person.age | salary |
+    // | John        | 20         | 1000   |
+    // | Jane        | 21         | 2000   |
+    // | Jack        | 22         | 3000   |
 }
 
 
@@ -84,7 +135,7 @@ Test (name:"Dataframe.column_access", for: Dataframe.column, example: True) {
     )
     columnNames: Array{String}("a", "b", "c")
 
-    df: Dataframe.init(columnNames, data)
+    df: Dataframe.from(columnNames, data)
 
     Assert.equals(lhs: df.column(name: "a"), rhs: Array{Int.I32}(1,2,3))
     Assert.equals(lhs: df.column(name: "b"), rhs: Array{Int.I32}(4,5,6))
@@ -99,7 +150,7 @@ Test(name:"Dataframe.row_access", for: Dataframe.row, exmaple: True) {
     )
     columnNames: Array{String}("a", "b", "c")
 
-    df: Dataframe.init(columnNames, data)
+    df: Dataframe.from(columnNames, data)
 
     Assert.equals(lhs: df.row(index: 0), rhs: Array{Int.I32}(1,4,7))
     Assert.equals(lhs: df.row(index: 1), rhs: Array{Int.I32}(2,5,8))
@@ -115,7 +166,7 @@ Test(name: "Dataframe.set", for: Dataframe.set, example: True) {
     )
     columnNames: Array{String}("a", "b", "c")
 
-    df: Dataframe.init(columnNames, data)
+    df: Dataframe.from(columnNames, data)
 
     // previous value
     df.set(column: "a", value: Array(10,20,30))
@@ -133,7 +184,7 @@ Test(name:"Dataframe.where", for: Dataframe.where, example: True){
     )
     columnNames: Array{String}("a", "b", "c")
 
-    df: Dataframe.init(columnNames, data)
+    df: Dataframe.from(columnNames, data)
 
     Assert.equals(lhs: df.where(row: "a", value: 1), rhs: Array(1,2,3))
     Assert.equals(lhs: df.where(row: "b", value: 2), rhs: Array(4,5,6))
@@ -152,7 +203,7 @@ Test(name: "Dataframe.transpose", for: Dataframe.transpose, example: True) {
         Array(7,8,9),
     )
     columnNames: Array{String}("a", "b", "c")
-    df: Dataframe.init(columnNames, data)
+    df: Dataframe.from(columnNames, data)
 
 }
 
@@ -165,7 +216,7 @@ Test(name: "Dataframe.operations", for: Dataframe, example: True) {
     )
 
     columnNames: Array{String}("a", "b", "c")
-    df: Dataframe.init(columnNames, data)
+    df: Dataframe.from(columnNames, data)
 
 }
 
@@ -178,7 +229,7 @@ Test(name: "Dataframe.broadcasting", for: Dataframe, example: True) {
     )
 
     columnNames: Array{String}("a", "b", "c")
-    df: Dataframe.init(columnNames, data)
+    df: Dataframe.from(columnNames, data)
     
     // broadcasting to a column
     // df = df + 1
@@ -191,3 +242,53 @@ Test(name: "Dataframe.broadcasting", for: Dataframe, example: True) {
 
 }
 
+
+Dataframe.JoinType: Enum {
+    Inner,
+    Outer,
+    Left,
+    Right,
+}
+
+Test(name: "Dataframe.join", for: Dataframe.concat, example: True) {
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+
+    columnNames: Array{String}("a", "b", "c")
+    df: Dataframe.from(columnNames, data)
+
+    // 
+    Dataframe.join(
+        how: Dataframe.JoinType.Inner,
+        lhs: Dataframe,
+        rhs: Dataframe,
+    )
+    df.join(
+        how: Dataframe.JoinType.Inner,
+        rhs: Dataframe,
+    )
+}
+
+
+Test(name: "Dataframe.show", for: Dataframe.display, example: True) {
+    data: Array{Array{Int.I32}} (
+        Array(1,2,3),
+        Array(4,5,6),
+        Array(7,8,9),
+    )
+
+    columnNames: Array{String}("a", "b", "c")
+    df: Dataframe.from(columnNames, data)
+
+    io.stdout.write(df.top(5).show())
+    // MD preview
+    // | a | b | c |
+    // -------------
+    // | 1 | 4 | 7 |
+    // | 2 | 5 | 8 |
+    // | 3 | 6 | 9 |
+
+}
