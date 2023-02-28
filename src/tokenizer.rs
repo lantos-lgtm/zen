@@ -4,19 +4,33 @@ use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Token {
+    // Literals
     StringLiteral(String),
     IntLiteral(i64),
     FloatLiteral(f64),
     CharLiteral(char),
     Identifier(String),
+
+    // Symbols
+    // Group
     CurlyBraceOpen,
     CurlyBraceClose,
     ParenOpen,
     ParenClose,
+    // Binary
     Colon,
-    Comma,
-    Ellipse,
     Dot,
+
+    // Unary
+    Ellipse,
+
+    // TODO:
+    // Arithmetic
+    // Logical
+    // Bitwise
+
+    // markup
+    Comma,
     Comment(String),
     WhiteSpace(usize),
     Newline(usize),
