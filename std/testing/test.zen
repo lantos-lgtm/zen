@@ -15,8 +15,10 @@ Benchmark: std.testing.Benchmark,
 
 Test: Function {
     args:{
-        self: String
-        body: 
+        self: String,
+        exmaple: Boolean.False,
+        for: Type,
+        body: Body,
     },
     return: ResultWithError {
         self: String
@@ -25,9 +27,7 @@ Test: Function {
         io.println { String.format {"Test: ${args.self}"} }
         benchMarkString: String.format {"Benchmark: ${args.self} Test"}
         Benchmark (benchMarkString) {
-            body:  {
-                args.body.evaluate()
-            }
+            args.body.evaluate()
         }
     },
 },

@@ -8,20 +8,42 @@
 // BLUE: String("BLUE")
 // RGB: RED | GREEN | BLUE
 
-Enum: {
+Enum: Enum {
     
 }
 
+parse: Function {
+    args: {
+        self: Enum,
+        string: String,
+    }
+    returns: {
+        self: Enum,
+        error: Error,
+    }
+    body: {
+        enumLoop: loop (self.keys()) {
+            if (enumLoop.value == string) {
+                return(enumLoop.value)
+            }
+            if (enumLoop.value.value == string) {
+                return(enumLoop.value)
+            }
+        }
+        return(Error(error: Error.InvalidInput, message: "Enum value not found"))
+    }
+}
 
-
-Test "Enum" {
-
+Test (
+    name: "Enum",
+    exmaple: Boolean.true,
+    for: Enum
+) {
     Currency: Enum {
         GBP: String("GBP"),
         USD: String("USD"),
         EUR: String("EUR"),
     }
-
     Rgb: Enum {
         RED,
         GREEN,
@@ -42,19 +64,17 @@ Test "Enum" {
         Literals: Literal,
     }
 
-
-
     // usage example
     currency: Currency.GBP
     color: Rgb.RED
     token: Token.Comment("This is a comment")
 
-    io.print(currency)                        // > "GBP"
-    io.print(String.parse(currency))          // > "GBP"
-    io.print(color)                           // > 0
-    io.print(String(color))                   // Fails as Rgb.RED is not a string
-    io.print(String.parse(color))             // > "RED"
-    io.print(token)                           // > "comment"
-    io.print(String(token))                   // > "This is a comment"
-    io.print(String(token.Type))              // String
+    io.stdout.writeLn(currency)                        // > "GBP"
+    io.stdout.writeLn(String.parse(currency))          // > "GBP"
+    io.stdout.writeLn(color)                           // > 0
+    io.stdout.writeLn(String(color))                   // Fails as Rgb.RED is not a string
+    io.stdout.writeLn(String.parse(color))             // > "RED"
+    io.stdout.writeLn(token)                           // > "comment"
+    io.stdout.writeLn(String(token))                   // > "This is a comment"
+    io.stdout.writeLn(String(token.Type))              // String
 }
