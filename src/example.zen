@@ -1,102 +1,150 @@
-// example
-Name: Type {
-    fistName: String,
-    lastName: String,
+std:    @std()      // importing the standard library @ denotes a builtin function
+io:     std.io      // importing the io module from the standard library
+{                   // begining of destructuring assignment
+    String,         // importing the String type from the standard library
+    Type,           // importing the Type type from the standard library
+    Int,            // importing the Int type from the standard library
+    Error,          // importing the Error type from the standard library
+}: std.types        // importing the types module from the standard library
+{                   // begining of destructuring assignment
+    type            // importing the type function from the standard library
+}: std.meta         // importing the meta module from the standard library
+{                   // begining of destructuring assignment
+    InvalidInput    // importing the InvalidInput type from the standard library
+}: std.errors       // importing the errors module from the standard library
+{                   // begining of destructuring assignment
+    Function,       // importing the Function type from the standard library
+    Range,          // importing the Range type from the standard library
+    loop,           // importing the loop function from the standard library
+    if              // importing the if function from the standard library
+}: std.control      // importing the control module from the standard library
+
+
+Name: Type {            // creating a type called Name
+    fistName: String,   // firstName is a String type
+    lastName: String,   // lastName is a String type
 }
 
-WrapType: Type {
-    self: Type,                 // generic type
+WrapType: Type {        // creating a type called WrapType
+    self: Type,         // generic type
 }
 
-Person: Type {
+Person: Type {                  // creating a type called Person
     uniqueId: Wrap{String},     // Wrapping String type as WrapType
-    ...Name                     // Union type
+    ...Name                     // Unioning with Name type
     age: Int.I32(0)             // default value
 }
 
-getFullname: Function {
+lastName: String("Zen"),        // creating a variable lastName of type String
+myPerson: Person(               // creating an instance of Person
+    uniqueId:   String("1234"), // setting uniqueId to "1234"
+    firstName:  String("John"), // setting firstName to "John"
+    lastName,                   // setting lastName to lastName variable using shorthand assignment
+    age:        Int.I32(20),    // setting age to 20
+),
+
+getFullname: Function { // creating a function is similar to creating a type
+    args:{              // args is a map of arguments
+        self: Person,   // self is a Person type
+    },
+    return: {           // return is a function that can be called to return a value
+        self: String,   // return type is String
+    },
+    body: {             // body is a the statements that will be executed
+        fullName: String.concat(self.firstName, String(" "), self.lastName) // creating a variable fullName to 
+        return(fullName) // calling return function to return value
+    },
+},
+
+fullName: myPerson.getFullname() // calling getFullname function and assigning it to fullName variable
+
+otherFunc1: Function {      // creating a function
     args:{
-        self: Person,
+        self: Person,       // self is a Person type
+        callBack: Function, // callBack is a Function type
     }
     return: {
-        self: String,
+        self: { x: Int.I32, y: Int.I32}, // creating an anonymous type
+        error: Error                    // returning an error
     }
-    body: {
-        fullName: String.concat(self.firstName, String(" "), self.lastName)
-        return(fullName) // returning value
-    }
-}
-
-lastName: String,
-myPerson: Person {
-    uniqueId: String("1234"),
-    firstName: String("John"),
-    lastName,
-    age: Int.I32(20),
-}
-fullName: myPerson.getFullname()
-
-otherFunc1: Function {
-    args:{
-        self: Person,
-        callBack: Function,
-    }
-    return: {
-        self: {x: Int.I32, y: Int.I32}, // creating an anonymous type
-        error: Error
-    }
-    body: {
-        if (self.age < 18) {
-            return(
-                Error(
-                    err: InvalidInput, 
-                    message:"You are not old enough"
+    body: {                             // body is a the statements that will be executed
+        if (self.age < 18) {            // if statement
+            return(                     // returning an error
+                Error(                  // creating an error
+                    err: InvalidInput,  // setting error type 
+                    message:"You are not old enough"    // setting error message
                 )
             )
         }
-        myLoop: Loop(Range(start: 0, end: 10)) {
-            io.print(myLoop.value)
+        myloop: loop(Range(start: 0, end: 10)) {    // creating a loop that will loop 10 times and assign the current loop handle to myloop
+            io.print(myloop.value)                  // printing the current value of the loop
         }
-        result: (           // returning an object
-            x: Int.I32(1),
-            y: Int.I32(2)
+        result: (                                   // returning an object
+            x: Int.I32(1),                          // setting x to an Int.I32 of 1
+            y: Int.I32(2)                           // setting y to an Int.I32 of 2
         )
-        callBack()      // calling callback
-        return(result)  // returning value
+        callBack()                                  // calling callback
+        return(result)                              // returning value
     }
 }
 
-otherFunc2: Function {
+otherFunc2: Function {  // creating a function
     args: {
-        other1: Type,
-        other2: Type
+        other1: Type,   // Type is a generic type
+        other2: Type    // Type is a generic type
     }
-    // no return type
-    body: {
-        io.print(String.parse(self.type()), String.parse(other.type()))
+                        // no return type
+    body: {             // body is a the statements that will be executed
+        io.print(String.parse(self.type()), String.parse(other.type())) // printing the type of self and other
+    }
+}
+
+otherFunc2: Function {  // creating a function
+    args: {
+        other1:     Type,   // Type is a generic type
+        other2:     Type    // Type is a generic type
+        callback:   Function
+    }
+                        // no return type
+    body: {             // body is a the statements that will be executed
+        io.print(String.parse(self.type()), String.parse(other.type())) // printing the type of self and other
+        callBack()      // calling callback
     }
 }
 
 
 
+// The following is an example of using the functions above so that
+// ident(args){ typeDefs } 
+// as Function is a type the definition can be passed in {}
+// if there are toomany generics then they need to be explicitly defined as shown in otherFunc3
 
-{
-    x: Int.I32,
-    y: Int.I32,
-}: myPerson.otherFunc1() {
-    io.print(result.x)
-    io.print(result.y)
+{                // begining of destructuring assignment
+    x: Int.I32,  // x is an Int.I32 type
+    y: Int.I32,  // y is an Int.I32 type
+}: myPerson.otherFunc1() {  // calling otherFunc1 function and defining the body stmt in a function
+    // this body statment is valid as otherFunc1.Function return and args are void
+    io.print(result.x)      // printing x
+    io.print(result.y)      // printing y
 }
 
-{
-    x, y
-}: myPerson.otherFunc1() {
-    io.print(result.x)
-    io.print(result.y)
+{                               // begining of destructuring assignment
+    x, y                        // destructuring x and y
+}: myPerson.otherFunc1() {      // calling otherFunc1 function and defining the body stmt in a function
+    io.print(result.x)          // printing x
+    io.print(result.y)          // printing y
 }
 
+otherFunc2() {                  // calling otherFunc2 function, as there are more then 2 generic that they need to be explicitly defined
+    other1: Person,             // other1 is a Person type
+    other2: String              // other2 is a String type
+}
 
-otherFunc2() {
-    other1: Person,
-    other2: String
+otherFunc2() {                  // calling otherFunc2 function
+    other1: Person,             // other1 is a Person type
+    other2: String              // other2 is a String type
+    callBack: Function {        // callBack is a Function type
+        // defining the body stmt of the function
+        io.print("Hello World") // printing Hello World
+    }
 }
