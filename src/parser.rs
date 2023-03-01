@@ -116,7 +116,7 @@ impl<'a> Parser<'a> {
 
     fn parse_assignment(&mut self, lhs: Expr) -> Result<Expr, ParseError> {
         // identifier: ...  = L Token::Colon, R
-        // {...}: ...       = L Token::Colon, R
+        // {...}: ...       = L Token::Colon, R 
         let key = self.parse_key(lhs)?;
         if let asisgnment = self.next_token()? {
             let expr = Expr::Assignment(Assignment {
@@ -133,6 +133,12 @@ impl<'a> Parser<'a> {
     fn parse_body(&mut self) -> Result<Expr, ParseError> {
         // { ... }
         // while token != Token::CurlyBraceClose { keep parsing }
+
+        // return either
+        // Assignments (deconstructing)
+        // Assignments (field assignment)
+        // Statements
+        // TypeDef
         todo!()
      
     }  

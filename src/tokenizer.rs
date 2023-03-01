@@ -76,15 +76,12 @@ impl<'a> Tokenizer<'a> {
             self.pos += 1;
             let fraction = self.read_while(|ch| ch.is_digit(10) || ch == '_');
             // the next character must be a whitespace | curlyBraceClose | ParenClose | comma
-            if self.starts_with(" ")
-                || self.starts_with("}")
-                || self.starts_with(")")
-                || self.starts_with(",")
+            if self.starts_with(".")
             {
+                panic!("Invalid number literal");
+            } else {
                 let number = format!("{}.{}", number, fraction);
                 Token::FloatLiteral(f64::from_str(&number).unwrap())
-            } else {
-                panic!("Invalid number literal");
             }
         } else {
             Token::IntLiteral(i64::from_str(&number.replace("_", "")).unwrap())

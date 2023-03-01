@@ -59,6 +59,10 @@ Lexer: Type {
     col     : Int.I64,
 }
 
+LexerError: Error {
+    message: String,
+}
+
 isAscii: Function {
     args: {
         char: String,
@@ -133,6 +137,10 @@ lex: Function {
         self. Lexer,
         source: String,
     },
+    return: {
+        Array{self:Token, dynamic: Boolean.True},
+        LexerError,
+    },
     body: {
         self.source = source
         self.pos = 0
@@ -152,7 +160,7 @@ lex: Function {
                             self.tokens.push(token)
                             self.pos.inc(l2.value.length())
                             // skip to next token
-                            l1.continue()
+                            l1.next()
                         }
                     }
                 }
@@ -174,7 +182,7 @@ lex: Function {
                     // if(str.count(".") > 1 || str.count("e") > 1) {
                     if(str.count(".") > 1) {
                         // invalid number
-                        self.error("invalid number")
+                        return(LexerError("Invalid number: " + str))
                     }
                     if (str.count(".") == 1) {
                         // float
@@ -182,7 +190,7 @@ lex: Function {
                         self.tokens.push(token)
                         self.pos.inc(token.value.length())
                         // skip to parsing next token
-                        l1.continue()
+                        l1.next()
                     }
                     token: Token.IntLiteral(Int.I64.from(str))
                 }
@@ -195,7 +203,7 @@ lex: Function {
                     self.tokens.push(token)
                     self.pos.inc(token.value.length())
                     // skip to parsing next token
-                    l1.continue()
+                    l1.next()
                 }
 
                 // identifiers
@@ -208,7 +216,7 @@ lex: Function {
                     self.tokens.push(token)
                     self.pos.inc(token.value.length())
                     // skip to parsing next token
-                    l1.continue()
+                    l1.next()
                 }
 
                 // comments
@@ -224,7 +232,7 @@ lex: Function {
                     self.tokens.push(token)
                     self.pos.inc(token.value.length())
                     // skip to parsing next token
-                    l1.continue()
+                    l1.next()
                 }
             }
         }
