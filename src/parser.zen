@@ -33,6 +33,7 @@ Expr: Enum {
     //     false_expr  : Expr,
     // },
     Grouping: Type {
+        
         expr    : Array{Expr, dynamic: True},
     },
 }
@@ -41,22 +42,35 @@ Expr: Enum {
 Parser: Type {
     tokens: Array{Token, dynamic: True},
     current: Int.I32,
-    parse: Function{
-        args: {
-            expr: Expr.Literal
-        },
-        body: {
-            
-        }
-    }
  }
+
+ParserError: Error {
+    message: String,
+    token: Token,
+}
+
+parse: Function{
+    args: {
+        self: Parser
+    },
+    return: {Expr, ParserError},
+    body: {
+        // parse the tokens
+        // this is the main parsing function
+    }
+}
 
 parse: Function{
     args: {
         self: Parser,
-        expr: Expr.Literal
+        expr: Token.Unary,
+        otherExpr: Token.Literal,
     },
+    return: {Expr.Unary},
     body: {
-        
+        return Expr.Unary{
+            op: Token.Unary
+            right: self.nextToken.parse(),
+        }
     }
 }
