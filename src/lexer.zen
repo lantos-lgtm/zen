@@ -1,39 +1,72 @@
 Token: Enum {
     // Literals
-    STRING_LITERAL: String,
-    INT_LITERAL: Int,
-    FLOAT_LITERAL: Float,
-    BOOL_LITERAL: Boolean,
+    Literal: Enum {
+        STRING_LITERAL      : String,
+        INT_LITERAL         : Int.I64,
+        FLOAT_LITERAL       : Float.F64,
+        // BOOL_LITERAL        : Boolean,
+        IDENTIFIER          : String,
+    }
 
-    // Identifiers
-    IDENTIFIER: String,
+    Format: Enum {
+        // Whitespace
+        TAB                 : String("\t"),
+        NEWLINE             : String("\n"),
+        SPACE               : String(" "),
+        COMMA               : String(","),
+    },
 
-    // Keywords
+    Unary: Enum {
+        // `op` rhs
+        // lhs `op`
+        NOT                 : String("!"),
+        MINUS               : String("-"),
+        PLUS                : String("+"),
+        ELIPSIS             : String("..."),
+    },
 
-    // Symbols
-    L_PAREN,
-    R_PAREN,
-    L_BRACE,
-    R_BRACE,
-    COMMA,
-    DOT,
-    ELIPSES,
-    COLON,
+    Binary: Enum {
+        // lhs `op` rhs
+        // Operators
+        COLON               : String(":"),
+        DOT                 : String("."),
+        EQUAL               : String("="),
+        PLUS                : String("+"),
+        MINUS               : String("-"),
+        STAR                : String("*"),
+        SLASH               : String("/"),
+        PERCENT             : String("%"),
+    },
 
-    // Operators
-    // PLUS,
-    // MINUS,
-    // STAR,
-    // SLASH,
-    // PERCENT,
+    Ternary: Enum {
+        // lhs `op` mid `op` rhs
+    },
+
+    Grouping: Enum {
+        // (expr)
+        L_PAREN             : String("("),
+        R_PAREN             : String(")"),
+        L_CURLY             : String("{"),
+        R_CURLY             : String("}"),
+    },
 }
 
 Lexer: Type {
-    tokens: Array{self:Token, dynamic: Boolean.True},
-    source: String,
-    pos: Int,
-    line: Int,
-    col: Int,
+    tokens  : Array{self:Token, dynamic: Boolean.True},
+    source  : String,
+    pos     : Int.I64,
+    line    : Int.I64,
+    col     : Int.I64,
+}
+
+isAscii: Function {
+    args: {
+        char: String,
+    },
+    return: Boolean,
+    body: {
+        return(char >= '\x00' && char <= '\x7F')
+    }
 }
 
 isDigit: Function {
@@ -42,7 +75,56 @@ isDigit: Function {
     },
     return: Boolean,
     body: {
-        return(char >= '0' && char <= '9')
+        return(char >= '\x30' && char <= '\x39')
+    }
+}
+
+startsWith: Function {
+    args: {
+        self: String,
+        other: String,
+    },
+    return: Boolean,
+    body: {
+        return(self.substring(Int.I64(0), other.length()) = other)
+    }
+}
+
+startsWith: Function {
+    args: {
+        self: String,
+        cond: Function {
+            args: {
+                self: String,
+            },
+            return: Boolean,
+        },
+    },
+    return: Boolean,
+    body: {
+        return(self.cond(self))
+    }
+}
+
+readwhile: Function {
+    args: {
+        self: String,
+        cond: Function {
+            args: {
+                self: String,
+            },
+            return: Boolean,
+        },
+    },
+    return: String,
+    body: {
+        str: String()
+        pos: Int.I64(0)
+        while (pos < self.length() && self.cond(self.window(pos))) {
+            str += self.window(pos)
+            pos.inc()
+        }
+        return(str)
     }
 }
 
@@ -59,37 +141,90 @@ lex: Function {
         self.tokens = Array{Token}()
 
         lexLoop: loop (self.pos < self.source.length()) {
-            if (self.source[self.pos]) {
-                is: Array(
-                    Match('\t', '   ') {
-                        self.pos.inc(Int(1))
-                        self.col.inc(Int(1))
-                    },
-                    Match('\n', '\r') {
-                        self.line.inc(Int(1))
-                        self.col: Int(1)
-                    },
-                    isDigit, {
-                        isFloat: Boolean.False
+            // match defined tokens against source
+            // `:`, `+` ...
+            l1: loop(Tokens.values) {
+                if (l1.value != Literal) {
+                    // handle non-literal tokens
+                    l2: loop(l1.values) {
+                        if (self.source.window(self.pos).startsWith(l2.value)) {
+                            token: Token(l2.value).parse(l2.value)
+                            self.tokens.push(token)
+                            self.pos.inc(l2.value.length())
+                            // skip to next token
+                            l1.continue()
+                        }
+                    }
+                }
+                // handle literal tokens
+                // match numbers (int, float) exponent?
+                // match strings
+                // match identifiers
+                // match comments
+                // numbers
+                
+                if (self.source.startsWith(self.pos, cond: {cond.return(cond.isDigit())})) {
+                    // _, 0-9, ., e
+                    // todo: handle exponent
+                    str: self.readwhile(self.pos, cond: {
+                        // cond.return(cond.isDigit() || cond.in(String("_"), String("."), String("e"))))
+                        cond.return(cond.isDigit() || cond.in(String("_"), String(".")))
+                    })
+                
+                    // if(str.count(".") > 1 || str.count("e") > 1) {
+                    if(str.count(".") > 1) {
+                        // invalid number
+                        self.error("invalid number")
+                    }
+                    if (str.count(".") == 1) {
+                        // float
+                        token: Token.FloatLiteral(Float.F64.from(str))
+                        self.tokens.push(token)
+                        self.pos.inc(token.value.length())
+                        // skip to parsing next token
+                        l1.continue()
+                    }
+                    token: Token.IntLiteral(Int.I64.from(str))
+                }
 
-                        lexDigit: loop (self.source[self.pos]isDigit()) {
-                            self.pos.inc(Int(1))
+                // strings
+                if (self.source.window(self.pos).startsWith(String("\""))) { 
+                    // string
+                    str: self.readwhile(self.pos, cond: {cond.return(!cond.in(String("\"")))})
+                    token: Token.StringLiteral(str)
+                    self.tokens.push(token)
+                    self.pos.inc(token.value.length())
+                    // skip to parsing next token
+                    l1.continue()
+                }
+
+                // identifiers
+                if (self.source.window(self.pos).startsWith(cond: {cond.return(cond.isAlpha())})) {
+                    // _, a-z, A-Z
+                    str: self.readwhile(self.pos, cond: {
+                        cond.return(cond.isAlpha() || cond.isDigit() || cond.in(String("_")))
+                    })
+                    token: Token.Identifier(str)
+                    self.tokens.push(token)
+                    self.pos.inc(token.value.length())
+                    // skip to parsing next token
+                    l1.continue()
+                }
+
+                // comments
+                if (self.source.window(self.pos).startsWith("//")) {
+                    // comment
+                    str: self.readwhile(
+                        self.pos,
+                        cond: { 
+                            self.return(!value.in(String("\n"), String("\r")))
                         }
-                        // check for float
-                        if (self.source[self.pos] == '.') {
-                            isFloat = Boolean.True
-                            self.pos.inc(Int(1))
-                            lexFloat: loop (self.source[self.pos]isDigit()) {
-                                self.pos.inc(Int(1))
-                            }
-                            // check for 
-                        }
-                        
-                    },
-                    
-                ),
-                else: {
-                    
+                    )
+                    token: Token.Comment(str)
+                    self.tokens.push(token)
+                    self.pos.inc(token.value.length())
+                    // skip to parsing next token
+                    l1.continue()
                 }
             }
         }

@@ -1,0 +1,62 @@
+std: @std()
+{
+    Enum,
+    Type,
+    Int,
+    Float,
+    String
+    {True, False}: Boolean.True,
+}: std.types
+{
+    Token,
+    Lexer
+}: std.src.lexer;
+
+
+
+
+
+Expr: Enum {
+    Literal:  Token.Literal,
+    Unary: Type {
+        op      : Token.Unary,
+        right   : Expr,
+    },
+    Binary: Type {
+        left    : Expr,
+        op      : Token.Binary,
+        right   : Expr,
+    },
+    // Ternary: Type {
+    //     condition   : Expr,
+    //     true_expr   : Expr,
+    //     false_expr  : Expr,
+    // },
+    Grouping: Type {
+        expr    : Array{Expr, dynamic: True},
+    },
+}
+
+
+Parser: Type {
+    tokens: Array{Token, dynamic: True},
+    current: Int.I32,
+    parse: Function{
+        args: {
+            expr: Expr.Literal
+        },
+        body: {
+            
+        }
+    }
+ }
+
+parse: Function{
+    args: {
+        self: Parser,
+        expr: Expr.Literal
+    },
+    body: {
+        
+    }
+}
