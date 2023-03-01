@@ -12,7 +12,7 @@ Enum: Enum {
     
 }
 
-parse: Function {
+from: Function {
     args: {
         self: Enum,
         string: String,
@@ -70,10 +70,10 @@ Test (
     token: Token.Comment("This is a comment")
 
     io.stdout.writeLn(currency)                        // > "GBP"
-    io.stdout.writeLn(String.parse(currency))          // > "GBP"
+    io.stdout.writeLn(String.from(currency))          // > "GBP"
     io.stdout.writeLn(color)                           // > 0
     io.stdout.writeLn(String(color))                   // Fails as Rgb.RED is not a string
-    io.stdout.writeLn(String.parse(color))             // > "RED"
+    io.stdout.writeLn(String.from(color))             // > "RED"
     io.stdout.writeLn(token)                           // > "comment"
     io.stdout.writeLn(String(token))                   // > "This is a comment"
     io.stdout.writeLn(String(token.Type))              // String
