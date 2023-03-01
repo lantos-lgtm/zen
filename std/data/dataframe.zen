@@ -119,11 +119,58 @@ Test (name:"Dateframe.from", for: Dataframe.from, example: True) {
     // | {"name": "Jane", "age": "21"}|       2000|
     // | {"name": "Jack", "age": "22"}|       3000|
 
-    df: df.flatten()
+}
+
+Test(name: "Dataframe.flatten", for: Dataframe.flatten, example: True) {
+    df: Dataframe(
+        Dataframe.Row("a", "b", "c"),
+        Dataframe.Row(1, Array(2, 3), 4),
+        Dataframe.Row(5, Array(6, 7), 8),
+        Dataframe.Row(9, Array(10, 11), 12),
+    )
+
+    // | idx | a |      b   |  c  |
+    // |  0  | 1 | {2, 3}   |  4  |
+    // |  1  | 5 | {6, 7}   |  8  |
+    // |  2  | 9 | {10, 11} |  12 |
+
+
+    _df: data.flatten(Dataframe.Column("b"))
+    // | idx |  a |  b |  c |
+    // |  0  |  1 |  2 |  4 |
+    // |  0  |  1 |  3 |  4 |
+    // |  1  |  5 |  6 |  8 |
+    // |  1  |  5 |  7 |  8 |
+    // |  2  |  9 | 10 | 12 |
+    // |  2  |  9 | 11 | 12 |
+
+
+
+    // Using complex types
+    Employee: Type {
+        person: Person,
+        salary: Float.F64,
+    }
+    data: Array{Employee}(
+        Employee(Person("John", 20), Float.f64(1000.0)),
+        Employee(Person("Jane", 21), Float.f64(2000.0)),
+        Employee(Person("Jack", 22), Float.f64(3000.0)),
+    )
+
+    df: Dataframe.from(data)
+    // how to deal with ref? 
+    // | Person                       | Salary    |
+    // | {"name": "John", "age": "20"}|       1000|
+    // | {"name": "Jane", "age": "21"}|       2000|
+    // | {"name": "Jack", "age": "22"}|       3000|
+
+    df: df.flatten(Dataframe.Column("person"))
     // | person.name | person.age | salary |
     // | John        | 20         | 1000   |
     // | Jane        | 21         | 2000   |
     // | Jack        | 22         | 3000   |
+
+
 }
 
 
@@ -192,6 +239,8 @@ Test(name:"Dataframe.where", for: Dataframe.where, example: True){
 
     // updating
     df.where(row: "a", value: 1) = Array(10,20,30)
+
+    df.where(row: "a", is: Function{ self: Int.I32 , body: {self > 5}})
     Assert.equals(lhs: df.where(row: "a", value: 1), rhs: Array(10,20,30))
 }
 
@@ -290,5 +339,4 @@ Test(name: "Dataframe.show", for: Dataframe.display, example: True) {
     // | 1 | 4 | 7 |
     // | 2 | 5 | 8 |
     // | 3 | 6 | 9 |
-
 }
