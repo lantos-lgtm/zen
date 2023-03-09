@@ -3,40 +3,58 @@ options { tokenVocab=ZenLexer; }
 
 
 
+// asignments
+// value1   : value0
+// value2   : value0.value1
+// value0   : Type( ... ) ...
+// value3   : call( ... ) ...
+// { }      : call( ... ) ...
+// { }      : ...value0
+// which is the same as 
+// IDENTIFIER COLON expr
+
+assignment  : IDENTIFIER COLON expr;
+
+// `...`value0
+// `...`Type( ... ) ...
+// `...`Type
+// `...`call( ... ) ...
+// wich is the same as
+// ELLIPSIS expr
+
+spread      : ELLIPSIS expr;
 
 
-assignment: 
-    IDENTIFIER COLON expr
-    | ELLIPSIS IDENTIFIER
-    ;
+// this looks wrong
+// value0.value1
+// value0.Type
+// value0.Type( ... ) ...
+// value0.call( ... ) ...
+// call().value0
+// Type
+// which is the same as
+// expr DOT IDENTIFIER
+accessor   : expr DOT expr;
 
-assignments: assignment (COMMA? assignment)*;
+statement   : expr (COMMA? expr)*;
 
-acccessor: IDENTIFIER DOT expr;
+arguments   : L_PAREN statement R_PAREN;
 
-block: expr*;
+body        : L_CURLY statement R_CURLY;
 
-call:           IDENTIFIER L_PAREN (assignments | LITERAL ) R_PAREN;
-callWithBlock:  call L_CURLY block R_CURLY;
+call        : IDENTIFIER arguments body?;
 
-callStmt:
-    call
-    | callWithBlock
-    | callGeneric
-    ;
-
-typeDef: 
-    IDENTIFIER L_CURLY (assignments | LITERAL) R_CURLY
-    | L_CURLY (assignments | LITERAL) R_CURLY
-    ;
+typeDef     : IDENTIFIER body;
 
 expr:
-    assignments
+    assignment // I don't think this works
+    | Literal
+    | spread
+    | accessor
+    | call
     | typeDef
-    | callStmt
     ;
 
-
-program: block EOF;
+program: statement EOF;
 
 

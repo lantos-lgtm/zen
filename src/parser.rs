@@ -1,8 +1,9 @@
-use clap::Id;
-use serde::{Serialize};
-use crate::ast::{Expr, Literal, Identifier, Assignment, Key, Body, SpreadOperator, TypeDef, Fields, Accessor};
+use crate::ast::{
+    Accessor, Assignment, Body, Expr, Fields, Identifier, Key, Literal, SpreadOperator, TypeDef,
+};
 use crate::tokenizer::{Token, Tokenizer};
-
+use clap::Id;
+use serde::Serialize;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub enum ParseError {
@@ -51,14 +52,13 @@ impl<'a> Parser<'a> {
         // identifier)     = L Token::Identifier        R
         // identifier,     = L Token::Identifier        R
         // identifier.     = L Token::Identifier        R
-        // identifier)      = L Token::Identifier       R
+        // identifier)     = L Token::Identifier        R
 
         if let Token::Identifier(name) = self.next_token()? {
             Ok(Expr::Identifier(Identifier(name)))
         } else {
             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
         }
-
     }
 
     fn parse_ellipse(&mut self) -> Result<Expr, ParseError> {
@@ -66,14 +66,11 @@ impl<'a> Parser<'a> {
         if let Token::Ellipse = self.next_token()? {
             if let Some(token) = self.tokens.peek() {
                 match token {
-                    Token::Identifier(_) => {
-                        Ok( self.parse_identifier()? )
-                    },
+                    Token::Identifier(_) => Ok(self.parse_identifier()?),
                     // Token::CurlyBraceOpen => {
                     //     Ok( self.parse_type_def()? )
                     // },
                     _ => Err(ParseError::UnexpectedToken(self.tokens.next().unwrap())),
-                    
                 }
             } else {
                 Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
@@ -116,19 +113,18 @@ impl<'a> Parser<'a> {
 
     fn parse_assignment(&mut self, lhs: Expr) -> Result<Expr, ParseError> {
         // identifier: ...  = L Token::Colon, R
-        // {...}: ...       = L Token::Colon, R 
+        // {...}: ...       = L Token::Colon, R
         let key = self.parse_key(lhs)?;
         if let asisgnment = self.next_token()? {
             let expr = Expr::Assignment(Assignment {
-                key:  key,
+                key: key,
                 value: Box::new(self.parse_expr()?),
             });
             Ok(expr)
         } else {
-            Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))   
+            Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
         }
     }
-
 
     fn parse_body(&mut self) -> Result<Expr, ParseError> {
         // { ... }
@@ -140,15 +136,14 @@ impl<'a> Parser<'a> {
         // Statements
         // TypeDef
         todo!()
-     
-    }  
+    }
     fn parse_fields(&mut self) -> Result<Fields, ParseError> {
         // { ... }
         // while token != Token::CurlyBraceClose { keep parsing }
         todo!()
     }
 
-    fn parse_type_def(&mut self, lhs: Expr) ->  Result<Expr, ParseError> {
+    fn parse_type_def(&mut self, lhs: Expr) -> Result<Expr, ParseError> {
         // Type { ... }
         // Type { key: Type, ... }
         if let Token::Identifier(name) = self.next_token()? {
@@ -173,37 +168,37 @@ impl<'a> Parser<'a> {
         // Should this be looping
         let mut lhs = self.parse_primary()?;
         // this should be our lhs
-        let mut expr : Option<Expr> = None;
+        let mut expr: Option<Expr> = None;
         if let Some(token) = self.tokens.peek() {
             match token {
-                Token::Newline(_) | Token::Comma=> {
+                Token::Newline(_) | Token::Comma => {
                     self.tokens.next();
                 }
                 Token::Colon => {
                     expr = Some(self.parse_assignment(lhs)?);
-                },
+                }
                 Token::Dot => {
                     expr = Some(self.parse_dot(lhs)?);
-                },
+                }
                 Token::Ellipse => {
                     expr = Some(self.parse_ellipse()?);
-                },
+                }
                 Token::CurlyBraceOpen => {
                     // probably a typedef
                     expr = Some(self.parse_type_def(lhs)?);
-                },
+                }
                 Token::ParenOpen => {
                     // probably a function call
                     expr = Some(self.parse_call(lhs)?);
-                },
+                }
                 // The following tokens are handled in the respected open token
-                // Token::CurlyBraceClose 
+                // Token::CurlyBraceClose
                 // Token::ParenClose
                 _ => {
                     expr = None;
                 }
             }
-        } 
+        }
 
         if let Some(expr) = expr {
             Ok(expr)
@@ -248,7 +243,6 @@ impl<'a> Parser<'a> {
 
 #[test]
 fn test_ast() {
-
     let name_str = "Name: Type {
         fistName: String,
         lastName: String,
@@ -257,36 +251,35 @@ fn test_ast() {
     let tokens = tokenizer.collect::<Vec<Token>>();
     println!("Parsing: {:?}", tokens);
     let mut parser = Parser::new(name_str);
-    let name_ast = match(parser.parse()) {
+    let name_ast = match (parser.parse()) {
         Ok(ast) => ast,
-        Err(e) => panic!("Error: {:?}", e)
+        Err(e) => panic!("Error: {:?}", e),
     };
 
     println!("{:?}", name_ast);
 
-    let name_ast_expected = Expr::Assignment(Assignment { 
+    let name_ast_expected = Expr::Assignment(Assignment {
         key: Key::Key(Identifier("Name".to_string())),
-        value: Box::new(Expr::TypeDef(TypeDef{
+        value: Box::new(Expr::TypeDef(TypeDef {
             name: Identifier("Type".to_string()),
             fields: Fields(vec![
                 Assignment {
                     key: Key::Key(Identifier("fistName".to_string())),
-                    value: Box::new(Expr::TypeDef(TypeDef{
+                    value: Box::new(Expr::TypeDef(TypeDef {
                         name: Identifier("String".to_string()),
                         fields: Fields(vec![]),
                     })),
                 },
                 Assignment {
                     key: Key::Key(Identifier("lastName".to_string())),
-                    value: Box::new(Expr::TypeDef(TypeDef{
+                    value: Box::new(Expr::TypeDef(TypeDef {
                         name: Identifier("String".to_string()),
                         fields: Fields(vec![]),
                     })),
                 },
             ]),
-        }))
+        })),
     });
-
 
     assert!(name_ast == name_ast_expected);
 }
