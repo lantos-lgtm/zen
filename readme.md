@@ -61,12 +61,12 @@ reserved symbols
 - ```:```         - used to define a type or instanciate a variable
 - ```{}```        - used to define a type or modify a type
 - ```()```        - used to call a function
-- ```||```         - used to define a or type
+- ```||```        - used to define a or type
 
 Logic, don't know ifthis should be included
-- logical operators ```== != > < >= <= && ||||```
-- maths operators ```+ - * / %```
-- bitwise operators ```& || ^ ~ << >>```
+- logical operators     ```== != > < >= <= && ||||```
+- maths operators       ```+ - * / %```
+- bitwise operators     ```& || ^ ~ << >>```
 
 <!-- 
     if ( ==(x, y, x) )
@@ -76,7 +76,6 @@ Logic, don't know ifthis should be included
     if ( or(eq(x, y), eq(x, z)))
     
  -->
-
 
 
 # Variable Declaration
