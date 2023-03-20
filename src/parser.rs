@@ -27,6 +27,8 @@ impl<'a> Parser<'a> {
 
     fn next_token(&mut self) {
         self.current_token = self.lexer.next();
+        &self.skip_formating();
+
     }
     // expect one or more tokens
     fn expect_token(&mut self, expected: Vec<Token>) {
@@ -38,7 +40,16 @@ impl<'a> Parser<'a> {
             panic!("Unexpected EOF, expected: {:?}", expected);
         }
     }
-
+    fn skip_formating(&mut self) {
+        while let Some(token) = &self.current_token {
+            match token {
+                Token::Comment(_) | Token::Comma | Token::NewLine(_) | Token::WhiteSpace(_)=> {
+                    self.next_token();
+                }
+                _ => break,
+            }
+        }
+    }
     fn parse_number_literal(&mut self) -> Expr {
         // starts with 0b, 0o, 0x -> binary, octal, hex
         // has a . -> float
@@ -175,6 +186,7 @@ impl<'a> Parser<'a> {
 
         let mut exprs: Vec<Expr> = Vec::new();
         loop {
+            &self.skip_formating();
             match &self.current_token {
                 Some(Token::CurlyBraceClose) => {
                     self.next_token();
@@ -188,10 +200,6 @@ impl<'a> Parser<'a> {
                 }
                 None | Some(Token::EndOfFile) => {
                     panic!("Unexpected EOF, expected: {:?}", Token::CurlyBraceClose);
-                }
-                // skip comments, newlines, commas, whitespace, 
-                Some(Token::Comment(_)) | Some(Token::NewLine(_)) | Some(Token::Comma) | Some(Token::WhiteSpace(_)) => {
-                    self.next_token();
                 }
                 // should add expected errors
                 _ => {
@@ -246,8 +254,8 @@ impl<'a> Parser<'a> {
         // Ident        ident
 
         // if we encounter a paren close we can finish parsing
-        let mut paramExprs: Vec<Expr> = Vec::new();
-        let mut blockExpr: Option<Expr> = None;
+        let mut param_exprs: Vec<Expr> = Vec::new();
+        let mut block_expr: Option<Expr> = None;
         loop {
             match &self.current_token {
                 Some(Token::ParenClose) => {
@@ -255,10 +263,10 @@ impl<'a> Parser<'a> {
                     break;
                 }
                 Some(Token::Ellipse) => {
-                    paramExprs.push(self.parse_spread_expression());
+                    param_exprs.push(self.parse_spread_expression());
                 }
                 Some(Token::Identifier(_)) => {
-                    paramExprs.push(self.parse_identifier());
+                    param_exprs.push(self.parse_identifier());
                 }
                 None | Some(Token::EndOfFile) => {
                     panic!("Unexpected EOF, expected: {:?}", Token::ParenClose);
@@ -274,10 +282,10 @@ impl<'a> Parser<'a> {
                     break;
                 }
                 Some(Token::Ellipse) => {
-                    paramExprs.push(self.parse_spread_expression());
+                    param_exprs.push(self.parse_spread_expression());
                 }
                 Some(Token::Identifier(_)) => {
-                    paramExprs.push(self.parse_identifier());
+                    param_exprs.push(self.parse_identifier());
                 }
                 None | Some(Token::EndOfFile) => {
                     panic!("Unexpected EOF, expected: {:?}", Token::ParenClose);
@@ -289,20 +297,20 @@ impl<'a> Parser<'a> {
 
         // check to see if next token is a curly brace open
         if &self.current_token == &Some(Token::CurlyBraceOpen) {
-            blockExpr = Some(self.parse_block(None));
+            block_expr = Some(self.parse_block(None));
         }
 
         
 
         match &ident {
             Some(ident) => {
-                match blockExpr {
+                match block_expr {
                     Some(expr) => {
                         if expr == Expr::StatementBlock(StatementBlock(vec![])) {
                             Expr::FuncCall(
                                 FuncCall {
                                     name: ident.to_owned(),
-                                    args: Box::new(Expr::ParamBlock(ParamBlock(paramExprs))),
+                                    args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
                                     fields: None,
                                     body: Some(Box::new(expr)),
                                 }
@@ -311,7 +319,7 @@ impl<'a> Parser<'a> {
                             Expr::FuncCall(
                                 FuncCall {
                                     name: ident.to_owned(),
-                                    args: Box::new(Expr::ParamBlock(ParamBlock(paramExprs))),
+                                    args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
                                     fields: Some(Box::new(expr)),
                                     body: None,
                                 }
@@ -322,7 +330,7 @@ impl<'a> Parser<'a> {
                         Expr::FuncCall(
                             FuncCall {
                                 name: ident.to_owned(),
-                                args: Box::new(Expr::ParamBlock(ParamBlock(paramExprs))),
+                                args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
                                 fields: None,
                                 body: None,
                             }
@@ -381,14 +389,7 @@ impl<'a> Parser<'a> {
 
             // Grouping
             Some(Token::CurlyBraceOpen) | Some(Token::ParenOpen) => self.parse_block(None),
-            
-            
-            // skip newlines, whitespace, and colons
-            Some(Token::Comment(_)) | Some(Token::NewLine(_)) | Some(Token::WhiteSpace(_)) | Some(Token::Colon) => {
-                self.next_token();
-                self.parse_expression()
-            }
-
+            Some(Token::EndOfFile) => Expr::EndOfFile,
             _ => panic!("Unexpected token: {:?}", self.current_token),
         }
     }
@@ -397,14 +398,10 @@ impl<'a> Parser<'a> {
         let mut expressions = Vec::new();
 
         while let Some(token) = &self.current_token {
-            match token {
-                Token::Comment(_) | Token::NewLine(_) | Token::WhiteSpace(_) | Token::Colon => {
-                    self.next_token();
-                }
-                _ => {
-                    expressions.push(self.parse_expression());
-                }
+            if token == &Token::EndOfFile {
+                break;
             }
+            expressions.push(self.parse_expression());
         }
 
         Program(expressions)

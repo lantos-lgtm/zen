@@ -76,4 +76,6 @@ pub enum Expr {
     
     TypeDef(TypeDef),           // Type { ... }
     FuncCall(FuncCall),         // fn ( ... ) { ... }?
+
+    EndOfFile
 }
