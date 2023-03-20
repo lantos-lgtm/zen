@@ -33,13 +33,21 @@ impl<'a> Parser<'a> {
     }
     // expect one or more tokens
     fn expect_token(&mut self, expected: Vec<Token>) {
-        if let Some(token) = &self.current_token {
-            if !expected.contains(token) {
-                panic!("Unexpected token: {:?}, expected: {:?}", token, expected);
+        let mut found = false;
+        match &self.current_token {
+            None => panic!("Was expecting one of {:?} but got {:?}", expected, self.current_token),
+            Some(token) => {
+                for expected_token in &expected {
+                    if std::mem::discriminant(token) == std::mem::discriminant(expected_token) {
+                        found = true;
+                    }
+                }
+                if !found {
+                    panic!("Was expecting one of {:?} but got {:?}", expected, self.current_token);
+                }
             }
-        } else {
-            panic!("Unexpected EOF, expected: {:?}", expected);
         }
+        
     }
     fn skip_formating(&mut self) {
         while let Some(token) = &self.current_token {
@@ -490,7 +498,7 @@ fn test_parser_1() {
             lastName: String,
         }
         Person: Type {
-            // ...Name,
+            ...Name,
             age: Int.i32(1),
             address: String,
         }

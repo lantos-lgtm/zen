@@ -154,8 +154,8 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 '.' => {
-                    if self.starts_with("..") {
-                        self.pos += 2;
+                    if self.starts_with("...") {
+                        self.pos += 3;
                         return Some(Token::Ellipse);
                     }
                     self.pos += 1;
