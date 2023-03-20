@@ -20,8 +20,8 @@ Token: Enum {
         // `op` rhs
         // lhs `op`
         NOT                 : String("!"),
-        MINUS               : String("-"),
-        PLUS                : String("+"),
+        // MINUS               : String("-"),
+        // PLUS                : String("+"),
         ELIPSIS             : String("..."),
     },
 

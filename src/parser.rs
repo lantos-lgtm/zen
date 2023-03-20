@@ -1,8 +1,7 @@
 use crate::ast::{
     Accessor, Assignment, Body, Expr, Fields, Identifier, Key, Literal, SpreadOperator, TypeDef,
 };
-use crate::tokenizer::{Token, Tokenizer};
-use clap::Id;
+use crate::lexer::{Lexer, Token};
 use serde::Serialize;
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -12,13 +11,13 @@ pub enum ParseError {
 }
 
 pub struct Parser<'a> {
-    tokens: std::iter::Peekable<Tokenizer<'a>>,
+    tokens: std::iter::Peekable<Lexer<'a>>,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Parser<'a> {
         Parser {
-            tokens: Tokenizer::new(input).peekable(),
+            tokens: Lexer::new(input).peekable(),
         }
     }
 
@@ -35,10 +34,45 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_number_literal(&mut self) -> Result<Expr, ParseError> {
-        if let Token::IntLiteral(value) = self.next_token()? {
-            Ok(Expr::Literal(Literal::IntLiteral(value)))
-        } else if let Token::FloatLiteral(value) = self.tokens.next().unwrap() {
-            Ok(Expr::Literal(Literal::FloatLiteral(value)))
+        // numVal: [0-9]+(\.[0-9]+)?
+        // num: numVal | numVal [eE] [+-]? numVal | hexVal | octVal | binVal
+        // hexVal: 0[xX] [0-9a-fA-F]+
+        // octVal: 0[oO] [0-7]+
+        // binVal: 0[bB] [01]+
+        // so we can consume until we hit a non number
+        // we can parse the number to int, float, hex, oct, bin in parser
+        if let Token::NumberLiteral(value) = self.next_token()? {
+            // match 0x, 0o, 0b
+            match value.as_str() {
+                // starts with 0x
+                _ if value.starts_with("0x") => {
+                    let value = value.trim_start_matches("0x");
+                    let value = u8::from_str_radix(value, 16).unwrap();
+                    Ok(Expr::Literal(Literal::Hex(value)))
+                }
+                // starts with 0o
+                _ if value.starts_with("0o") => {
+                    let value = value.trim_start_matches("0o");
+                    let value = u32::from_str_radix(value, 8).unwrap();
+                    Ok(Expr::Literal(Literal::Octal(value)))
+                }
+                // starts with 0b
+                _ if value.starts_with("0b") => {
+                    let value = value.trim_start_matches("0b");
+                    let value = u32::from_str_radix(value, 2).unwrap();
+                    Ok(Expr::Literal(Literal::Binary(value)))
+                }
+                _ => {
+                    // check if it has a decimal point
+                    if value.contains(".") {
+                        let value = value.parse::<f64>().unwrap();
+                        Ok(Expr::Literal(Literal::FloatLiteral(value)))
+                    } else {
+                        let value = value.parse::<i64>().unwrap();
+                        Ok(Expr::Literal(Literal::IntLiteral(value)))
+                    }
+                }
+            }
         } else {
             Err(ParseError::UnexpectedToken(self.tokens.next().unwrap()))
         }
@@ -247,11 +281,11 @@ fn test_ast() {
         fistName: String,
         lastName: String,
     }";
-    let tokenizer = Tokenizer::new(name_str);
-    let tokens = tokenizer.collect::<Vec<Token>>();
+    let lexer = Lexer::new(name_str);
+    let tokens = lexer.collect::<Vec<Token>>();
     println!("Parsing: {:?}", tokens);
     let mut parser = Parser::new(name_str);
-    let name_ast = match (parser.parse()) {
+    let name_ast = match parser.parse() {
         Ok(ast) => ast,
         Err(e) => panic!("Error: {:?}", e),
     };

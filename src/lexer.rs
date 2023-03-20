@@ -6,28 +6,55 @@ use std::collections::HashMap;
 pub enum Token {
     // Literals
     StringLiteral(String),
-    IntLiteral(i64),
-    FloatLiteral(f64),
+    // IntLiteral(i64),
+    // FloatLiteral(f64),
+    NumberLiteral(String),
     CharLiteral(char),
     Identifier(String),
 
-    // Symbols
+    // Binary
+    Colon,
+    Dot,
+
+    // Arithmetic
+    Plus,
+    Minus,
+    Multiply,
+    Divide,
+    Modulo,
+
+    // Logical
+    And,
+    Or,
+    Xor,
+    // NOT,
+
+    // Bitwise
+    BitwiseAnd,
+    BitwiseOr,
+    BitwiseXor,
+    BitwiseNot,
+
+    // Comparison
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
+
+
+
+    // Unary
+    Not,
+    Ellipse,
+
     // Group
     CurlyBraceOpen,
     CurlyBraceClose,
     ParenOpen,
     ParenClose,
-    // Binary
-    Colon,
-    Dot,
 
-    // Unary
-    Ellipse,
-
-    // TODO:
-    // Arithmetic
-    // Logical
-    // Bitwise
 
     // markup
     Comma,
@@ -38,14 +65,14 @@ pub enum Token {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct Tokenizer<'a> {
+pub struct Lexer<'a> {
     input: &'a str,
     pos: usize,
 }
 
-impl<'a> Tokenizer<'a> {
-    pub fn new(input: &'a str) -> Tokenizer<'a> {
-        Tokenizer { input, pos: 0 }
+impl<'a> Lexer<'a> {
+    pub fn new(input: &'a str) -> Lexer<'a> {
+        Lexer { input, pos: 0 }
     }
 
     fn next_char(&self) -> Option<char> {
@@ -71,21 +98,17 @@ impl<'a> Tokenizer<'a> {
         result
     }
     fn read_number(&mut self) -> Token {
-        let number = self.read_while(|ch| ch.is_digit(10) || ch == '_');
-        if self.starts_with(".") {
-            self.pos += 1;
-            let fraction = self.read_while(|ch| ch.is_digit(10) || ch == '_');
-            // the next character must be a whitespace | curlyBraceClose | ParenClose | comma
-            if self.starts_with(".")
-            {
-                panic!("Invalid number literal");
-            } else {
-                let number = format!("{}.{}", number, fraction);
-                Token::FloatLiteral(f64::from_str(&number).unwrap())
-            }
-        } else {
-            Token::IntLiteral(i64::from_str(&number.replace("_", "")).unwrap())
-        }
+        // numVal: [0-9]+(\.[0-9]+)?
+        // num: numVal | numVal [eE] [+-]? numVal | hexVal | octVal | binVal
+        // hexVal: 0[xX] [0-9a-fA-F]+
+        // octVal: 0[oO] [0-7]+
+        // binVal: 0[bB] [01]+
+        // so we can consume until we hit a non number
+        // we can parse the number to int, float, hex, oct, bin in parser
+        let s = self.read_while(
+            |ch| ch.is_ascii_digit() || ch == '.' || ch == 'e' || ch == 'E' || ch == 'x' || ch == 'X' || ch == 'o' || ch == 'O' || ch == 'b' || ch == 'B' || ch == '+' || ch == '-'
+        );
+        Token::NumberLiteral(s)
     }
 
     fn read_string(&mut self) -> Token {
@@ -123,7 +146,7 @@ impl<'a> Tokenizer<'a> {
     }
 }
 
-impl<'a> Iterator for Tokenizer<'a> {
+impl<'a> Iterator for Lexer<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Token> {
@@ -179,7 +202,79 @@ impl<'a> Iterator for Tokenizer<'a> {
                 }
                 self.pos += 1;
                 return Some(Token::Dot);
-            }
+            },
+            // bitwise
+            '&' => {
+                if self.starts_with("&&") {
+                    self.pos += 2;
+                    return Some(Token::And);
+                }
+                self.pos += 1;
+                return Some(Token::BitwiseAnd);
+            },
+            '|' => {
+                if self.starts_with("||") {
+                    self.pos += 2;
+                    return Some(Token::Or);
+                }
+                self.pos += 1;
+                return Some(Token::BitwiseOr);
+            },
+            '^' => {
+                self.pos += 1;
+                return Some(Token::BitwiseXor);
+            },
+            '~' => {
+                self.pos += 1;
+                return Some(Token::BitwiseNot);
+            },
+            // arithmetic
+            '+' => {
+                self.pos += 1;
+                return Some(Token::Plus);
+            },
+            '-' => {
+                self.pos += 1;
+                return Some(Token::Minus);
+            },
+            '*' => {
+                self.pos += 1;
+                return Some(Token::Multiply);
+            },
+            '/' => {
+                self.pos += 1;
+                return Some(Token::Divide);
+            },
+            '%' => {
+                self.pos += 1;
+                return Some(Token::Modulo);
+            },
+            // comparison
+            '!' => {
+                if self.starts_with("!=") {
+                    self.pos += 2;
+                    return Some(Token::NotEqual);
+                }
+                self.pos += 1;
+                return Some(Token::Not);
+            },
+            '>' => {
+                if self.starts_with(">=") {
+                    self.pos += 2;
+                    return Some(Token::GreaterThanOrEqual);
+                }
+                self.pos += 1;
+                return Some(Token::GreaterThan);
+            },
+            '<' => {
+                if self.starts_with("<=") {
+                    self.pos += 2;
+                    return Some(Token::LessThanOrEqual);
+                }
+                self.pos += 1;
+                return Some(Token::LessThan);
+            },
+
             // '\x00' => {
             //     self.pos += 1;
             //     Some(Token::Eof)
@@ -192,7 +287,7 @@ impl<'a> Iterator for Tokenizer<'a> {
 }
 
 #[test]
-fn test_tokenize() {
+fn test_lexer() {
     let input = r#"
 
 myResult: MyFunction(String("Value")) {
@@ -202,7 +297,7 @@ myResult: MyFunction(String("Value")) {
 }
 "#;
     let expected = vec![
-        Token::Newline(1),
+        Token::Newline(2),
         Token::Identifier("myResult".to_string()),
         Token::Colon,
         Token::WhiteSpace(1),
@@ -236,7 +331,7 @@ myResult: MyFunction(String("Value")) {
         Token::WhiteSpace(1),
         Token::Identifier("Int".to_string()),
         Token::ParenOpen,
-        Token::IntLiteral(123),
+        Token::NumberLiteral("123".to_string()),
         Token::ParenClose,
         Token::CurlyBraceClose,
         Token::ParenClose,
@@ -249,7 +344,7 @@ myResult: MyFunction(String("Value")) {
         Token::Newline(1),
         // Token::Eof,
     ];
-    let tokenizer = Tokenizer::new(input);
-    let tokens = tokenizer.collect::<Vec<Token>>();
+    let lexer = Lexer::new(input);
+    let tokens = lexer.collect::<Vec<Token>>();
     assert_eq!(tokens, expected);
 }

@@ -86,7 +86,7 @@
 // //  -> Identifier
 // //  -> Dot
 
-mod tokenizer;
+mod lexer;
 mod ast;
 mod parser;
 use parser::{Parser};

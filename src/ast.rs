@@ -76,9 +76,9 @@ pub enum Literal {
     IntLiteral(i64),
     FloatLiteral(f64),
     // Bool(bool),
-    // Hex(HexLiteral),
-    // Octal(OctalLiteral),
-    // Binary(BinaryLiteral),
+    Hex(u8),
+    Octal(u32),
+    Binary(u32),
 }
 
 #[derive(Debug, PartialEq, Serialize)]
