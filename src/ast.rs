@@ -34,6 +34,11 @@ pub struct TypeDef {
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
+pub struct AnonymousType {
+    pub fields  : Box<Expr>     // Block, // { ... }
+}
+
+#[derive(Debug, PartialEq, Serialize, Clone)]
 pub struct FuncCall {
     pub name    : Box<Expr>,                // Identifier, // Fn
     pub args    : Box<Expr>,                // ParamBlock, // ( ... )
@@ -59,6 +64,7 @@ pub enum Expr {
     Identifier(Identifier),
     Literal(Literal),
 
+
     // Unary
     SpreadExpr(Box<Expr>), // ...
 
@@ -69,12 +75,13 @@ pub enum Expr {
     // Ternary
 
     // Grouping
-    AssignmentBlock(AssignmentBlock),                   // { ... }
-    StatementBlock(StatementBlock), // { ... }
-    ParamBlock(ParamBlock),         // ( ... )
+    AssignmentBlock(AssignmentBlock),   // { ... }
+    StatementBlock(StatementBlock),     // { ... }
+    ParamBlock(ParamBlock),             // ( ... )
     
-    TypeDef(TypeDef),           // Type { ... }
-    FuncCall(FuncCall),         // fn ( ... ) { ... }?
+    AnonymousType(AnonymousType),       // {...}
+    TypeDef(TypeDef),                   // Type { ... }
+    FuncCall(FuncCall),                 // fn ( ... ) { ... }?
 
     EndOfFile
 }

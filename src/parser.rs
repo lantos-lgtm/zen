@@ -1,6 +1,9 @@
-use crate::ast::{Expr, Identifier, TypeDef, Assignment, AssignmentBlock, StatementBlock, ParamBlock , Literal, Accessor, FuncCall};
-use crate::lexer::{Lexer};
-use crate::token::{Token};
+use crate::ast::{
+    Accessor, Assignment, AssignmentBlock, Expr, FuncCall, Identifier, Literal, ParamBlock,
+    StatementBlock, TypeDef, AnonymousType,
+};
+use crate::lexer::Lexer;
+use crate::token::Token;
 
 use serde::Serialize;
 
@@ -29,13 +32,15 @@ impl<'a> Parser<'a> {
     fn next_token(&mut self) {
         self.current_token = self.lexer.next();
         &self.skip_formating();
-
     }
     // expect one or more tokens
     fn expect_token(&mut self, expected: Vec<Token>) {
         let mut found = false;
         match &self.current_token {
-            None => panic!("Was expecting one of {:?} but got {:?}", expected, self.current_token),
+            None => panic!(
+                "Was expecting one of {:?} but got {:?}",
+                expected, self.current_token
+            ),
             Some(token) => {
                 for expected_token in &expected {
                     if std::mem::discriminant(token) == std::mem::discriminant(expected_token) {
@@ -43,16 +48,18 @@ impl<'a> Parser<'a> {
                     }
                 }
                 if !found {
-                    panic!("Was expecting one of {:?} but got {:?}", expected, self.current_token);
+                    panic!(
+                        "Was expecting one of {:?} but got {:?}",
+                        expected, self.current_token
+                    );
                 }
             }
         }
-        
     }
     fn skip_formating(&mut self) {
         while let Some(token) = &self.current_token {
             match token {
-                Token::Comment(_) | Token::Comma | Token::NewLine(_) | Token::WhiteSpace(_)=> {
+                Token::Comment(_) | Token::Comma | Token::NewLine(_) | Token::WhiteSpace(_) => {
                     self.next_token();
                 }
                 _ => break,
@@ -95,9 +102,8 @@ impl<'a> Parser<'a> {
                 }
             };
             self.next_token();
-    
+
             number_expr
-    
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
         }
@@ -130,7 +136,7 @@ impl<'a> Parser<'a> {
         match &self.current_token {
             Some(Token::NumberLiteral(_)) => self.parse_number_literal(),
             Some(Token::StringLiteral(_)) => self.parse_string_literal(),
-            Some(Token::CharLiteral(_)) =>  self.parse_char_literal(),
+            Some(Token::CharLiteral(_)) => self.parse_char_literal(),
             None => panic!("Unexpected EOF"),
             _ => panic!("Unexpected token: {:?}", self.current_token),
         }
@@ -140,20 +146,16 @@ impl<'a> Parser<'a> {
         if let Some(Token::Identifier(name)) = &self.current_token {
             let identifier = Identifier(name.clone());
             self.next_token();
-            
+
             // ident : ident
             // ident . ident
             // ident { ... }
             // ident ( ... )
             match &self.current_token {
                 // ident : ident
-                Some(Token::Colon) => {
-                    self.parse_assignment(Box::new(Expr::Identifier(identifier)))
-                }
+                Some(Token::Colon) => self.parse_assignment(Box::new(Expr::Identifier(identifier))),
                 // ident . ident
-                Some(Token::Dot) => {
-                    self.parse_accessor(Box::new(Expr::Identifier(identifier)))
-                }
+                Some(Token::Dot) => self.parse_accessor(Box::new(Expr::Identifier(identifier))),
                 // ident { ... }
                 Some(Token::CurlyBraceOpen) => {
                     self.parse_block(Some(Box::new(Expr::Identifier(identifier))))
@@ -189,7 +191,7 @@ impl<'a> Parser<'a> {
     fn parse_spread_expression(&mut self) -> Expr {
         self.expect_token(vec![Token::Ellipse]);
         // skip this token(...)
-        self.next_token();  
+        self.next_token();
         // this expr expects a Identifier
         self.expect_token(vec![Token::Identifier("".to_string())]);
         let expr = Box::new(self.parse_expression());
@@ -249,7 +251,7 @@ impl<'a> Parser<'a> {
                 _ => {}
             }
         }
-        
+
         match &ident {
             Some(ident) => {
                 if is_statement_block {
@@ -267,12 +269,13 @@ impl<'a> Parser<'a> {
                     Expr::StatementBlock(StatementBlock(exprs))
                 } else {
                     // maybe this cn be anonymous Type?
-                    unimplemented!("Assignment block as type def, ident:{:?} exprs:{:?} \n current_token:{:?}", ident, exprs, self.current_token);
+                    Expr::AnonymousType(AnonymousType {
+                        fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(exprs))),
+                    })
+                    // unimplemented!("Assignment block as type def, ident:{:?} exprs:{:?} \n current_token:{:?}", ident, exprs, self.current_token);
                 }
             }
         }
-
-       
     }
 
     fn parse_paren_block(&mut self, ident: Option<Box<Expr>>) -> Expr {
@@ -300,7 +303,7 @@ impl<'a> Parser<'a> {
                 }
                 Some(Token::Identifier(_)) => {
                     param_exprs.push(self.parse_identifier());
-                },
+                }
                 Some(Token::CharLiteral(_) | Token::StringLiteral(_) | Token::NumberLiteral(_)) => {
                     param_exprs.push(self.parse_literal());
                 }
@@ -313,7 +316,10 @@ impl<'a> Parser<'a> {
 
                 // should add expected errors
                 _ => {
-                    unreachable!("lexerPos: {:?}, token: {:?}", self.lexer.pos, self.current_token);
+                    unreachable!(
+                        "lexerPos: {:?}, token: {:?}",
+                        self.lexer.pos, self.current_token
+                    );
                 }
             }
         }
@@ -341,49 +347,36 @@ impl<'a> Parser<'a> {
             block_expr = Some(self.parse_block(None));
         }
 
-        
-
         match &ident {
-            Some(ident) => {
-                match block_expr {
-                    Some(expr) => {
-                        if expr == Expr::StatementBlock(StatementBlock(vec![])) {
-                            Expr::FuncCall(
-                                FuncCall {
-                                    name: ident.to_owned(),
-                                    args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
-                                    fields: None,
-                                    body: Some(Box::new(expr)),
-                                }
-                            )
-                        } else {
-                            Expr::FuncCall(
-                                FuncCall {
-                                    name: ident.to_owned(),
-                                    args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
-                                    fields: Some(Box::new(expr)),
-                                    body: None,
-                                }
-                            )
-                        }
-                    },
-                    None => {
-                        Expr::FuncCall(
-                            FuncCall {
-                                name: ident.to_owned(),
-                                args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
-                                fields: None,
-                                body: None,
-                            }
-                        )
+            Some(ident) => match block_expr {
+                Some(expr) => {
+                    if expr == Expr::StatementBlock(StatementBlock(vec![])) {
+                        Expr::FuncCall(FuncCall {
+                            name: ident.to_owned(),
+                            args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
+                            fields: None,
+                            body: Some(Box::new(expr)),
+                        })
+                    } else {
+                        Expr::FuncCall(FuncCall {
+                            name: ident.to_owned(),
+                            args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
+                            fields: Some(Box::new(expr)),
+                            body: None,
+                        })
                     }
                 }
-            }
+                None => Expr::FuncCall(FuncCall {
+                    name: ident.to_owned(),
+                    args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
+                    fields: None,
+                    body: None,
+                }),
+            },
             None => {
                 unimplemented!("Param block without a name")
             }
         }
-
     }
 
     fn parse_block(&mut self, ident: Option<Box<Expr>>) -> Expr {
@@ -392,7 +385,7 @@ impl<'a> Parser<'a> {
         let expr = match &self.current_token {
             Some(Token::CurlyBraceOpen) => self.parse_curly_block(ident),
             Some(Token::ParenOpen) => self.parse_paren_block(ident),
-            _ => unreachable!()
+            _ => unreachable!(),
         };
         expr
     }
@@ -409,7 +402,7 @@ impl<'a> Parser<'a> {
         // Binary
         //  Assignment
         //  Accessor
-        
+
         //  Todo logical
 
         // Grouping
@@ -425,7 +418,7 @@ impl<'a> Parser<'a> {
             Some(Token::StringLiteral(_)) => self.parse_string_literal(),
             // Binary should be handled by the caller
 
-            // Unary 
+            // Unary
             Some(Token::Ellipse) => self.parse_spread_expression(),
 
             // Grouping
@@ -446,7 +439,6 @@ impl<'a> Parser<'a> {
         }
         Expr::StatementBlock(StatementBlock(expressions))
     }
-
 }
 
 #[test]
@@ -462,30 +454,23 @@ fn test_parser() {
     let mut parser = Parser::new(name_str);
     let name_ast = parser.parse();
 
-
-
-    let name_ast_expected = Expr::StatementBlock(StatementBlock(vec![
-        Expr::Assignment(Assignment { 
+    let name_ast_expected =
+        Expr::StatementBlock(StatementBlock(vec![Expr::Assignment(Assignment {
             key: Box::new(Expr::Identifier(Identifier("Name".to_string()))),
             value: Box::new(Expr::TypeDef(TypeDef {
                 name: Box::new(Expr::Identifier(Identifier("Type".to_string()))),
                 fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(vec![
-                    Expr::Assignment(
-                        Assignment {
-                            key: Box::new(Expr::Identifier(Identifier("fistName".to_string()))),
-                            value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-                        }
-                    ),
-                    Expr::Assignment(
-                        Assignment {
-                            key: Box::new(Expr::Identifier(Identifier("lastName".to_string()))),
-                            value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-                        }
-                    ),
+                    Expr::Assignment(Assignment {
+                        key: Box::new(Expr::Identifier(Identifier("fistName".to_string()))),
+                        value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
+                    }),
+                    Expr::Assignment(Assignment {
+                        key: Box::new(Expr::Identifier(Identifier("lastName".to_string()))),
+                        value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
+                    }),
                 ]))),
             })),
-        }),
-    ]));
+        })]));
 
     debug_assert!(name_ast == name_ast_expected);
 }
@@ -503,15 +488,21 @@ fn test_parser_1() {
             address: String,
         }
 
-    
+        greet: Function {
+            args: {Person},
+            body: {
+                std.io.stdout.write(\"Hello, {person.firstName}\")
+            }
+        }
     ";
     let lexer = Lexer::new(name_str);
     let tokens = lexer.collect::<Vec<Token>>();
     println!("Parsing string: {:?}", name_str);
     println!("Parsing tokens: {:?}", tokens);
     let mut parser = Parser::new(name_str);
-    
 
-    println!("AST: {}", serde_json::to_string_pretty(&parser.parse()).unwrap());
-    
+    println!(
+        "AST: {}",
+        serde_json::to_string_pretty(&parser.parse()).unwrap()
+    );
 }
