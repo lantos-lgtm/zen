@@ -244,7 +244,6 @@ impl<'a> Parser<'a> {
         for expr in &exprs {
             match expr {
                 Expr::Accessor(_) | Expr::FuncCall(_) => {
-                    print!("found! Statement block signature, expr: {:?}", expr);
                     is_statement_block = true;
                     break;
                 }
@@ -491,7 +490,6 @@ fn test_parser_1() {
         Person: Type {
             ...Name,
             age: Int.i32(1),
-            address: String,
         }
 
         greet: Function {
@@ -500,6 +498,12 @@ fn test_parser_1() {
                 std.io.stdout.write(\"Hello, {person.firstName}\")
             }
         }
+
+        myPerson: Person (
+            firstName: String(\"John\"),
+            lastName: String(\"Doe\"),
+            age: Int.i32(32),
+        )
     ";
     let lexer = Lexer::new(name_str);
     let tokens = lexer.collect::<Vec<Token>>();
