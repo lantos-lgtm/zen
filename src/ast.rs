@@ -1,7 +1,5 @@
 use serde::{Serialize};
 
-#[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct Program(pub Vec<Expr>);
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub struct Identifier(pub String);

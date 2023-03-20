@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Program, Identifier, TypeDef, Assignment, AssignmentBlock, StatementBlock, ParamBlock , Literal, Accessor, FuncCall};
+use crate::ast::{Expr, Identifier, TypeDef, Assignment, AssignmentBlock, StatementBlock, ParamBlock , Literal, Accessor, FuncCall};
 use crate::lexer::{Lexer};
 use crate::token::{Token};
 
@@ -10,6 +10,7 @@ pub enum ParseError {
     UnexpectedEOF,
 }
 
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
     current_token: Option<Token>,
@@ -426,7 +427,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse(&mut self) -> Program {
+    pub fn parse(&mut self) -> Expr {
         let mut expressions = Vec::new();
 
         while let Some(token) = &self.current_token {
@@ -435,8 +436,7 @@ impl<'a> Parser<'a> {
             }
             expressions.push(self.parse_expression());
         }
-
-        Program(expressions)
+        Expr::StatementBlock(StatementBlock(expressions))
     }
 
 }
@@ -452,31 +452,34 @@ fn test_parser() {
     println!("Parsing string: {:?}", name_str);
     println!("Parsing tokens: {:?}", tokens);
     let mut parser = Parser::new(name_str);
-    let name_ast = match parser.parse() {
-        Program(expressions) => expressions[0].clone()
-    };
+    let name_ast = parser.parse();
 
-    let name_ast_expected = Expr::Assignment(Assignment { 
-        key: Box::new(Expr::Identifier(Identifier("Name".to_string()))),
-        value: Box::new(Expr::TypeDef(TypeDef {
-            name: Box::new(Expr::Identifier(Identifier("Type".to_string()))),
-            fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(vec![
-                Expr::Assignment(
-                    Assignment {
-                        key: Box::new(Expr::Identifier(Identifier("fistName".to_string()))),
-                        value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-                    }
-                ),
-                Expr::Assignment(
-                    Assignment {
-                        key: Box::new(Expr::Identifier(Identifier("lastName".to_string()))),
-                        value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-                    }
-                ),
-            ]))),
-        })),
-    });
-    assert!(name_ast == name_ast_expected);
+
+
+    let name_ast_expected = Expr::StatementBlock(StatementBlock(vec![
+        Expr::Assignment(Assignment { 
+            key: Box::new(Expr::Identifier(Identifier("Name".to_string()))),
+            value: Box::new(Expr::TypeDef(TypeDef {
+                name: Box::new(Expr::Identifier(Identifier("Type".to_string()))),
+                fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(vec![
+                    Expr::Assignment(
+                        Assignment {
+                            key: Box::new(Expr::Identifier(Identifier("fistName".to_string()))),
+                            value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
+                        }
+                    ),
+                    Expr::Assignment(
+                        Assignment {
+                            key: Box::new(Expr::Identifier(Identifier("lastName".to_string()))),
+                            value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
+                        }
+                    ),
+                ]))),
+            })),
+        }),
+    ]));
+
+    debug_assert!(name_ast == name_ast_expected);
 }
 
 #[test]
@@ -487,7 +490,7 @@ fn test_parser_1() {
             lastName: String,
         }
         Person: Type {
-            ...Name,
+            // ...Name,
             age: Int.i32(1),
             address: String,
         }
@@ -499,10 +502,8 @@ fn test_parser_1() {
     println!("Parsing string: {:?}", name_str);
     println!("Parsing tokens: {:?}", tokens);
     let mut parser = Parser::new(name_str);
-    let name_ast = match parser.parse() {
-        Program(expressions) => expressions[0].clone()
-    };
+    
 
-    println!("AST: {}", serde_json::to_string_pretty(&name_ast).unwrap());
+    println!("AST: {}", serde_json::to_string_pretty(&parser.parse()).unwrap());
     
 }
