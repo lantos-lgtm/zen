@@ -11,51 +11,28 @@ std: @std,
 }: std.types,
 {
     Function,
-    Loop,
-    If,
+    if,
 }: std.functions,
 
 LoopHandle: Type {
     value: Type
 },
 
-Loop: Function {
+// equivalent to a while, for, and iterator 
+loop: Function {
     args: {
         self: LoopHandle
+        eval: Function {
+            return: Bool
+        }
         then: Body
     }
     return: self.Type
     body: Body {
         {
-            if(self()) {
-                args.then()
-                fn()
-            }
-            return()
+            // not sure how to do this
         }
     }
 }
 // iteration
-Loop: Function {
-    args: {
-        self: Array,
-        i: Int,
-        next: ResultWithError,
-        then: Body,
-        loopHandle: LoopHandle {
-            value: self.Type
-        },
-    }
-    return: args.loopHandle.Type,
-    body: Function {
-        {
-            if(i < self.size()) {
-                next: ResultWithError(self[i])
-                body(next)
-                i.increment()
-            } else {
-                next.error = "Out of bounds"
-            }
-        }
-    }
-}
+// not sure how to do this

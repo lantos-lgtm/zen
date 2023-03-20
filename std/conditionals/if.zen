@@ -46,101 +46,6 @@
 //     }
 // }
 
-if: Function {
-    args: {
-        value: Type
-        is: Array{Match{value.type(), body: Body}},
-    }
-    return: void | Type
-    body: {
-        matchLoop: loop (match) {
-            // this proably will be magic 
-            if (value == match.value) {
-                matchLoop.value.body()
-            }
-            matchLoop.next()
-        }
-
-    }
-}
-
-if: Function {
-    args: {
-        value: Type
-        is: Array{Match{value.type(), body: Body}},
-        else: Body,
-    }
-    return: void | Type
-    body: {
-        matchLoop: loop (match) {
-            // this proably will be magic 
-            if (value == match.value) {
-                matchLoop.value.body()
-            }
-            matchLoop.next()
-        }
-        else()
-
-    }
-}
-
-if: Function {
-    args: {
-        value: Function {
-            return: Boolean
-        }
-        body: Body,
-        else: Body,
-    }
-    return: void | Type
-    body: {
-            // this proably will be magic 
-        if (value()) {
-            result:  args.body()
-            return(result)
-        }
-    }
-}
-
-if: Function {
-    args: {
-        value: Function {
-            return: Boolean
-        },
-        body: Body,
-    }
-    return: void | Type
-    body: {
-            // this proably will be magic 
-        if (value()) {
-            result:  args.body()
-            return(result)
-        }
-        result: else()
-        return (result)
-    }
-}
-
-if: Function {
-    args: {
-        value: Function {
-            return: Boolean
-        }
-        body: Body,
-        else: Body,
-    }
-    return: void | Type
-    body: {
-            // this proably will be magic 
-        if (value()) {
-            result:  args.body()
-            return(result)
-        }
-        result: else()
-        return (result)
-    }
-}
-
 
 if: Function {
     args: {
@@ -148,8 +53,7 @@ if: Function {
     }
     return: void | Type
     body: {
-            // this proably will be magic 
-        if (value()) {
+        if (value) {
             result: match.body()
             return(result)
         }
@@ -164,12 +68,86 @@ if: Function {
     }
     return: void | Type
     body: {
-            // this proably will be magic 
-        if (value()) {
+        if (value) {
             result: args.body()
             return(result)
         }
         result: else()
         return (result)
+    }
+}
+
+
+if: Function {
+    args: {
+        value: Function {
+            return: Boolean
+        },
+        body: Body,
+    }
+    return: void | Type
+    body: {
+        @if (value()) {
+            result:  args.body()
+            return(result)
+        }
+        result: else()
+        return (result)
+    }
+}
+
+if: Function {
+    args: {
+        value: Function {
+            return: Boolean
+        }
+        body: Body,
+        else: Body,
+    }
+    return: void | Type
+    body: {
+        if (value()) {
+            result:  args.body()
+            return(result)
+        }
+        result: else()
+        return (result)
+    }
+}
+
+// equivalent to a switch statement
+if: Function {
+    args: {
+        value: Type
+        is: Array{Match{value.type(), body: Body}},
+    }
+    return: void | Type
+    body: {
+        matchLoop: loop (match) {
+            if (value == match.value) {
+                matchLoop.value.body()
+            }
+            matchLoop.next()
+        }
+
+    }
+}
+
+if: Function {
+    args: {
+        value: Type
+        is: Array{Match{value.type(), body: Body}},
+        else: Body,
+    }
+    return: void | Type
+    body: {
+        matchLoop: loop (match) {
+            if (value == match.value) {
+                matchLoop.value.body()
+            }
+            matchLoop.next()
+        }
+        else()
+
     }
 }
