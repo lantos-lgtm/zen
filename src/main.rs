@@ -88,6 +88,7 @@
 
 mod lexer;
 mod ast;
+mod token;
 mod parser;
 use parser::{Parser};
 

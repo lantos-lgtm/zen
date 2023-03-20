@@ -1,78 +1,18 @@
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
-use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub enum Token {
-    // Literals
-    StringLiteral(String),
-    // IntLiteral(i64),
-    // FloatLiteral(f64),
-    NumberLiteral(String),
-    CharLiteral(char),
-    Identifier(String),
+use crate::token::Token;
 
-    // Binary
-    Colon,
-    Dot,
-
-    // Arithmetic
-    Plus,
-    Minus,
-    Multiply,
-    Divide,
-    Modulo,
-
-    // Logical
-    And,
-    Or,
-    Xor,
-    // NOT,
-
-    // Bitwise
-    BitwiseAnd,
-    BitwiseOr,
-    BitwiseXor,
-    BitwiseNot,
-
-    // Comparison
-    Equal,
-    NotEqual,
-    LessThan,
-    LessThanOrEqual,
-    GreaterThan,
-    GreaterThanOrEqual,
-
-
-
-    // Unary
-    Not,
-    Ellipse,
-
-    // Group
-    CurlyBraceOpen,
-    CurlyBraceClose,
-    ParenOpen,
-    ParenClose,
-
-
-    // markup
-    Comma,
-    Comment(String),
-    WhiteSpace(usize),
-    Newline(usize),
-    // Eof,
-}
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Lexer<'a> {
     input: &'a str,
     pos: usize,
+    finished: bool,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Lexer<'a> {
-        Lexer { input, pos: 0 }
+        Lexer { input, pos: 0, finished: false }
     }
 
     fn next_char(&self) -> Option<char> {
@@ -89,7 +29,7 @@ impl<'a> Lexer<'a> {
     {
         let mut result = String::new();
         while let Some(ch) = self.next_char() {
-            if!test(ch) {
+            if !test(ch) {
                 break;
             }
             result.push(ch);
@@ -105,9 +45,16 @@ impl<'a> Lexer<'a> {
         // binVal: 0[bB] [01]+
         // so we can consume until we hit a non number
         // we can parse the number to int, float, hex, oct, bin in parser
-        let s = self.read_while(
-            |ch| ch.is_ascii_digit() || ch == '.' || ch == 'e' || ch == 'E' || ch == 'x' || ch == 'X' || ch == 'o' || ch == 'O' || ch == 'b' || ch == 'B' || ch == '+' || ch == '-'
-        );
+        let s = self.read_while(|ch| {
+            ch.is_ascii_digit()
+                || ch == '.'
+                || ch == 'e'
+                || ch == 'x'
+                || ch == 'o'
+                || ch == 'b'
+                || ch == '+'
+                || ch == '-'
+        });
         Token::NumberLiteral(s)
     }
 
@@ -130,7 +77,7 @@ impl<'a> Lexer<'a> {
         // ifis newline
         let newline = self.read_while(|ch| ['\r', '\n', '\u{A0}'].contains(&ch));
         if newline.len() > 0 {
-            return Token::Newline(newline.len());
+            return Token::NewLine(newline.len());
         }
         let white_space = self.read_while(|ch| ch.is_whitespace());
         if white_space.len() > 0 {
@@ -148,140 +95,143 @@ impl<'a> Lexer<'a> {
 
 impl<'a> Iterator for Lexer<'a> {
     type Item = Token;
+    
 
     fn next(&mut self) -> Option<Token> {
         let white_space = self.read_whitespace();
         if white_space != Token::WhiteSpace(0) {
             return Some(white_space);
         }
-        match self.next_char()? {
-            '{' => {
-                self.pos += 1;
-                Some(Token::CurlyBraceOpen)
-            }
-            '}' => {
-                self.pos += 1;
-                Some(Token::CurlyBraceClose)
-            }
-            '(' => {
-                self.pos += 1;
-                Some(Token::ParenOpen)
-            }
-            ')' => {
-                self.pos += 1;
-                Some(Token::ParenClose)
-            }
-            ':' => {
-                self.pos += 1;
-                Some(Token::Colon)
-            }
-            ',' => {
-                self.pos += 1;
+        match self.next_char() {
+            None => {
+                if self.finished {
+                    return None;
+                }
+                self.finished = true;
+                return Some(Token::EndOfFile);
+            },
+            Some(ch) => match ch {
 
-                Some(Token::Comma)
-            }
-            '"' => {
-                self.pos += 1;
-                Some(self.read_string())
-            }
-            '\'' => {
-                self.pos += 1;
-                Some(self.read_char())
-            }
-            '/' => {
-                if self.starts_with("//") {
-                    Some(self.read_comment())
-                } else {
-                    panic!("Unexpected character: /");
+                '{' => {
+                    self.pos += 1;
+                    Some(Token::CurlyBraceOpen)
                 }
-            }
-            '.' => {
-                if self.starts_with("..") {
-                    self.pos += 2;
-                    return Some(Token::Ellipse);
+                '}' => {
+                    self.pos += 1;
+                    Some(Token::CurlyBraceClose)
                 }
-                self.pos += 1;
-                return Some(Token::Dot);
-            },
-            // bitwise
-            '&' => {
-                if self.starts_with("&&") {
-                    self.pos += 2;
-                    return Some(Token::And);
+                '(' => {
+                    self.pos += 1;
+                    Some(Token::ParenOpen)
                 }
-                self.pos += 1;
-                return Some(Token::BitwiseAnd);
-            },
-            '|' => {
-                if self.starts_with("||") {
-                    self.pos += 2;
-                    return Some(Token::Or);
+                ')' => {
+                    self.pos += 1;
+                    Some(Token::ParenClose)
                 }
-                self.pos += 1;
-                return Some(Token::BitwiseOr);
-            },
-            '^' => {
-                self.pos += 1;
-                return Some(Token::BitwiseXor);
-            },
-            '~' => {
-                self.pos += 1;
-                return Some(Token::BitwiseNot);
-            },
-            // arithmetic
-            '+' => {
-                self.pos += 1;
-                return Some(Token::Plus);
-            },
-            '-' => {
-                self.pos += 1;
-                return Some(Token::Minus);
-            },
-            '*' => {
-                self.pos += 1;
-                return Some(Token::Multiply);
-            },
-            '/' => {
-                self.pos += 1;
-                return Some(Token::Divide);
-            },
-            '%' => {
-                self.pos += 1;
-                return Some(Token::Modulo);
-            },
-            // comparison
-            '!' => {
-                if self.starts_with("!=") {
-                    self.pos += 2;
-                    return Some(Token::NotEqual);
+                ':' => {
+                    self.pos += 1;
+                    Some(Token::Colon)
                 }
-                self.pos += 1;
-                return Some(Token::Not);
-            },
-            '>' => {
-                if self.starts_with(">=") {
-                    self.pos += 2;
-                    return Some(Token::GreaterThanOrEqual);
-                }
-                self.pos += 1;
-                return Some(Token::GreaterThan);
-            },
-            '<' => {
-                if self.starts_with("<=") {
-                    self.pos += 2;
-                    return Some(Token::LessThanOrEqual);
-                }
-                self.pos += 1;
-                return Some(Token::LessThan);
-            },
+                ',' => {
+                    self.pos += 1;
 
-            // '\x00' => {
-            //     self.pos += 1;
-            //     Some(Token::Eof)
-            // }
-            ch if ch.is_digit(10) => Some(self.read_number()),
-            ch if ch.is_ascii_alphabetic() => Some(self.read_identifier()),
-            ch => panic!("Unexpected character: {}", ch),
+                    Some(Token::Comma)
+                }
+                '"' => {
+                    self.pos += 1;
+                    Some(self.read_string())
+                }
+                '\'' => {
+                    self.pos += 1;
+                    Some(self.read_char())
+                }
+                '/' => {
+                    if self.starts_with("//") {
+                        Some(self.read_comment())
+                    } else {
+                        self.pos += 1;
+                        return Some(Token::Divide);
+                    }
+                }
+                '.' => {
+                    if self.starts_with("..") {
+                        self.pos += 2;
+                        return Some(Token::Ellipse);
+                    }
+                    self.pos += 1;
+                    return Some(Token::Dot);
+                }
+                // bitwise
+                '&' => {
+                    if self.starts_with("&&") {
+                        self.pos += 2;
+                        return Some(Token::And);
+                    }
+                    self.pos += 1;
+                    return Some(Token::BitwiseAnd);
+                }
+                '|' => {
+                    if self.starts_with("||") {
+                        self.pos += 2;
+                        return Some(Token::Or);
+                    }
+                    self.pos += 1;
+                    return Some(Token::BitwiseOr);
+                }
+                '^' => {
+                    self.pos += 1;
+                    return Some(Token::BitwiseXor);
+                }
+                '~' => {
+                    self.pos += 1;
+                    return Some(Token::BitwiseNot);
+                }
+                // arithmetic
+                '+' => {
+                    self.pos += 1;
+                    return Some(Token::Plus);
+                }
+                '-' => {
+                    self.pos += 1;
+                    return Some(Token::Minus);
+                }
+                '*' => {
+                    self.pos += 1;
+                    return Some(Token::Multiply);
+                }
+                '%' => {
+                    self.pos += 1;
+                    return Some(Token::Modulo);
+                }
+                // comparison
+                '!' => {
+                    if self.starts_with("!=") {
+                        self.pos += 2;
+                        return Some(Token::NotEqual);
+                    }
+                    self.pos += 1;
+                    return Some(Token::Not);
+                }
+                '>' => {
+                    if self.starts_with(">=") {
+                        self.pos += 2;
+                        return Some(Token::GreaterThanOrEqual);
+                    }
+                    self.pos += 1;
+                    return Some(Token::GreaterThan);
+                }
+                '<' => {
+                    if self.starts_with("<=") {
+                        self.pos += 2;
+                        return Some(Token::LessThanOrEqual);
+                    }
+                    self.pos += 1;
+                    return Some(Token::LessThan);
+                }
+                ch if ch.is_digit(10) => Some(self.read_number()),
+                ch if ch.is_ascii_alphabetic() => Some(self.read_identifier()),
+                ch => panic!("Unexpected character: {}", ch),
+            }
         }
     }
 }
@@ -297,7 +247,7 @@ myResult: MyFunction(String("Value")) {
 }
 "#;
     let expected = vec![
-        Token::Newline(2),
+        Token::NewLine(2),
         Token::Identifier("myResult".to_string()),
         Token::Colon,
         Token::WhiteSpace(1),
@@ -310,13 +260,13 @@ myResult: MyFunction(String("Value")) {
         Token::ParenClose,
         Token::WhiteSpace(1),
         Token::CurlyBraceOpen,
-        Token::Newline(1),
+        Token::NewLine(1),
         Token::WhiteSpace(4),
         Token::Identifier("callBack".to_string()),
         Token::Colon,
         Token::WhiteSpace(1),
         Token::CurlyBraceOpen,
-        Token::Newline(1),
+        Token::NewLine(1),
         Token::WhiteSpace(8),
         Token::Identifier("io".to_string()),
         Token::Dot,
@@ -335,14 +285,14 @@ myResult: MyFunction(String("Value")) {
         Token::ParenClose,
         Token::CurlyBraceClose,
         Token::ParenClose,
-        Token::Newline(1),
+        Token::NewLine(1),
         Token::WhiteSpace(4),
         Token::CurlyBraceClose,
         Token::Comma,
-        Token::Newline(1),
+        Token::NewLine(1),
         Token::CurlyBraceClose,
-        Token::Newline(1),
-        // Token::Eof,
+        Token::NewLine(1),
+        Token::EndOfFile,
     ];
     let lexer = Lexer::new(input);
     let tokens = lexer.collect::<Vec<Token>>();
