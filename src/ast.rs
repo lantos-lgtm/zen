@@ -48,6 +48,7 @@ pub enum Literal {
     IntLiteral(i64),
     FloatLiteral(f64),
     Bool(bool),
+    CharLiteral(char),
     OctalLiteral(u32),
     HexLiteral(u8),
     BinaryLiteral(u32),

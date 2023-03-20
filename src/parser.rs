@@ -104,6 +104,29 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn parse_char_literal(&mut self) -> Expr {
+        if let Some(Token::CharLiteral(value)) = &self.current_token {
+            let char_literal = Literal::CharLiteral(value.clone());
+            self.next_token();
+            Expr::Literal(char_literal)
+        } else {
+            panic!("Unexpected token: {:?}", self.current_token);
+        }
+    }
+
+    fn parse_literal(&mut self) -> Expr {
+        // number literal
+        // string literal
+        // char literal
+        match &self.current_token {
+            Some(Token::NumberLiteral(_)) => self.parse_number_literal(),
+            Some(Token::StringLiteral(_)) => self.parse_string_literal(),
+            Some(Token::CharLiteral(_)) =>  self.parse_char_literal(),
+            None => panic!("Unexpected EOF"),
+            _ => panic!("Unexpected token: {:?}", self.current_token),
+        }
+    }
+
     fn parse_identifier(&mut self) -> Expr {
         if let Some(Token::Identifier(name)) = &self.current_token {
             let identifier = Identifier(name.clone());
@@ -257,6 +280,7 @@ impl<'a> Parser<'a> {
         let mut param_exprs: Vec<Expr> = Vec::new();
         let mut block_expr: Option<Expr> = None;
         loop {
+            &self.skip_formating();
             match &self.current_token {
                 Some(Token::ParenClose) => {
                     self.next_token();
@@ -267,31 +291,39 @@ impl<'a> Parser<'a> {
                 }
                 Some(Token::Identifier(_)) => {
                     param_exprs.push(self.parse_identifier());
+                },
+                Some(Token::CharLiteral(_) | Token::StringLiteral(_) | Token::NumberLiteral(_)) => {
+                    param_exprs.push(self.parse_literal());
                 }
+
                 None | Some(Token::EndOfFile) => {
-                    panic!("Unexpected EOF, expected: {:?}", Token::ParenClose);
+                    // panic!("Unexpected EOF, expected: {:?}", &self.current_token);
+                    // this is a valid case ) can be the end of a file
+                    break;
                 }
+
                 // should add expected errors
-                _ => unreachable!()
+                _ => {
+                    unreachable!("lexerPos: {:?}, token: {:?}", self.lexer.pos, self.current_token);
+                }
             }
         }
+
+        // check to see if param has a assignment block or statement block
         loop {
+            &self.skip_formating();
             match &self.current_token {
-                Some(Token::ParenClose) => {
-                    self.next_token();
+                Some(Token::CurlyBraceOpen) => {
+                    block_expr = Some(self.parse_block(None));
                     break;
                 }
-                Some(Token::Ellipse) => {
-                    param_exprs.push(self.parse_spread_expression());
-                }
-                Some(Token::Identifier(_)) => {
-                    param_exprs.push(self.parse_identifier());
-                }
                 None | Some(Token::EndOfFile) => {
-                    panic!("Unexpected EOF, expected: {:?}", Token::ParenClose);
+                    // this is a valid case ) can be the end of a file
+                    break;
                 }
-                // should add expected errors
-                _ => unreachable!()
+                _ => {
+                    break;
+                }
             }
         }
 
@@ -376,7 +408,7 @@ impl<'a> Parser<'a> {
         //  StatementBlock
         //  ParamBlock
 
-    
+        &self.skip_formating();
         match &self.current_token {
             // Atoms
             Some(Token::Identifier(_)) => self.parse_identifier(),
@@ -445,4 +477,32 @@ fn test_parser() {
         })),
     });
     assert!(name_ast == name_ast_expected);
+}
+
+#[test]
+fn test_parser_1() {
+    let name_str = "
+        Name: Type {
+            fistName: String,
+            lastName: String,
+        }
+        Person: Type {
+            ...Name,
+            age: Int.i32(1),
+            address: String,
+        }
+
+    
+    ";
+    let lexer = Lexer::new(name_str);
+    let tokens = lexer.collect::<Vec<Token>>();
+    println!("Parsing string: {:?}", name_str);
+    println!("Parsing tokens: {:?}", tokens);
+    let mut parser = Parser::new(name_str);
+    let name_ast = match parser.parse() {
+        Program(expressions) => expressions[0].clone()
+    };
+
+    println!("AST: {}", serde_json::to_string_pretty(&name_ast).unwrap());
+    
 }

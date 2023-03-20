@@ -5,9 +5,9 @@ use crate::token::Token;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Lexer<'a> {
-    input: &'a str,
-    pos: usize,
-    finished: bool,
+    pub input: &'a str,
+    pub pos: usize,
+    pub finished: bool,
 }
 
 impl<'a> Lexer<'a> {
