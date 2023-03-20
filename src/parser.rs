@@ -279,6 +279,11 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_paren_block(&mut self, ident: Option<Box<Expr>>) -> Expr {
+        // WARNING: I MIGHT HAVE TO PUSH THIS TO AFTER TYPE CHECKING
+        // because we need to check to see if the fields are valid
+        // for the type
+        // if not it might be a function call or statement block
+
         // a params block
         self.expect_token(vec![Token::ParenOpen]);
         self.next_token();
@@ -374,6 +379,7 @@ impl<'a> Parser<'a> {
                 }),
             },
             None => {
+                // anon block { }
                 unimplemented!("Param block without a name")
             }
         }
