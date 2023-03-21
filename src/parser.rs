@@ -66,7 +66,7 @@ impl<'a> Parser<'a> {
             }
         }
     }
-    fn parse_number_literal(&mut self) -> Expr {
+    fn parse_number_literal(&mut self) -> Result<Expr, ParseError> {
         // starts with 0b, 0o, 0x -> binary, octal, hex
         // has a . -> float
         // has a e -> exponent
@@ -103,33 +103,33 @@ impl<'a> Parser<'a> {
             };
             self.next_token();
 
-            number_expr
+            Ok(number_expr)
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
         }
     }
 
-    fn parse_string_literal(&mut self) -> Expr {
+    fn parse_string_literal(&mut self) -> Result<Expr, ParseError> {
         if let Some(Token::StringLiteral(value)) = &self.current_token {
             let string_literal = Literal::StringLiteral(value.clone());
             self.next_token();
-            Expr::Literal(string_literal)
+            Ok(Expr::Literal(string_literal))
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
         }
     }
 
-    fn parse_char_literal(&mut self) -> Expr {
+    fn parse_char_literal(&mut self) -> Result<Expr, ParseError> {
         if let Some(Token::CharLiteral(value)) = &self.current_token {
             let char_literal = Literal::CharLiteral(value.clone());
             self.next_token();
-            Expr::Literal(char_literal)
+            Ok(Expr::Literal(char_literal))
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
         }
     }
 
-    fn parse_literal(&mut self) -> Expr {
+    fn parse_literal(&mut self) -> Result<Expr, ParseError> {
         // number literal
         // string literal
         // char literal
@@ -142,7 +142,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_identifier(&mut self) -> Expr {
+    fn parse_identifier(&mut self) -> Result<Expr, ParseError> {
         if let Some(Token::Identifier(name)) = &self.current_token {
             let identifier = Identifier(name.clone());
             self.next_token();
@@ -164,42 +164,42 @@ impl<'a> Parser<'a> {
                 Some(Token::ParenOpen) => {
                     self.parse_paren_block(Some(Box::new(Expr::Identifier(identifier))))
                 }
-                _ => Expr::Identifier(identifier),
+                _ => Ok(Expr::Identifier(identifier)),
             }
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
         }
     }
 
-    fn parse_assignment(&mut self, key: Box<Expr>) -> Expr {
+    fn parse_assignment(&mut self, key: Box<Expr>) -> Result<Expr, ParseError> {
         self.expect_token(vec![Token::Colon]);
         self.next_token();
         // key : value
         // key : Type ...
         // key : Func ...
-        let value = Box::new(self.parse_expression());
-        Expr::Assignment(Assignment { key, value })
+        let value = Box::new(self.parse_expression().unwrap());
+        Ok(Expr::Assignment(Assignment { key, value }))
     }
 
-    fn parse_accessor(&mut self, object: Box<Expr>) -> Expr {
+    fn parse_accessor(&mut self, object: Box<Expr>) -> Result<Expr, ParseError> {
         self.expect_token(vec![Token::Dot]);
         self.next_token();
-        let property = Box::new(self.parse_expression());
-        Expr::Accessor(Accessor { object, property })
+        let property = Box::new(self.parse_expression().unwrap());
+        Ok(Expr::Accessor(Accessor { object, property }))
     }
 
-    fn parse_spread_expression(&mut self) -> Expr {
+    fn parse_spread_expression(&mut self) -> Result<Expr, ParseError> {
         self.expect_token(vec![Token::Ellipse]);
         // skip this token(...)
         self.next_token();
         // this expr expects a Identifier
         self.expect_token(vec![Token::Identifier("".to_string())]);
-        let expr = Box::new(self.parse_expression());
+        let expr = Box::new(self.parse_expression().unwrap());
         // get the next expr
-        Expr::SpreadExpr(expr)
+        Ok(Expr::SpreadExpr(expr))
     }
 
-    fn parse_curly_block(&mut self, ident: Option<Box<Expr>>) -> Expr {
+    fn parse_curly_block(&mut self, ident: Option<Box<Expr>>) -> Result<Expr, ParseError> {
         // either a assignment block, a statement block
         self.expect_token(vec![Token::CurlyBraceOpen]);
         let mut is_statement_block = false;
@@ -227,10 +227,10 @@ impl<'a> Parser<'a> {
                     break;
                 }
                 Some(Token::Ellipse) => {
-                    exprs.push(self.parse_spread_expression());
+                    exprs.push(self.parse_spread_expression().unwrap());
                 }
                 Some(Token::Identifier(_)) => {
-                    exprs.push(self.parse_identifier());
+                    exprs.push(self.parse_identifier().unwrap());
                 }
                 None | Some(Token::EndOfFile) => {
                     panic!("Unexpected EOF, expected: {:?}", Token::CurlyBraceClose);
@@ -257,27 +257,27 @@ impl<'a> Parser<'a> {
                     // maybe this can be the default constructor
                     unimplemented!("Statement block as type def, {:?}", self.current_token);
                 } else {
-                    Expr::TypeDef(TypeDef {
+                    Ok(Expr::TypeDef(TypeDef {
                         name: ident.to_owned(),
                         fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(exprs))),
-                    })
+                    }))
                 }
             }
             None => {
                 if is_statement_block {
-                    Expr::StatementBlock(StatementBlock(exprs))
+                    Ok(Expr::StatementBlock(StatementBlock(exprs)))
                 } else {
                     // maybe this cn be anonymous Type?
-                    Expr::AnonymousType(AnonymousType {
+                    Ok(Expr::AnonymousType(AnonymousType {
                         fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(exprs))),
-                    })
+                    }))
                     // unimplemented!("Assignment block as type def, ident:{:?} exprs:{:?} \n current_token:{:?}", ident, exprs, self.current_token);
                 }
             }
         }
     }
 
-    fn parse_paren_block(&mut self, ident: Option<Box<Expr>>) -> Expr {
+    fn parse_paren_block(&mut self, ident: Option<Box<Expr>>) -> Result<Expr, ParseError> {
         // WARNING: I MIGHT HAVE TO PUSH THIS TO AFTER TYPE CHECKING
         // because we need to check to see if the fields are valid
         // for the type
@@ -303,13 +303,13 @@ impl<'a> Parser<'a> {
                     break;
                 }
                 Some(Token::Ellipse) => {
-                    param_exprs.push(self.parse_spread_expression());
+                    param_exprs.push(self.parse_spread_expression().unwrap());
                 }
                 Some(Token::Identifier(_)) => {
-                    param_exprs.push(self.parse_identifier());
+                    param_exprs.push(self.parse_identifier().unwrap());
                 }
                 Some(Token::CharLiteral(_) | Token::StringLiteral(_) | Token::NumberLiteral(_)) => {
-                    param_exprs.push(self.parse_literal());
+                    param_exprs.push(self.parse_literal().unwrap());
                 }
 
                 None | Some(Token::EndOfFile) => {
@@ -333,7 +333,7 @@ impl<'a> Parser<'a> {
             &self.skip_formating();
             match &self.current_token {
                 Some(Token::CurlyBraceOpen) => {
-                    block_expr = Some(self.parse_block(None));
+                    block_expr = Some(self.parse_block(None).unwrap());
                     break;
                 }
                 None | Some(Token::EndOfFile) => {
@@ -348,34 +348,34 @@ impl<'a> Parser<'a> {
 
         // check to see if next token is a curly brace open
         if &self.current_token == &Some(Token::CurlyBraceOpen) {
-            block_expr = Some(self.parse_block(None));
+            block_expr = Some(self.parse_block(None).unwrap());
         }
 
         match &ident {
             Some(ident) => match block_expr {
                 Some(expr) => {
                     if expr == Expr::StatementBlock(StatementBlock(vec![])) {
-                        Expr::FuncCall(FuncCall {
+                        Ok(Expr::FuncCall(FuncCall {
                             name: ident.to_owned(),
                             args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
                             fields: None,
                             body: Some(Box::new(expr)),
-                        })
+                        }))
                     } else {
-                        Expr::FuncCall(FuncCall {
+                        Ok(Expr::FuncCall(FuncCall {
                             name: ident.to_owned(),
                             args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
                             fields: Some(Box::new(expr)),
                             body: None,
-                        })
+                        }))
                     }
                 }
-                None => Expr::FuncCall(FuncCall {
+                None => Ok(Expr::FuncCall(FuncCall {
                     name: ident.to_owned(),
                     args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
                     fields: None,
                     body: None,
-                }),
+                })),
             },
             None => {
                 // anon block { }
@@ -384,7 +384,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_block(&mut self, ident: Option<Box<Expr>>) -> Expr {
+    fn parse_block(&mut self, ident: Option<Box<Expr>>) -> Result<Expr, ParseError> {
         // either a assignment block, a statement block or a param block
         self.expect_token(vec![Token::CurlyBraceOpen, Token::ParenOpen]);
         let expr = match &self.current_token {
@@ -395,7 +395,7 @@ impl<'a> Parser<'a> {
         expr
     }
 
-    fn parse_expression(&mut self) -> Expr {
+    fn parse_expression(&mut self) -> Result<Expr, ParseError> {
         // Atoms
         //  identifier
         //  literals
@@ -428,21 +428,21 @@ impl<'a> Parser<'a> {
 
             // Grouping
             Some(Token::CurlyBraceOpen) | Some(Token::ParenOpen) => self.parse_block(None),
-            Some(Token::EndOfFile) => Expr::EndOfFile,
+            Some(Token::EndOfFile) => Ok(Expr::EndOfFile),
             _ => panic!("Unexpected token: {:?}", self.current_token),
         }
     }
 
-    pub fn parse(&mut self) -> Expr {
+    pub fn parse(&mut self) -> Result<Expr, ParseError> {
         let mut expressions = Vec::new();
 
         while let Some(token) = &self.current_token {
             if token == &Token::EndOfFile {
                 break;
             }
-            expressions.push(self.parse_expression());
+            expressions.push(self.parse_expression().unwrap());
         }
-        Expr::StatementBlock(StatementBlock(expressions))
+        Ok(Expr::StatementBlock(StatementBlock(expressions)))
     }
 }
 
@@ -457,7 +457,7 @@ fn test_parser() {
     println!("Parsing string: {:?}", name_str);
     println!("Parsing tokens: {:?}", tokens);
     let mut parser = Parser::new(name_str);
-    let name_ast = parser.parse();
+    let name_ast = parser.parse().unwrap();
 
     let name_ast_expected =
         Expr::StatementBlock(StatementBlock(vec![Expr::Assignment(Assignment {

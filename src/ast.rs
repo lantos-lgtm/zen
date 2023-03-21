@@ -1,6 +1,5 @@
 use serde::{Serialize};
 
-
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub struct Identifier(pub String);
 
@@ -85,3 +84,9 @@ pub enum Expr {
 
     EndOfFile
 }
+
+// Curly -> TypeDef                // Type { a: Int.I32(1) }
+// Curly -> AnonType               // { a: Int.I32(1) }
+// Curly -> AnonAssignmentBlock    // { a: Int.I32(1) } : { a: Int.I32(1) }
+// Curly -> AnonStatement          // { std.out.write(String("Hello World")) }
+// Curly -> StatementBlock         // value: { getString() }
