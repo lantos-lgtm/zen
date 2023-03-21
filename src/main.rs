@@ -90,56 +90,63 @@ mod lexer;
 mod ast;
 mod token;
 mod parser;
-use parser::{Parser};
+mod codegen;
 
+use std::path::PathBuf;
+use clap::{Parser, Subcommand};
 
-// // repl
-// fn parse_repl() {
-//     todo!()
-// }
-// // file
-// fn parse_file(file_path: &String) {
-//     let file = std::fs::read_to_string(file_path).expect("Failed to read file");
-//     let mut parser = Parser::new(&file);
-//     let ast = parser.parse();
-//     println!("{:#?}", ast);
+#[derive(Parser)]
+#[command(name = "Zen")]
+#[command(author, version, about, long_about = None)] // Read from `Cargo.toml`
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
 
-// }
+#[derive(Subcommand)]
+enum Commands {
+    /// runs a file or string
+    Run {
+        #[arg(short, long)]
+        file: PathBuf,
+
+        #[arg(short, long)]
+        string: String,
+    },
+    // runs a repl session
+    Repl,
+}
+
+fn parse_file(file_path: &PathBuf) {
+    let file = std::fs::read_to_string(file_path).expect("Failed to read file");
+    let mut parser = parser::Parser::new(&file);
+    let ast = parser.parse();
+    println!("{:#?}", ast);
+}
 // // string
-// fn parse_string(string: &String) {
-//     let mut parser = Parser::new(&string);
-//     let ast = parser.parse();
-//     println!("{:#?}", ast);
-// }
+fn parse_string(string: &String) {
+    let mut parser = parser::Parser::new(&string);
+    let ast = parser.parse();
+    println!("{:#?}", ast);
+}
 
 fn main() {
-    // parse args using clap
-    // run, build, test
-    //  -f file_path
-    //  -s string
-    // -h help
-    // "" repl
 
-    let matches = clap::Command::new("zen")
-        .version("0.1.0")
-        .author("Lyndon Leong <l.leong1618[at]gmail.com>")
-        .about("A programming language")
-        .arg(
-            clap::Arg::new("file")
-                .short('f')
-                .long("file")
-                .value_name("FILE")
-                .help("File to parse")
-        )
-        .arg(
-            clap::Arg::new("string")
-                .short('s')
-                .long("string")
-                .value_name("STRING")
-                .help("String to parse")
-        )
-        .get_matches();
+    let cli = Cli::parse();
+    match &cli.command {
+        Commands::Run {file, string} => {
+           if !file.is_file() {
+               parse_file(file);
+            } else if !string.is_empty() {
+                parse_string(string);
+            } else {
+                panic!("No file or string provided");
+            }
+        },
+        Commands::Repl => {
+            todo!()
+        }
+    }
 
-    // Match on args    
-
+    
 }

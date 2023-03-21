@@ -1,0 +1,13 @@
+Person: Type {
+    name: String,
+    age: Int
+}
+
+main: Function {
+    body: {
+        person: Person (
+            name: "John",
+            age: 30
+        )
+    }
+}

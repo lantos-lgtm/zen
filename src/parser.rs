@@ -1,6 +1,6 @@
 use crate::ast::{
-    Accessor, Assignment, AssignmentBlock, Expr, FuncCall, Identifier, Literal, ParamBlock,
-    StatementBlock, TypeDef, AnonymousType,
+    Accessor, AnonymousType, Assignment, AssignmentBlock, Expr, FuncCall, Identifier, Literal,
+    ParamBlock, StatementBlock, TypeDef,
 };
 use crate::lexer::Lexer;
 use crate::token::Token;
@@ -93,12 +93,43 @@ impl<'a> Parser<'a> {
                 }
                 // float
                 _ if value.contains(".") => {
-                    todo!()
+                    // if contains e -> exponent
+                    // lhs = float
+                    // rhs = exponent
+                    if value.contains("e") {
+                        let mut split = value.split("e");
+                        let lhs = split.next().unwrap().parse::<f64>().unwrap();
+
+                        let rhs = split.next().unwrap();
+                        let rhs = i32::from_str_radix(rhs, 10).unwrap();
+
+                        // calculate the exponent
+                        let float = lhs * 10_f64.powi(rhs);
+                        Expr::Literal(Literal::FloatLiteral(float))
+
+                    } else {
+                        let val = value.parse::<f64>().unwrap();
+                        Expr::Literal(Literal::FloatLiteral(val))
+                    }
                 }
                 // int
                 _ => {
-                    let val = i64::from_str_radix(value, 10).unwrap();
-                    Expr::Literal(Literal::IntLiteral(val))
+                    if value.contains("e") {
+                        let mut split = value.split("e");
+                        let lhs = i64::from_str_radix(split.next().unwrap(), 10).unwrap();
+
+                        let rhs = split.next().unwrap();
+                        let rhs = i64::from_str_radix(rhs, 10).unwrap();
+
+                        // calculate the exponent
+                        let int = lhs * 10_i64.pow(rhs as u32);
+
+                        Expr::Literal(Literal::IntLiteral(int))
+
+                    } else {
+                        let val = value.parse::<i64>().unwrap();
+                        Expr::Literal(Literal::IntLiteral(val))
+                    }
                 }
             };
             self.next_token();
