@@ -45,10 +45,10 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
     fn gen_basic_value(&mut self, expr: &Expr) -> Result<BasicValueEnum<'ctx>, CodeGenError> {
         match expr {
             Expr::Literal(Literal::IntLiteral(int)) => {
-                Ok(self.context.i32_type().const_int(*int as u64, false).into())
+                Ok(self.context.i64_type().const_int(*int as u64, false).into())
             },
             Expr::Literal(Literal::FloatLiteral(float)) => {
-                Ok(self.context.f32_type().const_float(*float as f64).into())
+                Ok(self.context.f64_type().const_float(*float as f64).into())
             },
             Expr::Literal(Literal::StringLiteral(string)) => {
                 let string_const = self.context.const_string(string.as_bytes(), true);
@@ -72,10 +72,16 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
                 match self.symbol_table.get(identifier) {
                     Some(alloca) => *alloca,
                     None => {
-                        // If the variable doesn't exist, create it
-                        let new_alloca = self.builder.build_alloca(self.context.i32_type(), &identifier);
-                        self.symbol_table.insert(identifier.clone(), new_alloca);
-                        new_alloca
+                        todo!("Identifier symbol table")
+                        
+                        // // If the variable doesn't exist, create it
+                        // let ty = self.context.i64_type();
+                        // let name = identifier.as_str();
+                        // let new_alloca = self.builder.build_alloca(ty, name);
+
+                        // // Add the variable to the symbol table mapping
+                        // self.symbol_table.insert(identifier.clone(), new_alloca);
+                        // new_alloca
                     }
 
                 }
@@ -105,16 +111,16 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
 
     fn gen_expr(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
         match expr {
-            Expr::SpreadExpr(_) => todo!(),
+            Expr::SpreadExpr(_) => todo!("SpreadExpr"),
             Expr::Assignment(assignment) => self.gen_assignment(assignment),
-            Expr::Accessor(_) => todo!(),
-            Expr::AssignmentBlock(_) => todo!(),
+            Expr::Accessor(_) => todo!("Accessor"),
+            Expr::AssignmentBlock(_) => todo!("AssignmentBlock"),
             Expr::StatementBlock(_) => self.gen_statement_block(expr),
-            Expr::ParamBlock(_) => todo!(),
-            Expr::AnonymousType(_) => todo!(),
-            Expr::TypeDef(_) => todo!(),
-            Expr::FuncCall(_) => todo!(),
-            _ => todo!(),
+            Expr::ParamBlock(_) => todo!("ParamBlock"),
+            Expr::AnonymousType(_) => todo!("AnonymousType"),
+            Expr::TypeDef(_) => todo!("TypeDef"),
+            Expr::FuncCall(_) => todo!("FuncCall"),
+            _ => todo!("Other"),
         }
     }
 
@@ -125,8 +131,9 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
 
 #[test]
 pub fn test_codeGen() {
-    let path = "src/tests/test.zen";
-    let file = std::fs::read_to_string(path).unwrap();
+    // let path = "src/tests/test.zen";
+    // let file = std::fs::read_to_string(path).unwrap();
+    let file = "a: 10".to_string();
     let mut parser = parser::Parser::new(&file);
     let ast = parser.parse().unwrap();
     println!("{:#?}", ast);
@@ -170,6 +177,15 @@ pub fn test() {
     let sum = builder.build_int_add(x, y, "sum");
     let sum = builder.build_int_add(sum, z, "sum");
 
+    let w_ptr = builder.build_alloca(i64_type, "w");
+    let i64_zero = i64_type.const_int(10, false);
+
+    builder.build_store(w_ptr, i64_zero);
+
+    // retrieve the value of w
+    let w = builder.build_load(i64_type, w_ptr, "w").into_int_value();
+
+    let sum = builder.build_int_add(sum,w , "sum");
     builder.build_return(Some(&sum));
 
     type SumFunc = unsafe extern "C" fn(u64, u64, u64) -> u64;
@@ -182,6 +198,6 @@ pub fn test() {
 
     unsafe {
         println!("{} + {} + {} = {}", x, y, z, sum.call(x, y, z));
-        assert_eq!(sum.call(x, y, z), x + y + z);
+        assert_eq!(sum.call(x, y, z), x + y + z + 10);
     }
 }
