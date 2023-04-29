@@ -1,7 +1,7 @@
-use crate::ast::{
-    Accessor, AnonymousType, Assignment, AssignmentBlock, Expr, FuncCall, Identifier, Literal,
-    ParamBlock, StatementBlock, TypeDef,
-};
+use std::vec;
+
+use crate::ast::{Atom, Binary, BinaryOp, Expr, FuncCall, Group, GroupOp, Literal, TypeDef, Unary};
+
 use crate::lexer::Lexer;
 use crate::token::Token;
 
@@ -77,19 +77,19 @@ impl<'a> Parser<'a> {
                 _ if value.starts_with("0b") => {
                     let val = value.trim_start_matches("0b");
                     let val = u32::from_str_radix(val, 2).unwrap();
-                    Expr::Literal(Literal::BinaryLiteral(val))
+                    Expr::Atom(Atom::Literal(Literal::BinaryLiteral(val)))
                 }
                 // octal
                 _ if value.starts_with("0o") => {
                     let val = value.trim_start_matches("0o");
                     let val = u32::from_str_radix(val, 8).unwrap();
-                    Expr::Literal(Literal::OctalLiteral(val))
+                    Expr::Atom(Atom::Literal(Literal::OctalLiteral(val)))
                 }
                 // hex
                 _ if value.starts_with("0x") => {
                     let val = value.trim_start_matches("0x");
                     let val = u8::from_str_radix(val, 16).unwrap();
-                    Expr::Literal(Literal::HexLiteral(val))
+                    Expr::Atom(Atom::Literal(Literal::HexLiteral(val)))
                 }
                 // float
                 _ if value.contains(".") => {
@@ -105,11 +105,10 @@ impl<'a> Parser<'a> {
 
                         // calculate the exponent
                         let float = lhs * 10_f64.powi(rhs);
-                        Expr::Literal(Literal::FloatLiteral(float))
-
+                        Expr::Atom(Atom::Literal(Literal::FloatLiteral(float)))
                     } else {
                         let val = value.parse::<f64>().unwrap();
-                        Expr::Literal(Literal::FloatLiteral(val))
+                        Expr::Atom(Atom::Literal(Literal::FloatLiteral(val)))
                     }
                 }
                 // int
@@ -124,11 +123,10 @@ impl<'a> Parser<'a> {
                         // calculate the exponent
                         let int = lhs * 10_i64.pow(rhs as u32);
 
-                        Expr::Literal(Literal::IntLiteral(int))
-
+                        Expr::Atom(Atom::Literal(Literal::IntLiteral(int)))
                     } else {
                         let val = value.parse::<i64>().unwrap();
-                        Expr::Literal(Literal::IntLiteral(val))
+                        Expr::Atom(Atom::Literal(Literal::IntLiteral(val)))
                     }
                 }
             };
@@ -144,7 +142,7 @@ impl<'a> Parser<'a> {
         if let Some(Token::StringLiteral(value)) = &self.current_token {
             let string_literal = Literal::StringLiteral(value.clone());
             self.next_token();
-            Ok(Expr::Literal(string_literal))
+            Ok(Expr::Atom(Atom::Literal(string_literal)))
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
         }
@@ -154,18 +152,17 @@ impl<'a> Parser<'a> {
         if let Some(Token::BoolLiteral(value)) = &self.current_token {
             let bool_literal = Literal::BoolLiteral(value.clone());
             self.next_token();
-            Ok(Expr::Literal(bool_literal))
+            Ok(Expr::Atom(Atom::Literal(bool_literal)))
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
         }
     }
 
-
     fn parse_char_literal(&mut self) -> Result<Expr, ParseError> {
         if let Some(Token::CharLiteral(value)) = &self.current_token {
             let char_literal = Literal::CharLiteral(value.clone());
             self.next_token();
-            Ok(Expr::Literal(char_literal))
+            Ok(Expr::Atom(Atom::Literal(char_literal)))
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
         }
@@ -185,8 +182,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_identifier(&mut self) -> Result<Expr, ParseError> {
-        if let Some(Token::Identifier(name)) = &self.current_token {
-            let identifier = Identifier(name.clone());
+        if let Some(Token::Identifier(identifier)) = &self.current_token {
             self.next_token();
 
             // ident : ident
@@ -195,18 +191,21 @@ impl<'a> Parser<'a> {
             // ident ( ... )
             match &self.current_token {
                 // ident : ident
-                Some(Token::Colon) => self.parse_assignment(Box::new(Expr::Identifier(identifier))),
+                Some(Token::Colon) => self
+                    .parse_assignment(Box::new(Expr::Atom(Atom::Identifier(identifier.clone())))),
                 // ident . ident
-                Some(Token::Dot) => self.parse_accessor(Box::new(Expr::Identifier(identifier))),
+                Some(Token::Dot) => {
+                    self.parse_accessor(Box::new(Expr::Atom(Atom::Identifier(identifier.clone()))))
+                }
                 // ident { ... }
-                Some(Token::CurlyBraceOpen) => {
-                    self.parse_block(Some(Box::new(Expr::Identifier(identifier))))
-                }
+                Some(Token::CurlyBraceOpen) => self.parse_block(Some(Box::new(Expr::Atom(
+                    Atom::Identifier(identifier.clone()),
+                )))),
                 // ident ( ... )
-                Some(Token::ParenOpen) => {
-                    self.parse_paren_block(Some(Box::new(Expr::Identifier(identifier))))
-                }
-                _ => Ok(Expr::Identifier(identifier)),
+                Some(Token::ParenOpen) => self.parse_paren_block(Some(Box::new(Expr::Atom(
+                    Atom::Identifier(identifier.clone()),
+                )))),
+                _ => Ok(Expr::Atom(Atom::Identifier(identifier.clone()))),
             }
         } else {
             panic!("Unexpected token: {:?}", self.current_token);
@@ -220,14 +219,22 @@ impl<'a> Parser<'a> {
         // key : Type ...
         // key : Func ...
         let value = Box::new(self.parse_expression().unwrap());
-        Ok(Expr::Assignment(Assignment { key, value }))
+        Ok(Expr::Binary(Binary {
+            op: BinaryOp::Assignment,
+            left: key,
+            right: value,
+        }))
     }
 
     fn parse_accessor(&mut self, object: Box<Expr>) -> Result<Expr, ParseError> {
         self.expect_token(vec![Token::Dot]);
         self.next_token();
         let property = Box::new(self.parse_expression().unwrap());
-        Ok(Expr::Accessor(Accessor { object, property }))
+        Ok(Expr::Binary(Binary {
+            op: BinaryOp::Accessor,
+            left: object,
+            right: property,
+        }))
     }
 
     fn parse_spread_expression(&mut self) -> Result<Expr, ParseError> {
@@ -238,7 +245,7 @@ impl<'a> Parser<'a> {
         self.expect_token(vec![Token::Identifier("".to_string())]);
         let expr = Box::new(self.parse_expression().unwrap());
         // get the next expr
-        Ok(Expr::SpreadExpr(expr))
+        Ok(Expr::Unary(Unary::SpreadExpr(expr)))
     }
 
     fn parse_curly_block(&mut self, ident: Option<Box<Expr>>) -> Result<Expr, ParseError> {
@@ -284,12 +291,16 @@ impl<'a> Parser<'a> {
             }
         }
         for expr in &exprs {
+            // if any of the exprs is not an assignment then we need to treat it as a statement block
             match expr {
-                Expr::Accessor(_) | Expr::FuncCall(_) => {
+                Expr::Binary(Binary {
+                    op: BinaryOp::Assignment,
+                    ..
+                }) => {}
+                _ => {
                     is_statement_block = true;
                     break;
                 }
-                _ => {}
             }
         }
 
@@ -299,21 +310,29 @@ impl<'a> Parser<'a> {
                     // maybe this can be the default constructor
                     unimplemented!("Statement block as type def, {:?}", self.current_token);
                 } else {
+                    // this is a type def
                     Ok(Expr::TypeDef(TypeDef {
                         name: ident.to_owned(),
-                        fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(exprs))),
+                        fields: Box::new(Expr::Group(Group {
+                            exprs,
+                            op: GroupOp::AnonymousType,
+                        })),
                     }))
                 }
             }
             None => {
                 if is_statement_block {
-                    Ok(Expr::StatementBlock(StatementBlock(exprs)))
-                } else {
-                    // maybe this cn be anonymous Type?
-                    Ok(Expr::AnonymousType(AnonymousType {
-                        fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(exprs))),
+                    // this is a statement block
+                    Ok(Expr::Group(Group {
+                        exprs,
+                        op: GroupOp::StatementBlock,
                     }))
-                    // unimplemented!("Assignment block as type def, ident:{:?} exprs:{:?} \n current_token:{:?}", ident, exprs, self.current_token);
+                } else {
+                    // this is a anonymous type
+                    Ok(Expr::Group(Group {
+                        exprs,
+                        op: GroupOp::AnonymousType,
+                    }))
                 }
             }
         }
@@ -396,17 +415,28 @@ impl<'a> Parser<'a> {
         match &ident {
             Some(ident) => match block_expr {
                 Some(expr) => {
-                    if expr == Expr::StatementBlock(StatementBlock(vec![])) {
+                    if expr
+                        == Expr::Group(Group {
+                            exprs: vec![],
+                            op: GroupOp::StatementBlock,
+                        })
+                    {
                         Ok(Expr::FuncCall(FuncCall {
                             name: ident.to_owned(),
-                            args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
+                            args: Box::new(Expr::Group(Group {
+                                exprs: param_exprs,
+                                op: GroupOp::ParamBlock,
+                            })),
                             fields: None,
                             body: Some(Box::new(expr)),
                         }))
                     } else {
                         Ok(Expr::FuncCall(FuncCall {
                             name: ident.to_owned(),
-                            args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
+                            args: Box::new(Expr::Group(Group {
+                                exprs: param_exprs,
+                                op: GroupOp::ParamBlock,
+                            })),
                             fields: Some(Box::new(expr)),
                             body: None,
                         }))
@@ -414,7 +444,10 @@ impl<'a> Parser<'a> {
                 }
                 None => Ok(Expr::FuncCall(FuncCall {
                     name: ident.to_owned(),
-                    args: Box::new(Expr::ParamBlock(ParamBlock(param_exprs))),
+                    args: Box::new(Expr::Group(Group {
+                        exprs: param_exprs,
+                        op: GroupOp::ParamBlock,
+                    })),
                     fields: None,
                     body: None,
                 })),
@@ -485,7 +518,10 @@ impl<'a> Parser<'a> {
             }
             expressions.push(self.parse_expression().unwrap());
         }
-        Ok(Expr::StatementBlock(StatementBlock(expressions)))
+        Ok(Expr::Group(Group {
+            exprs: expressions,
+            op: GroupOp::StatementBlock,
+        }))
     }
 }
 
@@ -502,24 +538,49 @@ fn test_parser() {
     let mut parser = Parser::new(name_str);
     let name_ast = parser.parse().unwrap();
 
-    let name_ast_expected =
-        Expr::StatementBlock(StatementBlock(vec![Expr::Assignment(Assignment {
-            key: Box::new(Expr::Identifier(Identifier("Name".to_string()))),
-            value: Box::new(Expr::TypeDef(TypeDef {
-                name: Box::new(Expr::Identifier(Identifier("Type".to_string()))),
-                fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(vec![
-                    Expr::Assignment(Assignment {
-                        key: Box::new(Expr::Identifier(Identifier("fistName".to_string()))),
-                        value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-                    }),
-                    Expr::Assignment(Assignment {
-                        key: Box::new(Expr::Identifier(Identifier("lastName".to_string()))),
-                        value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-                    }),
-                ]))),
-            })),
-        })]));
+    // let name_ast_expected =
+    //     Expr::StatementBlock(StatementBlock(vec![Expr::Assignment(Assignment {
+    //         key: Box::new(Expr::Identifier(Identifier("Name".to_string()))),
+    //         value: Box::new(Expr::TypeDef(TypeDef {
+    //             name: Box::new(Expr::Identifier(Identifier("Type".to_string()))),
+    //             fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(vec![
+    //                 Expr::Assignment(Assignment {
+    //                     key: Box::new(Expr::Identifier(Identifier("fistName".to_string()))),
+    //                     value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
+    //                 }),
+    //                 Expr::Assignment(Assignment {
+    //                     key: Box::new(Expr::Identifier(Identifier("lastName".to_string()))),
+    //                     value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
+    //                 }),
+    //             ]))),
+    //         })),
+    //     })]));
 
+    let name_ast_expected = Expr::Group(Group {
+        op: GroupOp::StatementBlock,
+        exprs: vec![Expr::Binary(Binary {
+            op: BinaryOp::Assignment,
+            left: Box::new(Expr::Atom(Atom::Identifier("Name".to_string()))),
+            right: Box::new(Expr::TypeDef(TypeDef {
+                name: Box::new(Expr::Atom(Atom::Identifier("Type".to_string()))),
+                fields: Box::new(Expr::Group(Group {
+                    op: GroupOp::AnonymousType,
+                    exprs: vec![
+                        Expr::Binary(Binary {
+                            op: BinaryOp::Assignment,
+                            left: Box::new(Expr::Atom(Atom::Identifier("fistName".to_string()))),
+                            right: Box::new(Expr::Atom(Atom::Identifier("String".to_string()))),
+                        }),
+                        Expr::Binary(Binary {
+                            op: BinaryOp::Assignment,
+                            left: Box::new(Expr::Atom(Atom::Identifier("LastName".to_string()))),
+                            right: Box::new(Expr::Atom(Atom::Identifier("String".to_string()))),
+                        }),
+                    ],
+                })),
+            })),
+        })],
+    });
     debug_assert!(name_ast == name_ast_expected);
 }
 

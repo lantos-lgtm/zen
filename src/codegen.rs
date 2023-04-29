@@ -5,14 +5,15 @@ use inkwell::module::Module;
 use inkwell::passes::PassManager;
 use inkwell::targets::Target;
 use inkwell::types::BasicMetadataTypeEnum;
-use inkwell::values::{BasicMetadataValueEnum, FloatValue, FunctionValue, PointerValue, BasicValue, BasicValueEnum};
+use inkwell::values::{
+    BasicMetadataValueEnum, BasicValue, BasicValueEnum, FloatValue, FunctionValue, PointerValue,
+};
 use inkwell::{FloatPredicate, OptimizationLevel};
 use std::convert::Into;
 
-use crate::ast::{Expr, StatementBlock, Identifier, Assignment, Literal};
+use crate::ast::{Atom, Binary, BinaryOp, Expr, Group, Literal};
 use crate::parser;
 use std::collections::HashMap;
-
 
 #[derive(Debug)]
 pub struct CodeGen<'a, 'ctx> {
@@ -29,7 +30,7 @@ pub enum CodeGenError {
 }
 
 impl<'a, 'ctx> CodeGen<'a, 'ctx> {
-    fn new (
+    fn new(
         context: &'ctx Context,
         builder: &'a Builder<'ctx>,
         module: &'a Module<'ctx>,
@@ -42,19 +43,20 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
             symbol_table,
         }
     }
+
     fn gen_basic_value(&mut self, expr: &Expr) -> Result<BasicValueEnum<'ctx>, CodeGenError> {
         match expr {
-            Expr::Literal(Literal::IntLiteral(int)) => {
+            Expr::Atom(Atom::Literal(Literal::IntLiteral(int))) => {
                 Ok(self.context.i64_type().const_int(*int as u64, false).into())
-            },
-            Expr::Literal(Literal::FloatLiteral(float)) => {
+            }
+            Expr::Atom(Atom::Literal(Literal::FloatLiteral(float))) => {
                 Ok(self.context.f64_type().const_float(*float as f64).into())
-            },
-            Expr::Literal(Literal::StringLiteral(string)) => {
+            }
+            Expr::Atom(Atom::Literal(Literal::StringLiteral(string))) => {
                 let string_const = self.context.const_string(string.as_bytes(), true);
-                let global_string = self
-                    .module
-                    .add_global(string_const.get_type(), None, "global_string");
+                let global_string =
+                    self.module
+                        .add_global(string_const.get_type(), None, "global_string");
                 global_string.set_initializer(&string_const);
                 Ok(global_string.as_pointer_value().into())
             }
@@ -62,18 +64,18 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
         }
     }
 
-    fn gen_assignment(&mut self, assignment: &Assignment) -> Result<(), CodeGenError> {
-        let key = &assignment.key;
-        let value = &assignment.value;
-    
-        let alloca = match key.as_ref() {
-            Expr::Identifier(Identifier(identifier)) => {
+    fn gen_assignment(&mut self, assignment: &Binary) -> Result<(), CodeGenError> {
+        let left = &assignment.left;
+        let right = &assignment.right;
+
+        let alloca = match left.as_ref() {
+            Expr::Atom(Atom::Identifier(identifier)) => {
                 // Check if the variable already exists in the symbol table
                 match self.symbol_table.get(identifier) {
                     Some(alloca) => *alloca,
                     None => {
                         todo!("Identifier symbol table")
-                        
+
                         // // If the variable doesn't exist, create it
                         // let ty = self.context.i64_type();
                         // let name = identifier.as_str();
@@ -83,24 +85,36 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
                         // self.symbol_table.insert(identifier.clone(), new_alloca);
                         // new_alloca
                     }
-
                 }
             }
-            Expr::AnonymousType(_) => todo!(),
-            _ => return Err(CodeGenError::UnexpectedExpr(Expr::Assignment(assignment.clone()))),
+            _ => return Err(CodeGenError::UnexpectedExpr(*left.clone())),
         };
 
-        let value = self.gen_basic_value(value)?;
+        let value = self.gen_basic_value(right)?;
         self.builder.build_store(alloca, value);
         Ok(())
     }
-    
 
     fn gen_statement_block(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
+
         match expr {
-            Expr::StatementBlock(StatementBlock(statements)) => {
-                for statement in statements {
-                    self.gen_expr(statement).unwrap();
+            Expr::Group(Group { op, exprs }) => {
+                for statement in exprs {
+                    match statement {
+                        // here we should expect, asignments and function calls
+                        Expr::Binary(binary) => match binary {
+                            Binary {
+                                op,
+                                left: _,
+                                right: _,
+                            } => match op {
+                                BinaryOp::Assignment => self.gen_assignment(binary)?,
+                                BinaryOp::Accessor => todo!("Accessor"),
+                            },
+                        },
+                        Expr::FuncCall(_) => todo!("FuncCall"),
+                        _ => return Err(CodeGenError::UnexpectedExpr(statement.clone())),
+                    }
                 }
             }
             _ => return Err(CodeGenError::UnexpectedExpr(expr.clone())),
@@ -108,19 +122,15 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
         Ok(())
     }
 
-
     fn gen_expr(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
         match expr {
-            Expr::SpreadExpr(_) => todo!("SpreadExpr"),
-            Expr::Assignment(assignment) => self.gen_assignment(assignment),
-            Expr::Accessor(_) => todo!("Accessor"),
-            Expr::AssignmentBlock(_) => todo!("AssignmentBlock"),
-            Expr::StatementBlock(_) => self.gen_statement_block(expr),
-            Expr::ParamBlock(_) => todo!("ParamBlock"),
-            Expr::AnonymousType(_) => todo!("AnonymousType"),
-            Expr::TypeDef(_) => todo!("TypeDef"),
-            Expr::FuncCall(_) => todo!("FuncCall"),
-            _ => todo!("Other"),
+            Expr::Atom(_) => todo!(),
+            Expr::Unary(_) => todo!(),
+            Expr::Binary(_) => todo!(),
+            Expr::Group(_) => todo!(),
+            Expr::TypeDef(_) => todo!(),
+            Expr::FuncCall(_) => todo!(),
+            _ => return Err(CodeGenError::UnexpectedExpr(expr.clone())),
         }
     }
 
@@ -138,16 +148,15 @@ pub fn test_codeGen() {
     let ast = parser.parse().unwrap();
     println!("{:#?}", ast);
 
-    let context     = Context::create();
-    let module       = context.create_module("test");
-    let builder     = context.create_builder();
+    let context = Context::create();
+    let module = context.create_module("test");
+    let builder = context.create_builder();
     let mut symbol_table: HashMap<String, PointerValue> = HashMap::new();
     let mut codegen = CodeGen {
-        context:        &context,
-        builder:        &builder,
-        module:         &module,
-        symbol_table:   &mut symbol_table,
-        
+        context: &context,
+        builder: &builder,
+        module: &module,
+        symbol_table: &mut symbol_table,
     };
     codegen.gen(&ast).unwrap();
     module.print_to_stderr();
@@ -185,7 +194,7 @@ pub fn test() {
     // retrieve the value of w
     let w = builder.build_load(i64_type, w_ptr, "w").into_int_value();
 
-    let sum = builder.build_int_add(sum,w , "sum");
+    let sum = builder.build_int_add(sum, w, "sum");
     builder.build_return(Some(&sum));
 
     type SumFunc = unsafe extern "C" fn(u64, u64, u64) -> u64;

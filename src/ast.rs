@@ -1,39 +1,8 @@
 use serde::{Serialize};
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct Identifier(pub String);
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
-// lets not support destructuring for now
-pub struct Assignment {
-    pub key     : Box<Expr>,     // Identifier,   // a:
-    pub value   : Box<Expr>,    // Int.I32(1)
-}
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct Accessor {
-    pub object  : Box<Expr>,    // Identifier,   // a.
-    pub property: Box<Expr>,    // b
-}
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct AssignmentBlock(pub Vec<Expr>);
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct StatementBlock(pub Vec<Expr>);
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct ParamBlock(pub Vec<Expr>);
-
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct TypeDef {
+pub struct TypeDef { // is this a binary expression?
     pub name    : Box<Expr>,    // Identifier, // Type
-    pub fields  : Box<Expr>     // Block, // { ... }
-}
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct AnonymousType {
     pub fields  : Box<Expr>     // Block, // { ... }
 }
 
@@ -58,35 +27,60 @@ pub enum Literal {
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
+
+pub enum Atom {
+    Identifier(String),
+    Literal(Literal),
+}
+
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub enum Unary {
+    SpreadExpr(Box<Expr>), // ...
+}
+
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub enum BinaryOp {
+    Assignment,
+    Accessor,
+}
+
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub struct Binary {
+    pub op: BinaryOp,
+    pub left: Box<Expr>,
+    pub right: Box<Expr>,
+}
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub enum GroupOp{
+    AssignmentBlock,
+    StatementBlock,
+    ParamBlock,
+    AnonymousType,
+}
+
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub struct Group {
+    pub op: GroupOp,
+    pub exprs: Vec<Expr>,
+}
+
+
+
+#[derive(Debug, PartialEq, Serialize, Clone)]
 pub enum Expr {
     // Atom
-    Identifier(Identifier),
-    Literal(Literal),
-
-
+    Atom(Atom),             // Identifier, Literal
     // Unary
-    SpreadExpr(Box<Expr>), // ...
-
+    Unary(Unary),           // ...a
     // Binary
-    Assignment(Assignment),     // a: Int.I32(1)
-    Accessor(Accessor),         // a.b
-
+    Binary(Binary),         // a = b
     // Ternary
-
+    // Ternary(Ternary),       // a ? b : c
     // Grouping
-    AssignmentBlock(AssignmentBlock),   // { ... }
-    StatementBlock(StatementBlock),     // { ... }
-    ParamBlock(ParamBlock),             // ( ... )
-    
-    AnonymousType(AnonymousType),       // {...}
+    Group(Group),           // ( ... )
+    // Compound
     TypeDef(TypeDef),                   // Type { ... }
     FuncCall(FuncCall),                 // fn ( ... ) { ... }?
 
     EndOfFile
 }
-
-// Curly -> TypeDef                // Type { a: Int.I32(1) }
-// Curly -> AnonType               // { a: Int.I32(1) }
-// Curly -> AnonAssignmentBlock    // { a: Int.I32(1) } : { a: Int.I32(1) }
-// Curly -> AnonStatement          // { std.out.write(String("Hello World")) }
-// Curly -> StatementBlock         // value: { getString() }
