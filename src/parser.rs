@@ -182,33 +182,32 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_identifier(&mut self) -> Result<Expr, ParseError> {
-        if let Some(Token::Identifier(identifier)) = &self.current_token {
-            self.next_token();
+        // get the identifier
 
+        let identifier = match &self.current_token {
+            Some(Token::Identifier(identifier)) => identifier.clone(),
+            _ => panic!("Unexpected token: {:?}", self.current_token),
+        };
+
+        self.next_token();
+        match &self.current_token {
             // ident : ident
-            // ident . ident
-            // ident { ... }
-            // ident ( ... )
-            match &self.current_token {
-                // ident : ident
-                Some(Token::Colon) => self
-                    .parse_assignment(Box::new(Expr::Atom(Atom::Identifier(identifier.clone())))),
-                // ident . ident
-                Some(Token::Dot) => {
-                    self.parse_accessor(Box::new(Expr::Atom(Atom::Identifier(identifier.clone()))))
-                }
-                // ident { ... }
-                Some(Token::CurlyBraceOpen) => self.parse_block(Some(Box::new(Expr::Atom(
-                    Atom::Identifier(identifier.clone()),
-                )))),
-                // ident ( ... )
-                Some(Token::ParenOpen) => self.parse_paren_block(Some(Box::new(Expr::Atom(
-                    Atom::Identifier(identifier.clone()),
-                )))),
-                _ => Ok(Expr::Atom(Atom::Identifier(identifier.clone()))),
+            Some(Token::Colon) => {
+                self.parse_assignment(Box::new(Expr::Atom(Atom::Identifier(identifier.clone()))))
             }
-        } else {
-            panic!("Unexpected token: {:?}", self.current_token);
+            // ident . ident
+            Some(Token::Dot) => {
+                self.parse_accessor(Box::new(Expr::Atom(Atom::Identifier(identifier.clone()))))
+            }
+            // ident { ... }
+            Some(Token::CurlyBraceOpen) => self.parse_block(Some(Box::new(Expr::Atom(
+                Atom::Identifier(identifier.clone()),
+            )))),
+            // ident ( ... )
+            Some(Token::ParenOpen) => self.parse_paren_block(Some(Box::new(Expr::Atom(
+                Atom::Identifier(identifier.clone()),
+            )))),
+            _ => Ok(Expr::Atom(Atom::Identifier(identifier.clone()))),
         }
     }
 
@@ -531,30 +530,13 @@ fn test_parser() {
         fistName: String,
         lastName: String,
     }";
+    println!("Parsing string: {:?}", name_str);
     let lexer = Lexer::new(name_str);
     let tokens = lexer.collect::<Vec<Token>>();
-    println!("Parsing string: {:?}", name_str);
-    println!("Parsing tokens: {:?}", tokens);
+    println!("Parsed tokens: {:?}", tokens);
     let mut parser = Parser::new(name_str);
     let name_ast = parser.parse().unwrap();
-
-    // let name_ast_expected =
-    //     Expr::StatementBlock(StatementBlock(vec![Expr::Assignment(Assignment {
-    //         key: Box::new(Expr::Identifier(Identifier("Name".to_string()))),
-    //         value: Box::new(Expr::TypeDef(TypeDef {
-    //             name: Box::new(Expr::Identifier(Identifier("Type".to_string()))),
-    //             fields: Box::new(Expr::AssignmentBlock(AssignmentBlock(vec![
-    //                 Expr::Assignment(Assignment {
-    //                     key: Box::new(Expr::Identifier(Identifier("fistName".to_string()))),
-    //                     value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-    //                 }),
-    //                 Expr::Assignment(Assignment {
-    //                     key: Box::new(Expr::Identifier(Identifier("lastName".to_string()))),
-    //                     value: Box::new(Expr::Identifier(Identifier("String".to_string()))),
-    //                 }),
-    //             ]))),
-    //         })),
-    //     })]));
+    println!("Pared AST: {:?}", name_ast);
 
     let name_ast_expected = Expr::Group(Group {
         op: GroupOp::StatementBlock,
@@ -573,7 +555,7 @@ fn test_parser() {
                         }),
                         Expr::Binary(Binary {
                             op: BinaryOp::Assignment,
-                            left: Box::new(Expr::Atom(Atom::Identifier("LastName".to_string()))),
+                            left: Box::new(Expr::Atom(Atom::Identifier("lastName".to_string()))),
                             right: Box::new(Expr::Atom(Atom::Identifier("String".to_string()))),
                         }),
                     ],
