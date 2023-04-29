@@ -283,7 +283,6 @@ impl<'a> Parser<'a> {
                 None | Some(Token::EndOfFile) => {
                     panic!("Unexpected EOF, expected: {:?}", Token::CurlyBraceClose);
                 }
-                // should add expected errors
                 _ => {
                     panic!("Unexpected token: {:?}", self.current_token);
                 }
@@ -470,25 +469,6 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expression(&mut self) -> Result<Expr, ParseError> {
-        // Atoms
-        //  identifier
-        //  literals
-        //  assignment
-
-        // Unary
-        //  spread
-
-        // Binary
-        //  Assignment
-        //  Accessor
-
-        //  Todo logical
-
-        // Grouping
-        //  AssignmentBlock
-        //  StatementBlock
-        //  ParamBlock
-
         let _ = &self.skip_formating();
         match &self.current_token {
             // Atoms
