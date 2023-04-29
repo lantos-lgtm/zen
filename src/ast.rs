@@ -49,7 +49,7 @@ pub struct FuncCall {
 pub enum Literal {
     IntLiteral(i64),
     FloatLiteral(f64),
-    Bool(bool),
+    BoolLiteral(bool),
     CharLiteral(char),
     OctalLiteral(u32),
     HexLiteral(u8),

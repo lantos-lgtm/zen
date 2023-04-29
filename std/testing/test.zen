@@ -1,4 +1,4 @@
-std: @std(),
+std: @std,
 io: std.io,
 {
     Function,
@@ -11,6 +11,7 @@ io: std.io,
     Array,
     Type,
 }: std.types,
+
 Benchmark: std.testing.Benchmark,
 
 Test: Function {

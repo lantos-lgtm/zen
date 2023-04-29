@@ -1,4 +1,4 @@
-std: @std()
+std: @std
 {
     Array,
     Boolean,

@@ -1,7 +1,5 @@
-imports: Imports {
-    std,
-    build,
-}
+std: @std
+build: std.build
 
 build:  build.Builder {
     body:  {

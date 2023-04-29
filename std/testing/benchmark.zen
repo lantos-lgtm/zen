@@ -1,20 +1,20 @@
-imports: {
-    std,
-    {
-        io,
-        time,
-    }: std,
-    {
-        Function,
-        Loop,
-    }: std.functions,
-    {
-        String,
-        Int,
-        Bool,
-        Array,
-    }: std.types,
-},
+std: @std,
+{
+    io,
+    time,
+}: std,
+{
+    Function,
+    Loop,
+}: std.functions,
+{
+    String,
+    Int,
+    Bool,
+    Array,
+}: std.types
+
+
 Bechmark: Function {
     args: {
         self: Body

@@ -1,18 +1,19 @@
-imports: Imports {
-  std: std,
-  io: std.io,
-  {
-    Function,
-    Loop,
-  }: std.functions,
-  {
-    String,
-    Int,
-    Bool,
-    Array,
-    Type,
-  }: std.types,
-},
+std: @std,
+io: std.io,
+{
+  Function,
+  Loop,
+}: std.functions,
+{
+  String,
+  Int,
+  Bool,
+  Array,
+  Type,
+}: std.types,
+
+
+
 ExpectedCallBackArgs: Type {
   string: String
 },

@@ -5,10 +5,9 @@ use serde::Serialize;
 pub enum Token {
     // Literals
     StringLiteral(String),
-    // IntLiteral(i64),
-    // FloatLiteral(f64),
     NumberLiteral(String),
     CharLiteral(char),
+    BoolLiteral(bool),
     Identifier(String),
 
     // Binary
@@ -25,7 +24,6 @@ pub enum Token {
     // Logical
     And,
     Or,
-    Xor,
     // NOT,
 
     // Bitwise
@@ -35,7 +33,7 @@ pub enum Token {
     BitwiseNot,
 
     // Comparison
-    Equal,
+    Equality,
     NotEqual,
     LessThan,
     LessThanOrEqual,

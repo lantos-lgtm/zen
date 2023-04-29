@@ -1,18 +1,15 @@
-std: @std()
-
+std: @std
 {
     Docker,
     State
     listContainers,
     stopContainer
-}: importLocal("./docker.zen")
+}: std.packages.local.docker
 
 
 
 main: Function()
 {
-    args: {},
-    return: {},
     body: {
         docker: Docker()
         containers: docker.listContainers()

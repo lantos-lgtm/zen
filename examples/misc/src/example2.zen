@@ -9,7 +9,7 @@
 
 // example.zen
 
-std: @std()
+std: @std
 {
     Type,
     Int,
@@ -30,8 +30,8 @@ std: @std()
 // each project entry is build.zen, the build file will add
 // - all zen files in the project to the module under localPackages
 // - all zen remote packages to the module under packages
-customImport: std.localPackages.customImport    
-customPackage: std.packages.customPackage
+customImport    : std.packages.local.customImport    
+customPackage   : std.packages.remote.customPackage
 
 // this is an enum but I probably should call it Enum {}
 // I feel that enums are just singular maps (key: value)

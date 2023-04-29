@@ -1,4 +1,4 @@
-std:    @std()      // importing the standard library @ denotes a builtin function
+std:    @std      // importing the standard library @ denotes a builtin function
 io:     std.io      // importing the io module from the standard library
 {                   // begining of destructuring assignment
     String,         // importing the String type from the standard library

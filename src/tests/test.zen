@@ -1,6 +1,17 @@
+// zen
 Person: Type {
     name: String,
     age: Int
+}
+
+
+
+greet: Function {
+    args: { Person }
+    return: String
+    body: {
+        return String.format("Hello ${self.name}! You are ${self.age} years old.")
+    }
 }
 
 main: Function {
@@ -11,3 +22,26 @@ main: Function {
         )
     }
 }
+
+// // Second example
+// Person<T>:
+//     name<String>,
+//     age<Int>
+
+// greet<Func>:
+//     args<Person>,
+//     return<String>,
+//     body:
+//         return(String.format("Hello ${self.name}! You are ${self.age} years old.")),
+
+
+// main<Func>:
+//     return: void
+//     body:
+//         person<Person>:
+//             name:   "John",
+//             age:    30
+//         return.defer.append("Good bye!")
+//         greeting: person.greet()
+
+

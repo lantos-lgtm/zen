@@ -402,7 +402,7 @@ packages.json
 
 build.zen
 ```groovy
-std:        @std()                  // import the std lib
+std:        @std                  // import the std lib
 Build:      std.build
 
 // load External packages
@@ -439,7 +439,7 @@ main: Buld.Build {
 
 src/utils/other.zen
 ```groovy
-std: @std() // import the std lib
+std: @std // import the std lib
 {
     Function,
     Loop
@@ -456,7 +456,7 @@ someUtil: Function {
 src/main.zen
 ```groovy   
 // std
-std: @std()
+std: @std
 {
     Function,
     Loop

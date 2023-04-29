@@ -69,6 +69,15 @@ impl<'a> Lexer<'a> {
     }
 
     fn read_identifier(&mut self) -> Token {
+        if self.starts_with("true") {
+            self.pos += 4;
+            return Token::BoolLiteral(true);
+        }
+        if self.starts_with("false") {
+            self.pos += 5;
+            return Token::BoolLiteral(false);
+        }
+        
         let s = self.read_while(|ch| ch.is_ascii_alphanumeric() || ch == '_');
         Token::Identifier(s)
     }
@@ -111,7 +120,6 @@ impl<'a> Iterator for Lexer<'a> {
                 return Some(Token::EndOfFile);
             },
             Some(ch) => match ch {
-
                 '{' => {
                     self.pos += 1;
                     Some(Token::CurlyBraceOpen)

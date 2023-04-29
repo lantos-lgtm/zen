@@ -31,7 +31,7 @@ impl<'a> Parser<'a> {
 
     fn next_token(&mut self) {
         self.current_token = self.lexer.next();
-        &self.skip_formating();
+        let _ = &self.skip_formating();
     }
     // expect one or more tokens
     fn expect_token(&mut self, expected: Vec<Token>) {
@@ -150,6 +150,17 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn parse_bool_literal(&mut self) -> Result<Expr, ParseError> {
+        if let Some(Token::BoolLiteral(value)) = &self.current_token {
+            let bool_literal = Literal::BoolLiteral(value.clone());
+            self.next_token();
+            Ok(Expr::Literal(bool_literal))
+        } else {
+            panic!("Unexpected token: {:?}", self.current_token);
+        }
+    }
+
+
     fn parse_char_literal(&mut self) -> Result<Expr, ParseError> {
         if let Some(Token::CharLiteral(value)) = &self.current_token {
             let char_literal = Literal::CharLiteral(value.clone());
@@ -251,7 +262,7 @@ impl<'a> Parser<'a> {
 
         let mut exprs: Vec<Expr> = Vec::new();
         loop {
-            &self.skip_formating();
+            let _ = &self.skip_formating();
             match &self.current_token {
                 Some(Token::CurlyBraceClose) => {
                     self.next_token();
@@ -327,7 +338,7 @@ impl<'a> Parser<'a> {
         let mut param_exprs: Vec<Expr> = Vec::new();
         let mut block_expr: Option<Expr> = None;
         loop {
-            &self.skip_formating();
+            let _ = &self.skip_formating();
             match &self.current_token {
                 Some(Token::ParenClose) => {
                     self.next_token();
@@ -361,7 +372,7 @@ impl<'a> Parser<'a> {
 
         // check to see if param has a assignment block or statement block
         loop {
-            &self.skip_formating();
+            let _ = &self.skip_formating();
             match &self.current_token {
                 Some(Token::CurlyBraceOpen) => {
                     block_expr = Some(self.parse_block(None).unwrap());
@@ -446,12 +457,13 @@ impl<'a> Parser<'a> {
         //  StatementBlock
         //  ParamBlock
 
-        &self.skip_formating();
+        let _ = &self.skip_formating();
         match &self.current_token {
             // Atoms
             Some(Token::Identifier(_)) => self.parse_identifier(),
             Some(Token::NumberLiteral(_)) => self.parse_number_literal(),
             Some(Token::StringLiteral(_)) => self.parse_string_literal(),
+            Some(Token::BoolLiteral(_)) => self.parse_bool_literal(),
             // Binary should be handled by the caller
 
             // Unary
