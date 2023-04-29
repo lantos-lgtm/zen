@@ -122,11 +122,43 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
         Ok(())
     }
 
+    fn gen_atom(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
+        match expr {
+            Expr::Atom(atom) => match atom {
+                Atom::Identifier(identifier) => {
+                    match self.symbol_table.get(identifier) {
+                        Some(alloca) => {
+                            todo!("Identifier symbol table");
+                            Ok(())
+                        }
+                        None => Err(CodeGenError::UnexpectedExpr(expr.clone())),
+                    }
+                }
+                Atom::Literal(_) => todo!(),
+                _ => Err(CodeGenError::UnexpectedExpr(expr.clone())),
+            },
+            _ => Err(CodeGenError::UnexpectedExpr(expr.clone())),
+        }
+    }
+    fn gen_binary(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
+        match expr {
+            Expr::Binary(binary) => {
+                match binary.op {
+                    BinaryOp::Assignment => self.gen_assignment(binary)?,
+                    BinaryOp::Accessor => todo!("Accessor not implemented"),
+                }
+            },
+            _ => return Err(CodeGenError::UnexpectedExpr(expr.clone())),
+        }
+        Ok(())
+    }
+
+
     fn gen_expr(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
         match expr {
             Expr::Atom(_) => todo!(),
             Expr::Unary(_) => todo!(),
-            Expr::Binary(_) => todo!(),
+            Expr::Binary(_) => self.gen_binary(expr),
             Expr::Group(_) => todo!(),
             Expr::TypeDef(_) => todo!(),
             Expr::FuncCall(_) => todo!(),
