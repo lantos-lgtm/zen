@@ -1,77 +1,85 @@
+
+Literal: Enum {
+    STRING_LITERAL      : String,
+    INT_LITERAL         : Int.I64,
+    FLOAT_LITERAL       : Float.F64,
+    BOOL_LITERAL        : Boolean,
+}
+
+Format: Enum {
+    // Whitespace
+    TAB                 : String("\t"),
+    NEWLINE             : String("\n"),
+    SPACE               : String(" "),
+    COMMA               : String(","),
+},
+
+Atom: Enum {
+    Identifier: String,
+    Literal: Literal,
+    Format: Format,
+}
+
+Unary: Enum {
+    // `op` `expr`
+    NOT                 : String("!"),
+    // MINUS               : String("-"),
+    // PLUS                : String("+"),
+    ELIPSIS             : String("..."),
+    COMMENT             : String("//"),
+}
+
+Binary: Enum {
+    // `lhs` `op` `rhs`
+    // Operators
+    COLON               : String(":"),
+    DOT                 : String("."),
+    // comparison
+    EQUAL               : String("="),
+    NOT_EQUAL           : String("!="),
+    LESS                : String("<"),
+    LESS_EQUAL          : String("<="),
+    GREATER             : String(">"),
+    GREATER_EQUAL       : String(">="),
+    // logical
+    AND                 : String("&&"),
+    OR                  : String("||"),
+    // maths
+    PLUS                : String("+"),
+    MINUS               : String("-"),
+    STAR                : String("*"),
+    SLASH               : String("/"),
+    PERCENT             : String("%"),
+    // bitwise
+    BIT_AND             : String("&"),
+    BIT_OR              : String("|"),
+    BIT_XOR             : String("^"),
+    BIT_NOT             : String("~"),
+    BIT_LSHIFT          : String("<<"),
+    BIT_RSHIFT          : String(">>"),
+},
+
+// Ternary: Enum {
+    // lhs `op` mid `op` rhs
+    // we don't have a ternary operator
+// },
+
+Group: Enum {
+    // (expr)
+    L_PAREN             : String("("),
+    R_PAREN             : String(")"),
+    L_CURLY             : String("{"),
+    R_CURLY             : String("}"),
+},
+
+
 Token: Enum {
     // Literals
-    Literal: Enum {
-        STRING_LITERAL      : String,
-        INT_LITERAL         : Int.I64,
-        FLOAT_LITERAL       : Float.F64,
-        // BOOL_LITERAL        : Boolean,
-        IDENTIFIER          : String,
-    }
-
-    Format: Enum {
-        // Whitespace
-        TAB                 : String("\t"),
-        NEWLINE             : String("\n"),
-        SPACE               : String(" "),
-        COMMA               : String(","),
-    },
-
-    Unary: Enum {
-        // `op` rhs
-        // lhs `op`
-        NOT                 : String("!"),
-        // MINUS               : String("-"),
-        // PLUS                : String("+"),
-        ELIPSIS             : String("..."),
-    },
-
-    Binary: Enum {
-        // lhs `op` rhs
-        // Operators
-        COLON               : String(":"),
-        DOT                 : String("."),
-        // comparison
-        EQUAL               : String("="),
-        NOT_EQUAL           : String("!="),
-        LESS                : String("<"),
-        LESS_EQUAL          : String("<="),
-        GREATER             : String(">"),
-        GREATER_EQUAL       : String(">="),
-        // logical
-        AND                 : String("&&"),
-        OR                  : String("||"),
-        // maths
-        PLUS                : String("+"),
-        MINUS               : String("-"),
-        STAR                : String("*"),
-        SLASH               : String("/"),
-        PERCENT             : String("%"),
-        // bitwise
-        BIT_AND             : String("&"),
-        BIT_OR              : String("|"),
-        BIT_XOR             : String("^"),
-        BIT_NOT             : String("~"),
-        BIT_LSHIFT          : String("<<"),
-        BIT_RSHIFT          : String(">>"),
-    },
-
-    // Ternary: Enum {
-    //     // lhs `op` mid `op` rhs
-    //     // we don't have a ternary operator
-    // },
-
-    Grouping: Enum {
-        // (expr)
-        L_PAREN             : String("("),
-        R_PAREN             : String(")"),
-        L_CURLY             : String("{"),
-        R_CURLY             : String("}"),
-    },
-
-    Comment: Enum {
-        // comment
-        COMMENT             : String("//"),
-    },
+    Atom: Atom,
+    Float: Float,
+    Unary: Unary,
+    Binary: Binary
+    Group: Group,
 }
 
 Lexer: Type {
