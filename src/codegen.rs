@@ -4,7 +4,7 @@ use inkwell::execution_engine::JitFunction;
 use inkwell::module::Module;
 use inkwell::passes::PassManager;
 use inkwell::targets::Target;
-use inkwell::types::BasicMetadataTypeEnum;
+use inkwell::types::{BasicMetadataTypeEnum, BasicTypeEnum};
 use inkwell::values::{
     BasicMetadataValueEnum, BasicValue, BasicValueEnum, FloatValue, FunctionValue, PointerValue,
 };
@@ -20,7 +20,7 @@ pub struct CodeGen<'a, 'ctx> {
     pub context: &'ctx Context,
     pub builder: &'a Builder<'ctx>,
     pub module: &'a Module<'ctx>,
-    pub symbol_table: &'a mut HashMap<String, PointerValue<'ctx>>,
+    pub symbol_table: HashMap<String, (PointerValue<'ctx>, BasicTypeEnum<'ctx>)> ,
 }
 
 #[derive(Debug)]
@@ -34,8 +34,9 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
         context: &'ctx Context,
         builder: &'a Builder<'ctx>,
         module: &'a Module<'ctx>,
-        symbol_table: &'a mut HashMap<String, PointerValue<'ctx>>,
     ) -> Self {
+        let symbol_table = HashMap::new();
+
         Self {
             context,
             builder,
@@ -65,6 +66,11 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
     }
 
     fn gen_assignment(&mut self, assignment: &Binary) -> Result<(), CodeGenError> {
+        // we need to 
+        // check if the variable exists in the symbol table
+        // if it doesn't exist, create it
+        // if it does exist, update it
+
         let left = &assignment.left;
         let right = &assignment.right;
 
@@ -74,16 +80,14 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
                 match self.symbol_table.get(identifier) {
                     Some(alloca) => *alloca,
                     None => {
-                        todo!("Identifier symbol table")
-
-                        // // If the variable doesn't exist, create it
-                        // let ty = self.context.i64_type();
-                        // let name = identifier.as_str();
-                        // let new_alloca = self.builder.build_alloca(ty, name);
-
-                        // // Add the variable to the symbol table mapping
-                        // self.symbol_table.insert(identifier.clone(), new_alloca);
-                        // new_alloca
+                        // for now we are only going to use the normal alloca and symbol table but we will need scoping
+                        let alloca = self.builder.build_alloca(
+                            self.context.i64_type(),
+                            identifier.as_str(),
+                        );
+                        // self.symbol_table.insert(identifier.clone(), alloca);
+                        // alloca
+                        todo!()
                     }
                 }
             }
@@ -91,7 +95,8 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
         };
 
         let value = self.gen_basic_value(right)?;
-        self.builder.build_store(alloca, value);
+        // self.builder.build_store(alloca, value);
+        todo!("build store");
         Ok(())
     }
 
@@ -128,7 +133,7 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
                 Atom::Identifier(identifier) => {
                     match self.symbol_table.get(identifier) {
                         Some(alloca) => {
-                            todo!("Identifier symbol table");
+                            let value = self.builder.build_load(alloca.1,alloca.0, identifier.as_str());
                             Ok(())
                         }
                         None => Err(CodeGenError::UnexpectedExpr(expr.clone())),
@@ -183,13 +188,7 @@ pub fn test_codeGen() {
     let context = Context::create();
     let module = context.create_module("test");
     let builder = context.create_builder();
-    let mut symbol_table: HashMap<String, PointerValue> = HashMap::new();
-    let mut codegen = CodeGen {
-        context: &context,
-        builder: &builder,
-        module: &module,
-        symbol_table: &mut symbol_table,
-    };
+    let mut codegen = CodeGen::new(&context, &builder, &module);
     codegen.gen(&ast).unwrap();
     module.print_to_stderr();
 }
