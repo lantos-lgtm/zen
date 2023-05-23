@@ -1,20 +1,6 @@
 use serde::{Serialize};
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct TypeDef { // is this a binary expression?
-    pub name    : Box<Expr>,    // Identifier, // Type
-    pub fields  : Box<Expr>     // Block, // { ... }
-}
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct FuncCall {
-    pub name    : Box<Expr>,                // Identifier, // Fn
-    pub args    : Box<Expr>,                // ParamBlock, // ( ... )
-    pub fields  : Option<Box<Expr>>,         // Option<Block>, // { ... }?
-    pub body    : Option<Box<Expr>>          // Option<StatementBlock>,   // { ... }?
-}
-
-#[derive(Debug, PartialEq, Serialize, Clone)]
 pub enum Literal {
     IntLiteral(i64),
     FloatLiteral(f64),
@@ -31,6 +17,7 @@ pub enum Literal {
 pub enum Atom {
     Identifier(String),
     Literal(Literal),
+    EndOfFile
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
@@ -42,6 +29,10 @@ pub enum Unary {
 pub enum BinaryOp {
     Assignment,
     Accessor,
+    Invoke,  // can be called on any Body defines
+    FieldDef,
+    TypeDef,
+    // BodyDef //  Body {} an invokable defined, has access to sibling values
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
@@ -50,6 +41,20 @@ pub struct Binary {
     pub left: Box<Expr>,
     pub right: Box<Expr>,
 }
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub enum TernaryOp {
+    // Conditional,
+    InvokeDefine   // func (func-params) {func-def}
+}
+
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub struct Ternary {
+    pub op: TernaryOp,
+    pub left: Box<Expr>,
+    pub middle: Box<Expr>,
+    pub right: Box<Expr>,
+}
+
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub enum GroupOp{
     AssignmentBlock,
@@ -64,23 +69,16 @@ pub struct Group {
     pub exprs: Vec<Expr>,
 }
 
-
-
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub enum Expr {
     // Atom
-    Atom(Atom),             // Identifier, Literal
+    Atom(Atom),             // Identifier, Literal, EndOfFile
     // Unary
-    Unary(Unary),           // ...a
+    Unary(Unary),           // ...`a`
     // Binary
-    Binary(Binary),         // a = b
+    Binary(Binary),         // `a` = `b`
     // Ternary
-    // Ternary(Ternary),       // a ? b : c
+    Ternary(Ternary),       // `a` ? `b` : `c`  or  `a` ( `b` ) { `c` }
     // Grouping
-    Group(Group),           // ( ... )
-    // Compound
-    TypeDef(TypeDef),                   // Type { ... }
-    FuncCall(FuncCall),                 // fn ( ... ) { ... }?
-
-    EndOfFile
+    Group(Group),           // ( ... ) or { ... }
 }

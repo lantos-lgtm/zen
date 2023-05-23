@@ -1,14 +1,14 @@
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::execution_engine::JitFunction;
-use inkwell::module::Module;
+use inkwell::module::{Module, Linkage};
 use inkwell::passes::PassManager;
 use inkwell::targets::Target;
 use inkwell::types::{BasicMetadataTypeEnum, BasicTypeEnum};
 use inkwell::values::{
-    BasicMetadataValueEnum, BasicValue, BasicValueEnum, FloatValue, FunctionValue, PointerValue,
+    BasicMetadataValueEnum, BasicValue, BasicValueEnum, FloatValue, FunctionValue, PointerValue, AggregateValueEnum, AnyValueEnum,
 };
-use inkwell::{FloatPredicate, OptimizationLevel};
+use inkwell::{FloatPredicate, OptimizationLevel, AddressSpace};
 use std::convert::Into;
 
 use crate::ast::{Atom, Binary, BinaryOp, Expr, Group, Literal};
@@ -20,7 +20,7 @@ pub struct CodeGen<'a, 'ctx> {
     pub context: &'ctx Context,
     pub builder: &'a Builder<'ctx>,
     pub module: &'a Module<'ctx>,
-    pub symbol_table: HashMap<String, (PointerValue<'ctx>, BasicTypeEnum<'ctx>)> ,
+    symbol_table: HashMap<String, PointerValue<'a>>,
 }
 
 #[derive(Debug)]
@@ -45,133 +45,78 @@ impl<'a, 'ctx> CodeGen<'a, 'ctx> {
         }
     }
 
-    fn gen_basic_value(&mut self, expr: &Expr) -> Result<BasicValueEnum<'ctx>, CodeGenError> {
-        match expr {
-            Expr::Atom(Atom::Literal(Literal::IntLiteral(int))) => {
-                Ok(self.context.i64_type().const_int(*int as u64, false).into())
-            }
-            Expr::Atom(Atom::Literal(Literal::FloatLiteral(float))) => {
-                Ok(self.context.f64_type().const_float(*float as f64).into())
-            }
-            Expr::Atom(Atom::Literal(Literal::StringLiteral(string))) => {
-                let string_const = self.context.const_string(string.as_bytes(), true);
-                let global_string =
-                    self.module
-                        .add_global(string_const.get_type(), None, "global_string");
-                global_string.set_initializer(&string_const);
-                Ok(global_string.as_pointer_value().into())
-            }
-            _ => Err(CodeGenError::UnexpectedExpr(expr.clone())),
-        }
-    }
+    fn gen_literal(&mut self, literal: &Literal) -> Result<(), CodeGenError> {
 
-    fn gen_assignment(&mut self, assignment: &Binary) -> Result<(), CodeGenError> {
-        // we need to 
-        // check if the variable exists in the symbol table
-        // if it doesn't exist, create it
-        // if it does exist, update it
-
-        let left = &assignment.left;
-        let right = &assignment.right;
-
-        let alloca = match left.as_ref() {
-            Expr::Atom(Atom::Identifier(identifier)) => {
-                // Check if the variable already exists in the symbol table
-                match self.symbol_table.get(identifier) {
-                    Some(alloca) => *alloca,
-                    None => {
-                        // for now we are only going to use the normal alloca and symbol table but we will need scoping
-                        let alloca = self.builder.build_alloca(
-                            self.context.i64_type(),
-                            identifier.as_str(),
-                        );
-                        // self.symbol_table.insert(identifier.clone(), alloca);
-                        // alloca
-                        todo!()
-                    }
-                }
-            }
-            _ => return Err(CodeGenError::UnexpectedExpr(*left.clone())),
+        // create and store the values in symbol table
+        // get the ptr value
+        let ptr:PointerValue = match literal {
+            // Other Literal variants ...
+            Literal::IntLiteral(value) => self.context.i64_type().const_int(*value as u64, false).into(),
+            Literal::FloatLiteral(value) => self.context.f64_type().const_float(*value as f64).into(),
+            Literal::BoolLiteral(value) => self.context.bool_type().const_int(*value as u64, false).into(),
+            Literal::CharLiteral(value) => self.context.i8_type().const_int(*value as u64, false).into(),
+            Literal::OctalLiteral(value) => self.context.i32_type().const_int(*value as u64, false).into(),
+            Literal::HexLiteral(value) => self.context.i8_type().const_int(*value as u64, false).into(),
+            Literal::BinaryLiteral(value) => self.context.i32_type().const_int(*value as u64, false).into(),
+            Literal::StringLiteral(value) => {
+                let string = self.context.const_string(value.as_bytes(), false);
+                let ptr = self.builder.build_alloca(string.get_type(), "string");
+                self.builder.build_store(ptr, string);
+                ptr
+            },
         };
-
-        let value = self.gen_basic_value(right)?;
-        // self.builder.build_store(alloca, value);
-        todo!("build store");
         Ok(())
     }
 
-    fn gen_statement_block(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
-
-        match expr {
-            Expr::Group(Group { op, exprs }) => {
-                for statement in exprs {
-                    match statement {
-                        // here we should expect, asignments and function calls
-                        Expr::Binary(binary) => match binary {
-                            Binary {
-                                op,
-                                left: _,
-                                right: _,
-                            } => match op {
-                                BinaryOp::Assignment => self.gen_assignment(binary)?,
-                                BinaryOp::Accessor => todo!("Accessor"),
-                            },
-                        },
-                        Expr::FuncCall(_) => todo!("FuncCall"),
-                        _ => return Err(CodeGenError::UnexpectedExpr(statement.clone())),
-                    }
-                }
-            }
-            _ => return Err(CodeGenError::UnexpectedExpr(expr.clone())),
-        }
+    fn gen_identifier(&mut self, identifier: &str) -> Result<(), CodeGenError> {
+        let pointer = self.symbol_table.get(identifier).unwrap();
+        let value  = self.builder.build_load(pointer.get_type(), *pointer, identifier);
         Ok(())
     }
 
-    fn gen_atom(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
+    fn gen_atom(&mut self, atom: &Atom) -> Result<(), CodeGenError> {   
+        let _llvm_value = match atom {
+            Atom::Literal(literal) => self.gen_literal(literal),
+            Atom::Identifier(identifier) => self.gen_identifier(identifier),
+            Atom::EndOfFile => return Err(CodeGenError::UnexpectedEOF),
+        };
+        Ok(())
+    } 
+
+    fn gen_assignment(&mut self, expr: &Binary) -> Result<(), CodeGenError> {
+
+        todo!()
+    }
+
+    fn gen_binary(&mut self, expr: &Binary) -> Result<(), CodeGenError> {
         match expr {
-            Expr::Atom(atom) => match atom {
-                Atom::Identifier(identifier) => {
-                    match self.symbol_table.get(identifier) {
-                        Some(alloca) => {
-                            let value = self.builder.build_load(alloca.1,alloca.0, identifier.as_str());
-                            Ok(())
-                        }
-                        None => Err(CodeGenError::UnexpectedExpr(expr.clone())),
-                    }
-                }
-                Atom::Literal(_) => todo!(),
-                _ => Err(CodeGenError::UnexpectedExpr(expr.clone())),
+            Binary {
+                op,
+                left,
+                right,
+            } => match op {
+                BinaryOp::Assignment => self.gen_assignment(expr),
+                BinaryOp::Accessor => todo!("Accessor"),
+                BinaryOp::FieldDef => todo!("FieldDef"),
+                BinaryOp::TypeDef => todo!("TypeDef"),
+                BinaryOp::Invoke => todo!("Invoke"),
             },
-            _ => Err(CodeGenError::UnexpectedExpr(expr.clone())),
         }
-    }
-    fn gen_binary(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
-        match expr {
-            Expr::Binary(binary) => {
-                match binary.op {
-                    BinaryOp::Assignment => self.gen_assignment(binary)?,
-                    BinaryOp::Accessor => todo!("Accessor not implemented"),
-                }
-            },
-            _ => return Err(CodeGenError::UnexpectedExpr(expr.clone())),
-        }
-        Ok(())
     }
 
 
     fn gen_expr(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
         match expr {
-            Expr::Atom(_) => todo!(),
+            Expr::Atom(atom) => self.gen_atom(atom),
             Expr::Unary(_) => todo!(),
-            Expr::Binary(_) => self.gen_binary(expr),
+            Expr::Binary(binary) => self.gen_binary(binary),
+            Expr::Ternary(ternary) => todo!(),
             Expr::Group(_) => todo!(),
-            Expr::TypeDef(_) => todo!(),
-            Expr::FuncCall(_) => todo!(),
             _ => return Err(CodeGenError::UnexpectedExpr(expr.clone())),
         }
     }
 
-    pub fn gen(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
+    pub fn compile(&mut self, expr: &Expr) -> Result<(), CodeGenError> {
         self.gen_expr(expr)
     }
 }
@@ -189,7 +134,7 @@ pub fn test_codeGen() {
     let module = context.create_module("test");
     let builder = context.create_builder();
     let mut codegen = CodeGen::new(&context, &builder, &module);
-    codegen.gen(&ast).unwrap();
+    codegen.compile(&ast);
     module.print_to_stderr();
 }
 

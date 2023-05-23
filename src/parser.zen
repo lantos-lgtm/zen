@@ -12,30 +12,49 @@ std: @std
     Lexer
 }: std.src.lexer;
 
+Literal: {
+    Boolean: Boolean,
+    Int: Int.I64,
+    Float: Float.F64,
+    Char: Char,
+    String: String,
+}
 
+Atom: Enum {
+    Literal,
+    Identifier: String,
+    EndOfFile,
+}
 
+Unary: {
+    Kind: Token.Unary,
+    Right: Ref<Expr>,
+}
 
+Binary: {
+    Kind: Token.Binary,
+    Left: Ref<Expr>,
+    Right: Ref<Expr>,
+}
+
+// Ternary: {
+//     Kind: Token.Ternary,
+//     Condition: Ref<Expr>,
+//     TrueExpr: Ref<Expr>,
+//     FalseExpr: Ref<Expr>,
+// }
+
+Group: {
+    Kind: Token.Group,
+    Expr: Array{Expr, dynamic: True},
+}
 
 Expr: Enum {
-    Literal:  Token.Literal,
-    Unary: Type {
-        op      : Token.Unary,
-        right   : Expr,
-    },
-    Binary: Type {
-        left    : Expr,
-        op      : Token.Binary,
-        right   : Expr,
-    },
-    // Ternary: Type {
-    //     condition   : Expr,
-    //     true_expr   : Expr,
-    //     false_expr  : Expr,
-    // },
-    Grouping: Type {
-        
-        expr    : Array{Expr, dynamic: True},
-    },
+    Atom: Atom,
+    Unary: Unary,
+    Binary: Binary,
+    // Ternary: Ternary,
+    Group: Group,
 }
 
 
@@ -63,14 +82,72 @@ parse: Function{
 parse: Function{
     args: {
         self: Parser,
-        expr: Token.Unary,
-        otherExpr: Token.Literal,
+        token: Token.Atom.Literal,
     },
-    return: {Expr.Unary},
+    return: ResultWithError{Expr},
     body: {
-        return Expr.Unary{
-            op: Token.Unary
-            right: self.nextToken.parse(),
+        if (token) {
+            is: {
+                Token.Atom.Literal.Boolean {
+                    return(Expr.Atom.Literal.Boolean{ 
+                        value: token
+                    })
+                },
+                Token.Atom.Literal.Int {
+                    return(Expr.Atom.Literal.Int{ 
+                        value: token
+                    })
+                },
+                Token.Atom.Literal.Float {
+                    return(Expr.Atom.Literal.Float{ 
+                        value: token
+                    })
+                },
+                Token.Atom.Literal.Char {
+                    return(Expr.Atom.Literal.Char{ 
+                        value: token
+                    })
+                },
+                Token.Atom.Literal.String {
+                    return(Expr.Atom.Literal.String{ 
+                        value: token
+                    })
+                },
+            },
+            else: {
+                 return(
+                    error: ParserError{
+                        message: "Unexpected token",
+                        token: token
+                    }
+                 )
+            }
         }
     }
 }
+
+parse: Function{
+    args: {
+        self: Parser,
+        token: Token.Atom.Identifier,
+    },
+    return: ResultWithError{Expr},
+    body: {
+        // we need to check if next token is a binary operator or a group
+        if(self.peekToken()) {
+            is: {
+                Token.Binary: {
+                    // todo
+                },
+                Token.Group: {
+                    // todo
+                },
+
+            },
+            else: {
+                return (Expr.Atom.Identifier {token})
+            }
+        }
+    }
+}
+

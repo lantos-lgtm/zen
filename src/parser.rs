@@ -1,6 +1,8 @@
 use std::vec;
 
-use crate::ast::{Atom, Binary, BinaryOp, Expr, FuncCall, Group, GroupOp, Literal, TypeDef, Unary};
+use crate::ast::{
+    Atom, Binary, BinaryOp, Expr, Group, GroupOp, Literal, Ternary, TernaryOp, Unary,
+};
 
 use crate::lexer::Lexer;
 use crate::token::Token;
@@ -309,9 +311,10 @@ impl<'a> Parser<'a> {
                     unimplemented!("Statement block as type def, {:?}", self.current_token);
                 } else {
                     // this is a type def
-                    Ok(Expr::TypeDef(TypeDef {
-                        name: ident.to_owned(),
-                        fields: Box::new(Expr::Group(Group {
+                    Ok(Expr::Binary(Binary {
+                        op: BinaryOp::TypeDef,
+                        left: ident.to_owned(),
+                        right: Box::new(Expr::Group(Group {
                             exprs,
                             op: GroupOp::AnonymousType,
                         })),
@@ -419,35 +422,34 @@ impl<'a> Parser<'a> {
                             op: GroupOp::StatementBlock,
                         })
                     {
-                        Ok(Expr::FuncCall(FuncCall {
-                            name: ident.to_owned(),
-                            args: Box::new(Expr::Group(Group {
+                        Ok(Expr::Ternary(Ternary {
+                            op: TernaryOp::InvokeDefine,
+                            left: ident.to_owned(),
+                            middle: Box::new(Expr::Group(Group {
                                 exprs: param_exprs,
                                 op: GroupOp::ParamBlock,
                             })),
-                            fields: None,
-                            body: Some(Box::new(expr)),
+                            right: Box::new(expr),
                         }))
                     } else {
-                        Ok(Expr::FuncCall(FuncCall {
-                            name: ident.to_owned(),
-                            args: Box::new(Expr::Group(Group {
+                        Ok(Expr::Ternary(Ternary {
+                            op: TernaryOp::InvokeDefine,
+                            left: ident.to_owned(),
+                            middle: Box::new(Expr::Group(Group {
                                 exprs: param_exprs,
                                 op: GroupOp::ParamBlock,
                             })),
-                            fields: Some(Box::new(expr)),
-                            body: None,
+                            right: Box::new(expr),
                         }))
                     }
                 }
-                None => Ok(Expr::FuncCall(FuncCall {
-                    name: ident.to_owned(),
-                    args: Box::new(Expr::Group(Group {
+                None => Ok(Expr::Binary(Binary {
+                    op: BinaryOp::Invoke,
+                    left: ident.to_owned(),
+                    right: Box::new(Expr::Group(Group {
                         exprs: param_exprs,
                         op: GroupOp::ParamBlock,
                     })),
-                    fields: None,
-                    body: None,
                 })),
             },
             None => {
@@ -483,7 +485,7 @@ impl<'a> Parser<'a> {
 
             // Grouping
             Some(Token::CurlyBraceOpen) | Some(Token::ParenOpen) => self.parse_block(None),
-            Some(Token::EndOfFile) => Ok(Expr::EndOfFile),
+            Some(Token::EndOfFile) => Ok(Expr::Atom(Atom::EndOfFile)),
             _ => panic!("Unexpected token: {:?}", self.current_token),
         }
     }
@@ -523,9 +525,10 @@ fn test_parser() {
         exprs: vec![Expr::Binary(Binary {
             op: BinaryOp::Assignment,
             left: Box::new(Expr::Atom(Atom::Identifier("Name".to_string()))),
-            right: Box::new(Expr::TypeDef(TypeDef {
-                name: Box::new(Expr::Atom(Atom::Identifier("Type".to_string()))),
-                fields: Box::new(Expr::Group(Group {
+            right: Box::new(Expr::Binary(Binary {
+                op: BinaryOp::TypeDef,
+                left: Box::new(Expr::Atom(Atom::Identifier("Type".to_string()))),
+                right: Box::new(Expr::Group(Group {
                     op: GroupOp::AnonymousType,
                     exprs: vec![
                         Expr::Binary(Binary {

@@ -17,29 +17,24 @@ Todo:
 
 Mantra
 - You should be able to work out where things come from without a editior
-- simple rules
-- one way to do things unless there is a really good reason not
+- one way to do things unless there is a really good reason not.
+- The language should get out of the way of the programmer.
 
 Rules
-- There are no enums, as enums are essentially types that map to a string or number
-- Everything is exported unless you use the private keyword
-- Everything is immutable unless you use the mutable keyword
+- Enums are just Types with many definable fields but only one instanciated field.
+- Everything is exported unless you use the private/secret keyword
+- Everything is mutable unless you use the const keyword.
 - Everything should be explicit except for when there is 
     - one argument that is other than ``self``
     - You are setting a value with a defined type
 - Only first level declarations are exported
-
-<!-- - Curly Brackets {} are used to define a type or to modify a type
-- parenthesis () are used to call a function
-- colons : are used to instanciate a varaiable or type
-    - when {} are used it is type definition
-    - when : and followed by a defined variable or a function call it is a variable instanciation -->
+- Functions are essentially just types with a body that is run when called
 
 
 Features
 - spread operator ```Person: Type {...Address, name: String, age: Int.I32}```
 - object destructuring ```{myValue, myOtherValue} = myObject```
-- shorthand property asignments ```name: String("John), person: Person {name, age: Int.I32(10)}``` 
+- shorthand property asignments ```name: String("John"), age: Int.I32(10), person: Person {name, age}``` 
 - no tuples without keys, just return an anonymous type, this is to keep code clean.
 - All functions return a ```Result``` or ```ResultWithError```
     - no red/blue code (async/await)
@@ -49,8 +44,6 @@ Reserved words
 - ```Type```      - used to define a type
 - ```CompTime```  - used to define a type or function that is run at compile time
 - ```Body```      - used to define a body of code, this will take any fields on the type and make them available in the body
-
-These are not reserved words but are in the std
 - ```Const```     - used to define a constant
 - ```Private```   - used to define a private field, values marked as are only modifable by the same scope
 - ```Secret```    - used to define a secret field,  values marked as are only visible to the same scope
@@ -60,13 +53,12 @@ These are not reserved words but are in the std
 reserved symbols
 - ```:```         - used to define a type or instanciate a variable
 - ```{}```        - used to define a type or modify a type
-- ```()```        - used to call a function
-- ```||```        - used to define a or type
+- ```()```        - used to call a function or instanciate a type
 
-Logic, don't know ifthis should be included
-- logical operators     ```== != > < >= <= && ||||```
+Inbuilt operators
+- logical operators     ```== != > < >= <= && ||```
 - maths operators       ```+ - * / %```
-- bitwise operators     ```& || ^ ~ << >>```
+- bitwise operators     ```& ^ ~ << >>```
 
 <!-- 
     if ( ==(x, y, x) )
@@ -86,7 +78,7 @@ myString:   String            // variable declaration with type inference
 myString:   String("hello \"zen\"\n")   // variable declaration with type inference and initialisation
 
 my_int:     Const{Int}        // error int must be initialised with a value
-my_int:     Const{Int(1)}     // const variable declaration with type union and initialisation
+my_int:     Const{Int(1)}     // const variable declaration with type and initialisation
 
 // code blocks
 myBlock:    Body {
@@ -95,7 +87,7 @@ myBlock:    Body {
 
 ```
 
-Type destructuring
+Variable destructuring
 ```groovy
 myFunction: Function { 
     // args...
@@ -104,9 +96,6 @@ myFunction: Function {
 }
 {myValue, myOtherValue}: myFunction()
 ```
-
-
-
 
 # Types
 ## Types
