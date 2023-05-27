@@ -1,28 +1,24 @@
 Counter: Element {
     count: State(Int.I32(0)),
-    return (
+    Box (
         Box (
-            Box (
-                onClick: body {
-                    count = count + 1
-                }
-                Text ("Increment")
-            ),
-            Text (count)
-        )
+            onClick: body {
+                count = count + 1
+            }
+            Text ("Increment")
+        ),
+        Text (count)
     )
 }
 
-homeView: Function {
+homeView: Func {
     args: {ctx: Context}
     body: {
-        return (
-            Box (
-                Text(
-                    "Hello World"
-                ),
-                Counter()
-            )
+        // get the name from the query string
+        name: ctx.query.get("name")
+        Box (
+            Text("Hello ${name}"),
+            Counter()
         )
     }
 }
