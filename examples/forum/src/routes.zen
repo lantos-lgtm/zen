@@ -23,6 +23,26 @@ homeView: Func {
     }
 }
 
-router: Router()
+main: Func {
+    body: {
+        env: Env.load() {
+            port:  Fn {Int.I32.parse(s)} (s: String)
+            someOption: Option{String}
+        }
+        router: Router.default()
+        router.add(path: "/", fn: homeView)
+        router.listen(port: Port(env.port))
+    }
+}
 
-router.add(path: "/", fn: homeView)
+// router.use(StaticFileMiddleware(root: "static"))
+// router.use(NotFoundMiddleware())
+// router.use(ErrorMiddleware())
+// router.use(LogMiddleware())
+// router.use(BodyParserMiddleware())
+// router.use(QueryParserMiddleware())
+// router.use(SwaggerMiddleware())
+// router.use(CorsMiddleware())
+// router.use(CompressionMiddleware())
+// router.use(AuthMiddleware())
+// router.use(JsonRPCMiddleware())
