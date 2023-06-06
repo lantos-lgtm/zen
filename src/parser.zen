@@ -13,28 +13,28 @@ std: @std
 }: std.src.lexer;
 
 Literal: {
-    Boolean: Boolean,
-    Int: Int.I64,
-    Float: Float.F64,
-    Char: Char,
-    String: String,
+    Boolean     : Boolean,
+    Int         : Int.I64,
+    Float       : Float.F64,
+    Char        : Char,
+    String      : String,
 }
 
 Atom: Enum {
     Literal,
-    Identifier: String,
+    Identifier  : String,
     EndOfFile,
 }
 
 Unary: {
-    Kind: Token.Unary,
-    Right: Ref<Expr>,
+    Kind        : Token.Unary,
+    Right       : Ref<Expr>,
 }
 
 Binary: {
-    Kind: Token.Binary,
-    Left: Ref<Expr>,
-    Right: Ref<Expr>,
+    Kind        : Token.Binary,
+    Left        : Ref<Expr>,
+    Right       : Ref<Expr>,
 }
 
 // Ternary: {
@@ -45,8 +45,8 @@ Binary: {
 // }
 
 Group: {
-    Kind: Token.Group,
-    Expr: Array{Expr, dynamic: True},
+    Kind        : Token.Group,
+    Expr        : Array {Expr, dynamic: True},
 }
 
 Expr: Enum {
@@ -58,7 +58,7 @@ Expr: Enum {
 }
 
 
-Parser: Type {
+Parser: {
     tokens: Array{Token, dynamic: True},
     current: Int.I32,
  }
@@ -68,7 +68,7 @@ ParserError: Error {
     token: Token,
 }
 
-parse: Function{
+parse: Fn {
     args: {
         self: Parser
     },
@@ -79,7 +79,7 @@ parse: Function{
     }
 }
 
-parse: Function{
+parse: Fn {
     args: {
         self: Parser,
         token: Token.Atom.Literal,
@@ -126,7 +126,7 @@ parse: Function{
     }
 }
 
-parse: Function{
+parse: Fn {
     args: {
         self: Parser,
         token: Token.Atom.Identifier,

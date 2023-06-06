@@ -1,7 +1,7 @@
 
 
 
-AssetType: Type {
+AssetType: {
     Cash,
     Equity,
     Bond,
@@ -11,7 +11,7 @@ AssetType: Type {
     Other,
 }
 
-Asset: Type {
+Asset: {
     transactions:   Array {Transaction}
     name:           String,
     symbol:         String,
@@ -19,7 +19,7 @@ Asset: Type {
     children:       Array {Asset},
 }
 
-Rate: Type {
+Rate: {
     quote:          Asset,
     base:           Asset,
     sign:           Boolean,
@@ -39,7 +39,7 @@ TransactionType: Enum {
     Other,
 }
 
-Transaction: Type {
+Transaction: {
     account:            Account,
     transactionType:    TransactionType,
     asset:              Asset,
@@ -48,11 +48,11 @@ Transaction: Type {
     settled:            Date
 }
 
-TransactionGroup: Type {
+TransactionGroup: {
     transactions: Array {Transaction}
 }
 
-Account: Type {
+Account: {
     transactions: Array {TransactionGroup}
 }
 
@@ -60,11 +60,11 @@ Account: Type {
 // we create a new entry with an active flag and active 
 // date then take the most recent active entry and use 
 // that as the current state.
-Active: Type {
+Active: {
     active:     Boolean,
     activeDate: Date,
 }
-AddActiveFlags: Function {
+AddActiveFlags: Fn {
     args: { 
         self: Type,
     },
@@ -72,7 +72,7 @@ AddActiveFlags: Function {
         self:   Type,
         error:  Error,
     },
-    body: {
+    fn: {
         // TODO
         return self
     }

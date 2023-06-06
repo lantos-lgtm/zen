@@ -23,17 +23,17 @@ io:     std.io      // importing the io module from the standard library
 }: std.control      // importing the control module from the standard library
 
 
-Name: Type {            // creating a type called Name
+Name: {            // creating a type called Name
     fistName: String,   // firstName is a String type
     lastName: String,   // lastName is a String type
 }
 
-WrapType: Type {        // creating a type called WrapType
+WrapType: {        // creating a type called WrapType
     self: Type,         // generic type
     something: String   // String type
 }
 
-Person: Type {                  // creating a type called Person
+Person: {                  // creating a type called Person
     uniqueId: Wrap{String},     // Wrapping String type as WrapType
     ...Name                     // merge/inheret with Name type
     age: Int.I32(0)             // default int value
@@ -48,7 +48,7 @@ getFullname: Function { // creating a function is similar to creating a type
     return: {           // return is a function that can be called to return a value
         self: String,   // return type is String
     },
-    body: {             // body is a the statements that will be executed
+    fn: {             // body is a the statements that will be executed
         fullName: String.concat(self.firstName, String(" "), self.lastName) // creating a variable fullName to 
         return(fullName) // calling return function to return value
     },
@@ -63,7 +63,7 @@ otherFunc1: Function {      // creating a function
         self: { x: Int.I32, y: Int.I32}, // creating an anonymous type
         error: Error                    // returning an error
     }
-    body: {                             // body is a the statements that will be executed
+    fn: {                             // body is a the statements that will be executed
         if (self.age < 18) {            // if statement
             return(                     // returning an error
                 Error(                  // creating an error
@@ -90,7 +90,7 @@ otherFunc2: Function {  // creating a function
         other2: Type    // Type is a generic type
     }
                         // no return type
-    body: {             // body is a the statements that will be executed
+    fn: {             // body is a the statements that will be executed
         io.print(String.parse(self.type()), String.parse(other.type())) // printing the type of self and other
     }
 }
@@ -102,7 +102,7 @@ otherFunc2: Function {  // creating a function
         callback:   Function
     }
                         // no return type
-    body: {             // body is a the statements that will be executed
+    fn: {             // body is a the statements that will be executed
         io.print(String.parse(self.type()), String.parse(other.type())) // printing the type of self and other
         callBack()      // calling callback
     }
@@ -113,7 +113,7 @@ otherFunc2: Function {  // creating a function
 main: Function {    // creating a function called main
     args: {},       // no args
     return: {},     // no return
-    body: {         // body is a the statements that will be executed
+    fn: {         // body is a the statements that will be executed
         lastName: String("Zen"),        // creating a variable lastName of type String
         myPerson: Person(               // creating an instance of Person
             uniqueId:   String("1234"), // setting uniqueId to "1234"

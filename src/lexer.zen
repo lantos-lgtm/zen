@@ -94,41 +94,41 @@ LexerError: Error {
     message: String,
 }
 
-isAscii: Function {
+isAscii: Fn {
     args: {
         char: String,
     },
     return: Boolean,
-    body: {
+    fn: {
         return(char >= '\x00' && char <= '\x7F')
     }
 }
 
-isDigit: Function {
+isDigit: Fn {
     args: {
         char: String,
     },
     return: Boolean,
-    body: {
+    fn: {
         return(char >= '\x30' && char <= '\x39')
     }
 }
 
-startsWith: Function {
+startsWith: Fn {
     args: {
         self: String,
         other: String,
     },
     return: Boolean,
-    body: {
-        return(self.substring(Int.I64(0), other.length()) = other)
+    fn: {
+        return(self.substring(Int.I64(0), other.length()): other)
     }
 }
 
-startsWith: Function {
+startsWith: Fn {
     args: {
         self: String,
-        cond: Function {
+        con: Fn {
             args: {
                 self: String,
             },
@@ -136,15 +136,15 @@ startsWith: Function {
         },
     },
     return: Boolean,
-    body: {
+    fn: {
         return(self.cond(self))
     }
 }
 
-readwhile: Function {
+readwhile: Fn {
     args: {
         self: String,
-        cond: Function {
+        con: Fn {
             args: {
                 self: String,
             },
@@ -152,7 +152,7 @@ readwhile: Function {
         },
     },
     return: String,
-    body: {
+    fn: {
         str: String()
         pos: Int.I64(0)
         while (pos < self.length() && self.cond(self.window(pos))) {
@@ -163,7 +163,7 @@ readwhile: Function {
     }
 }
 
-lex: Function {
+lex: Fn {
     args: {
         self. Lexer,
         source: String,
@@ -172,12 +172,12 @@ lex: Function {
         Array{self:Token, dynamic: Boolean.True},
         LexerError,
     },
-    body: {
-        self.source = source
-        self.pos = 0
-        self.line = 1
-        self.col = 1
-        self.tokens = Array{Token}()
+    fn: {
+        self.source: source
+        self.pos: 0
+        self.line: 1
+        self.col: 1
+        self.tokens: Array{Token}()
 
         lexLoop: loop (self.pos < self.source.length()) {
             // match defined tokens against source
@@ -202,10 +202,10 @@ lex: Function {
                 // match comments
                 // numbers
                 
-                if (self.source.startsWith(self.pos, cond: {cond.return(cond.isDigit())})) {
+                if (self.source.startsWith(self.pos, con: {cond.return(cond.isDigit())})) {
                     // _, 0-9, ., e
                     // todo: handle exponent
-                    str: self.readwhile(self.pos, cond: {
+                    str: self.readwhile(self.pos, con: {
                         // cond.return(cond.isDigit() || cond.in(String("_"), String("."), String("e"))))
                         cond.return(cond.isDigit() || cond.in(String("_"), String(".")))
                     })
@@ -229,7 +229,7 @@ lex: Function {
                 // strings
                 if (self.source.window(self.pos).startsWith(String("\""))) { 
                     // string
-                    str: self.readwhile(self.pos, cond: {cond.return(!cond.in(String("\"")))})
+                    str: self.readwhile(self.pos, con: {cond.return(!cond.in(String("\"")))})
                     token: Token.StringLiteral(str)
                     self.tokens.push(token)
                     self.pos.inc(token.value.length())
@@ -238,9 +238,9 @@ lex: Function {
                 }
 
                 // identifiers
-                if (self.source.window(self.pos).startsWith(cond: {cond.return(cond.isAlpha())})) {
+                if (self.source.window(self.pos).startsWith(con: {cond.return(cond.isAlpha())})) {
                     // _, a-z, A-Z
-                    str: self.readwhile(self.pos, cond: {
+                    str: self.readwhile(self.pos, con: {
                         cond.return(cond.isAlpha() || cond.isDigit() || cond.in(String("_")))
                     })
                     token: Token.Identifier(str)
@@ -255,7 +255,7 @@ lex: Function {
                     // comment
                     str: self.readwhile(
                         self.pos,
-                        cond: { 
+                        con: { 
                             self.return(!value.in(String("\n"), String("\r")))
                         }
                     )

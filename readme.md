@@ -7,7 +7,7 @@
 
 Todo:
 - [x] tokenize
-- [ ] astGen
+- [x] astGen
 - [ ] ast -> llvm
 - [ ] ast -> lsp
 - [x] Highlighting
@@ -32,7 +32,7 @@ Rules
 
 
 Features
-- spread operator ```Person: Type {...Address, name: String, age: Int.I32}```
+- spread operator ```Person: {...Address, name: String, age: Int.I32}```
 - object destructuring ```{myValue, myOtherValue} = myObject```
 - shorthand property asignments ```name: String("John"), age: Int.I32(10), person: Person {name, age}``` 
 - no tuples without keys, just return an anonymous type, this is to keep code clean.
@@ -41,7 +41,6 @@ Features
     - ResultWithError the error must be handled. As the default error body will exit with ```Errror(ErrorNotCaptured, "Error not captured")```
 
 Reserved words
-- ```Type```      - used to define a type
 - ```CompTime```  - used to define a type or function that is run at compile time
 - ```Body```      - used to define a body of code, this will take any fields on the type and make them available in the body
 - ```Const```     - used to define a constant
@@ -53,6 +52,7 @@ Reserved words
 reserved symbols
 - ```:```         - used to define a type or instanciate a variable
 - ```{}```        - used to define a type or modify a type
+- ```@{}```       - used to define a callable aka function
 - ```()```        - used to call a function or instanciate a type
 
 Inbuilt operators
@@ -89,7 +89,7 @@ myBlock:    Body {
 
 Variable destructuring
 ```groovy
-myFunction: Function { 
+myFunction: Fn { 
     // args...
     return: { myValue: String, myOtherValue: Int} 
     // body...
@@ -101,23 +101,23 @@ myFunction: Function {
 ## Types
 ```groovy
 
-// Type: Type {
+// Type: {
 //     self: String,
 //     fields: Map {key: String, value: Type }
 // }
 
 // type definition
-PersonSecret: Type {
+PersonSecret: {
 // PersonSecret: Secret{Type} { // make this only visable in this scope
     secret: Secret{String()}, // only visible in this scope
 }
-PersonPrivate: Type {
+PersonPrivate: {
 // PersonPrivate: Private{Type} { // make this only modifiable in this scope
     private: Private{String()}, // only modifiable in this scope
 }
 
 // can also be to mark functions and types private
-Person: Type {
+Person: {
     name:   String,
     age:    Int,
     // extending types
@@ -130,15 +130,15 @@ Person: Type {
 setSecretValue: Secret{Function} {
     args:   { self: Person, value: String},
     return: ResultWithError {self: Person, error: ErrorType},
-    body:   {
+    fn: {
         self.secret = value
     }
 }
 
-setPrivateValue: Function {
-    args:   { self: Person, value: String},
+setPrivateValue: Fn {
+    args: { self: Person, value: String},
     return: ResultWithError { self: Person, error: ErrorType},
-    body:   {
+    fn: {
         self.private = value
     }
 }
@@ -181,6 +181,7 @@ Literal: Enum {
     Int:    Int.i128,
 }
 
+// 
 Token: Enum {
     NewLine:    Int.usize,
     WhiteSpace: Int.usize,
@@ -216,22 +217,22 @@ io.std.writeLine(String(token.value.Type))        // String
 ### function declaration
 functions are types with a body call
 ```groovy
-Function: Type {
+Function: {
     args:   Type,
-    body:   Body,
+    fn:   Body,
     return: Result || ResultWithError
 }
 ```
 #### Function example
 
 ```groovy
-greet: Function {
+greet: Fn {
     args:   {
         self:       Person,
         message:    String,
     },
     return: String,
-    body:   {
+    fn:   {
         return(String.format("${message} ${self.name}"))
     },
 }
@@ -239,7 +240,7 @@ greet: Function {
 ### Results
 ```groovy
 
-Result: Type {
+Result: {
     self:   Type,
     error:  ErrorType,
 }
@@ -251,10 +252,10 @@ ResultWithError: Result {
 
 ### Errors 
 ```groovy
-Error: Type {
+Error: {
     error:      Enum,
     message:    String,
-    body:       Body,
+    fn:       Body,
 }
 ```
 #### Error example
@@ -270,7 +271,7 @@ MyError: Error {
 }
 
 // is the same as this
-// MyError: Type {
+// MyError: {
 //     ...Error
 //     error: MyErrorEnum
 // }
@@ -288,14 +289,55 @@ myResult: MyResult(self:"hello")                            // same as above but
 ```
 
 ### Conditionals
+
+There is only an if statement but can handle match also
+```groovy
+if (someThing) { doSomething() }
+if (someThing) { is: { doSomething() }, else: { doSomethingElse() } }
+if (Enum{A, B} (A)) { is: ((A, { doA() }), (B, { doB() })), else: { doSomethingElse() } }
+
+myIntOption: Some(Int.i32(1))
+myInt: if (myInt) { is: { myInt }, else: { Int.i32(0) } }
+
+myInt: if (Some(Int.I32(1))) { is: (
+    (Int.I32, { }),
+    (None, { Int.I32(0) }),
+) }
+
+MyEnum: Enum {
+    A: String,
+    B: Int,
+    C
+}
+
+myFunc: Fn {
+    MyEnum.A("hello")
+}
+
+myValue: if (t: myFunc()) {
+    is: (
+        (MyEnum.A, {t}),
+        (MyEnum.B, {t.to(String)}),
+        (MyEnum.C, {"C"})
+    ),
+    else: {"default"}
+}
+
+
+```
+
+
+
+more examples
+
 ```groovy
 
-// if: Function {
+// if: Fn {
 //     args: {
 //         self: Function || Boolean,
-//         then: Body,
+//         is: Body,
 //     },
-//     body: Body()
+//     fn: Body()
 // }
 
 // standard ifstatement
@@ -303,17 +345,17 @@ myResult: MyResult(self:"hello")                            // same as above but
 if (Boolean.True) {
     io.std.writeLine("true")
 }
-// if: Function {
+// if: Fn {
 //     args: {
-//         self: Function || Boolean,
-//         then: Body,
+//         self: Enum { Function, Boolean },
+//         is: Body,
 //         else: Body,
 //     },
-//     body: Body()
+//     fn: Body()
 // }
 
 if (Boolean.True) {
-    then: {io.std.writeLine("true")},
+    is: {io.std.writeLine("true")},
     else: {io.std.writeLine("false")},
 }
 // we need to define then and else as there are two def types
@@ -333,16 +375,16 @@ if (value) {
 
 ### Loops
 ```groovy
-// Loop: Type {
+// Loop: {
 //     condition: Function || Boolean,
 //     return: LoodHandle,
-//     body: Body,
+//     fn: Body,
 // }
 
-// Loop: Type {
+// Loop: {
 //     condition: Function || Boolean,
 //     return: LoodHandle,
-//     body: Body,
+//     fn: Body,
 // }
 
 counter:    Int(0)
@@ -434,9 +476,9 @@ std: @std // import the std lib
     Loop
 }: std.functions,
 
-someUtil: Function {
+someUtil: Fn {
     args: {},
-    body: {
+    fn: {
         io.std.writeLine("hello world")
     }
 }
@@ -458,10 +500,10 @@ someUtil: std.localPackages.utils.other.someUtil,
 
 
 // only 1st level declarations are exported
-main: Function {
+main: Fn {
     args: {},
     return: String,
-    body: {
+    fn: {
         docker: Docker()
         // body.defer: {
         body.defer.add({

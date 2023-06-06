@@ -28,6 +28,7 @@ Account: Type {
     parentPermissions: Array {Permission},
     posts: Array {Post}
 }
+
 Group: Type {
     name: String,
     accounts: Array {Account},
