@@ -21,8 +21,14 @@ pub enum Atom {
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub enum Unary {
-    SpreadExpr(Box<Expr>), // ...
+pub enum UnaryOp {
+    SpreadExpr
+}
+
+#[derive(Debug, PartialEq, Serialize, Clone)]
+pub struct Unary {
+    pub op: UnaryOp,
+    pub expr: Box<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]

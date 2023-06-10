@@ -109,3 +109,143 @@ let myValue = match myFunc() {
 }
 
 ```
+
+
+
+```groovy
+
+
+std: @std()
+
+// UI
+state: State {
+    count: int64(0)
+}
+
+home: Box((
+    Text("hello world")
+    Text(state.count)
+    Box(
+        Text("+")
+        onClick: {
+            state.count: state.count + 1
+        }
+    )
+    Box(
+        c: Text("-")
+        onClick: {
+            state.count: state.count - 1
+        }
+    )
+))
+
+
+// Structures
+Person: {
+    name: String
+    age: Int64,
+    secret: Private{String}
+    new: Static{Fn} {
+        for: Person
+        args: {
+            name: String
+            age: Int64,
+            secret: "secret"
+        }
+        result: Person
+        body: {
+            Person(
+                name: args.name
+                age: args.age
+            )
+        }
+    }
+}
+
+GreetError: Enum {
+    InvalidAge: Enum {
+        OutOfRange: Int64
+        TooYoung: Int64
+    }
+    Unknown: String
+}
+
+greet: Fn {
+    args: {
+        person: Person
+    }
+    res: Eres { String, GreetError}
+    body: {
+        if person.age > 18 {
+            res: "Hello " + person.name
+        } else {
+            res: GreetError("Too young")
+        }
+    }
+}
+
+main: {
+
+    myPerson: Person (
+        name: "John"
+        age: 42
+    )
+
+    myPerson: Person.new(
+        name: "John"
+        age: 42,
+        secret: "secret"
+    )
+
+    msg: if (myPerson.greet()) {
+        args: Enum { String, Error }
+        is: (
+            (Error.InvalidAge, { 
+                if (t) {
+                    is: (
+                        (Error.InvalidAge.OutOfRange, { "Error: out of range" + t }),
+                        (Error.InvalidAge.TooYoung, { "Error: too young" + t })
+                    )
+                }
+            }),
+            (Error.Unknown, { "Error: unkown error" }),
+            (String, { t })
+        )
+    }
+
+    myLoop: Loop(0...10){
+        std.println(myLoop.index)
+    }
+}
+
+
+
+CallbackStruct: {
+    arg: Int64
+    callback: Fn {
+        res: Int64
+        body: Stmt
+    }
+}
+
+myFunc: Fn {
+    arg: {
+        callback: CallbackStruct
+    }
+    body: {
+        value: callback.callback(10)
+        std.println(value)
+    }
+}
+
+myFunct( CallbackStuct  {
+    callback: Fn {
+        body: {
+            @this.res (@this.arg +  10)
+        }
+    }
+} )
+
+
+
+```

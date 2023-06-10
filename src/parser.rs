@@ -1,7 +1,7 @@
 use std::vec;
 
 use crate::ast::{
-    Atom, Binary, BinaryOp, Expr, Group, GroupOp, Literal, Ternary, TernaryOp, Unary,
+    Atom, Binary, BinaryOp, Expr, Group, GroupOp, Literal, Ternary, TernaryOp, Unary, UnaryOp,
 };
 
 use crate::lexer::Lexer;
@@ -246,7 +246,11 @@ impl<'a> Parser<'a> {
         self.expect_token(vec![Token::Identifier("".to_string())]);
         let expr = Box::new(self.parse_expression().unwrap());
         // get the next expr
-        Ok(Expr::Unary(Unary::SpreadExpr(expr)))
+        Ok(Expr::Unary(Unary {
+            op: UnaryOp::SpreadExpr,
+            expr,
+         }
+        ))
     }
 
     fn parse_curly_block(&mut self, ident: Option<Box<Expr>>) -> Result<Expr, ParseError> {
