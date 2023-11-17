@@ -50,7 +50,7 @@ pub struct Binary {
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub enum TernaryOp {
     // Conditional,
-    InvokeDefine   // func (func-params) {func-def}
+    FuncDefInvoke   // func (func-params) {func-def}
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]

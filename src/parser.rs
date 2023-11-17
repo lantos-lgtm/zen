@@ -427,7 +427,7 @@ impl<'a> Parser<'a> {
                         })
                     {
                         Ok(Expr::Ternary(Ternary {
-                            op: TernaryOp::InvokeDefine,
+                            op: TernaryOp::FuncDefInvoke,
                             left: ident.to_owned(),
                             middle: Box::new(Expr::Group(Group {
                                 exprs: param_exprs,
@@ -437,7 +437,7 @@ impl<'a> Parser<'a> {
                         }))
                     } else {
                         Ok(Expr::Ternary(Ternary {
-                            op: TernaryOp::InvokeDefine,
+                            op: TernaryOp::FuncDefInvoke,
                             left: ident.to_owned(),
                             middle: Box::new(Expr::Group(Group {
                                 exprs: param_exprs,

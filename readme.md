@@ -32,19 +32,32 @@ Rules
 
 
 Features
-- spread operator ```Person: {...Address, name: String, age: Int.I32}```
-- object destructuring ```{myValue, myOtherValue} = myObject```
-- shorthand property asignments ```name: String("John"), age: Int.I32(10), person: Person {name, age}``` 
+- spread operator 
+```groovy
+Person: {...Address, name: String, age: Int.I32}
+```
+- object destructuring 
+```groovy
+{myValue, myOtherValue} = myObject
+```
+- shorthand property assignments 
+```groovy
+name: String("John")
+age: Int.I32(10)
+
+person: Person {name, age}
+
+``` 
 - no tuples without keys, just return an anonymous type, this is to keep code clean.
-- All functions return a ```Result``` or ```ResultWithError```
+- All functions return a ```Res``` or ```ResErr```
     - no red/blue code (async/await)
-    - ResultWithError the error must be handled. As the default error body will exit with ```Errror(ErrorNotCaptured, "Error not captured")```
+    - ResErr the error must be handled. As the default error body will exit with ```Error(ErrorNotCaptured, "Error not captured")```
 
 Reserved words
 - ```CompTime```  - used to define a type or function that is run at compile time
 - ```Body```      - used to define a body of code, this will take any fields on the type and make them available in the body
-- ```Const```     - used to define a constant
-- ```Private```   - used to define a private field, values marked as are only modifable by the same scope
+- ```Mut```     - used to define a mutable field
+- ```Private```   - used to define a private field, values marked as are only modifiable by the same scope
 - ```Secret```    - used to define a secret field,  values marked as are only visible to the same scope
 - ```Enum```      - used to define an enum
 
@@ -52,7 +65,6 @@ Reserved words
 reserved symbols
 - ```:```         - used to define a type or instanciate a variable
 - ```{}```        - used to define a type or modify a type
-- ```@{}```       - used to define a callable aka function
 - ```()```        - used to call a function or instanciate a type
 
 Inbuilt operators
@@ -74,14 +86,14 @@ Inbuilt operators
 
 Variable declaration
 ```groovy
-myString:   String            // variable declaration with type inference
-myString:   String("hello \"zen\"\n")   // variable declaration with type inference and initialisation
+myString:   Mut{String}           // variable declaration with type inference
+myString:   Mut{String("hello \"zen\"\n")}   // variable declaration with type inference and initialization
 
-my_int:     Const{Int}        // error int must be initialised with a value
-my_int:     Const{Int(1)}     // const variable declaration with type and initialisation
+my_int:     Int        // error int must be initialized with a value unless it is defined by a compTime literal/value
+my_int:     Int(1)     // const variable declaration with type and initialization
 
 // code blocks
-myBlock:    Body {
+myBlock: Fn {
     myString: myString.concat(String("World!")) // this modifies the myString variable in the outer scope as there is no variable shadowing
 }
 
@@ -113,21 +125,22 @@ PersonSecret: {
 }
 PersonPrivate: {
 // PersonPrivate: Private{Type} { // make this only modifiable in this scope
-    private: Private{String()}, // only modifiable in this scope
+    private: String(), // only modifiable in this scope
 }
+
 
 // can also be to mark functions and types private
 Person: {
-    name:   String,
-    age:    Int,
+    name:   Pub{String},
+    age:    Pub{Int},
     // extending types
     ...PersonSecret,
     ...PersonPrivate,
 }
 
 
-// only visable in this scope
-setSecretValue: Secret{Function} {
+// only visible in this scope
+setSecretValue: Secret{Fn} {
     args:   { self: Person, value: String},
     return: ResultWithError {self: Person, error: ErrorType},
     fn: {
@@ -164,9 +177,9 @@ io.std.writeLine(myPerson.type) // > "Person"
 // }
 
 Currency: Enum {
-    GBP: Const{String("GBP")},
-    USD: Const{String("USD")},
-    EUR: Const{String("EUR")},
+    GBP: "GBP",
+    USD: "USD",
+    EUR: "EUR",
 }
 
 Rgb: Enum {
@@ -218,34 +231,35 @@ io.std.writeLine(String(token.value.Type))        // String
 functions are types with a body call
 ```groovy
 Function: {
-    args:   Type,
-    fn:   Body,
-    return: Result || ResultWithError
+    a:   Type,
+    f:   Body,
+    r: Res || ResErr
 }
 ```
+
 #### Function example
 
 ```groovy
 greet: Fn {
-    args:   {
-        self:       Person,
+    self: Person,
+    a: {
         message:    String,
     },
-    return: String,
-    fn:   {
-        return(String.format("${message} ${self.name}"))
+    r: Res{String},
+    f:   {
+        r(String.fmt("\(message) \(self.name)"))
     },
 }
 ```
 ### Results
 ```groovy
 
-Result: {
+Res: {
     self:   Type,
     error:  ErrorType,
 }
 
-ResultWithError: Result {
+ResErr: Res {
     error:  ErrorType
 }
 ```
@@ -255,19 +269,22 @@ ResultWithError: Result {
 Error: {
     error:      Enum,
     message:    String,
-    fn:       Body,
+    fn:         Body,
 }
+
 ```
+
+
 #### Error example
 ```groovy
-MyErrorEnum: Enum {
+MyErrEnum: Enum {
     InvalidName,
     InvalidAmount,
     InvalidCurrency,
 }
 
-MyError: Error {
-    error: MyErrorEnum
+MyError: Err {
+    error: MyErrEnum
 }
 
 // is the same as this
@@ -277,14 +294,17 @@ MyError: Error {
 // }
 
 
-MyResult: Result {String}                                   // you can attempt to define an un defined type with {}
-MyResult: Result {self: String}                             // same as above but more explicit
-MyResult: ResultWithError {self: String, error: MyError}    // ifthe underType has more then one undefined type you must specify what field you are defining the type of
+MyResult: Res {String}                                   // you can attempt to define an un defined type with {}
+MyRes: Res {
+    self: String
+}                             // same as above but more explicit
+MyRes: ResErr {self: String, error: MyErr}    // if the underType has more then one undefined type you must specify what field you are defining the type of
 
-myResult: MyResult("hello") {                               // initialising a variable then defining what to do ifthere is an error
-    io.std.writeLine(String("error"))                               // print the error
-}                                                           // this works because we define a body which applys to the error.body
-myResult: MyResult(self:"hello")                            // same as above but more explicit
+myResult: MyRes("hello") {                               // initializing a variable then defining what to do if there is an error
+    io.std.writeLine("error")                               // print the error
+}                                                           // this works because we define a body which applies to the error.body
+
+myResult: MyRe(self:"hello")                            // same as above but more explicit
 
 ```
 
@@ -292,17 +312,30 @@ myResult: MyResult(self:"hello")                            // same as above but
 
 There is only an if statement but can handle match also
 ```groovy
+
 if (someThing) { doSomething() }
-if (someThing) { is: { doSomething() }, else: { doSomethingElse() } }
-if (Enum{A, B} (A)) { is: ((A, { doA() }), (B, { doB() })), else: { doSomethingElse() } }
+
+if (someThing) { 
+    is: { doSomething() }, 
+    else: { doSomethingElse() 
+} }
+
+if (Enum{A, B} (A)) { 
+    is: ((A, { doA() }), (B, { doB() })), 
+    else: { doSomethingElse() 
+} }
 
 myIntOption: Some(Int.i32(1))
-myInt: if (myInt) { is: { myInt }, else: { Int.i32(0) } }
 
-myInt: if (Some(Int.I32(1))) { is: (
-    (Int.I32, { }),
-    (None, { Int.I32(0) }),
-) }
+myInt: if (myInt) { 
+    is: { myInt }, 
+    else: { Int.i32(0) } 
+}
+
+myInt: if (myIntOption) { 
+    Int.I32, { }
+    None, { Int.I32(0) }
+}
 
 MyEnum: Enum {
     A: String,

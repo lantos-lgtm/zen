@@ -91,6 +91,7 @@ mod ast;
 mod token;
 mod parser;
 mod codegen;
+mod wat_codegen;
 
 use std::path::PathBuf;
 use clap::{Parser, Subcommand};
